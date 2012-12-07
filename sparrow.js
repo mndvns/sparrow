@@ -1,13 +1,13 @@
 if (Meteor.isClient) {
-  Template.hello.greeting = function () {
-    return "Welcome to sparrow.";
-  };
 
   Template.hello.events({
     'click input' : function () {
-      // template data, if any, is available in 'this'
-      if (typeof console !== 'undefined')
-        console.log("You pressed the button");
+      Accounts.createUser({
+        username: $('#inputUsername').val(),
+        password: $('#inputPassword').val(),
+        type: 'admin'
+      })
+      console.log("You pressed the button");
     }
   });
 }
