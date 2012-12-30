@@ -4,27 +4,67 @@
 
 <body>
   <div class="container">
-
-
-    <form action="" class="form-horizontal">
-      <div class="control-group">
-        <label class="control-label" for="">Username</label>
-        <div class="controls">
-          <input type="text" id="inputUsername">
-        </div>
-      </div>
-      <div class="control-group">
-        <label class="control-label" for="">Password</label>
-        <div class="controls">
-          <input type="text" id="inputPassword">
-        </div>
-      </div>
-    {{> hello}}
-    </form>
-
-   </div>
+    <div class="row span2 pane west">
+      <nav>
+        {{loginButtons}}
+        {{#if currentUser}}
+          <br>
+          <a href="/account">Account</a><br>
+          <a href="/">Main</a><br>
+        {{/if}}
+      </nav>
+    </div>
+    <div class="row span9">
+      {{renderPage}}
+    </div>
+  </div>
 </body>
 
-<template name="hello">
-  <input type="button" class="btn" value="Click" />
+<template name="home">
+  {{#each getOffers}}
+    {{> offer}}
+  {{/each}}
+</template>
+
+<template name="offer">
+  {{#if checkVote this._id}}
+  <div class="offer voted" id="{{this._id}}">
+  {{else}}
+  <div class="offer" id="{{this._id}}">
+  {{/if}}
+    <span class="name" data-value="{{this.name}}">{{this.name}}</span><br>
+    <span class="price" data-value="{{this.price}}">{{this.price}}</span><br>
+    <span class="">Votes: {{this.votes}}</span><br>
+    <span class="">Created: {{styleDate this.createdAt}}</span><br>
+    <span class="">Updated: {{this.updatedAt}}</span><br>
+    <i class="icon-ok upvote"></i>
+  </div>
+</template>
+
+<template name="account">
+  {{> myOffer}}
+</template>
+
+<template name="myOffer">
+  <form action="" class="form-horizontal">
+    <!-- <div class="control-group"> -->
+    <!--   <label class="control-label">Offer Name</label> -->
+    <!--   <div class="controls"> -->
+    <!--     <input type="text" id="offerName" value="{{offer.name}}"> -->
+    <!--   </div> -->
+    <!-- </div> -->
+    <div class="control-group">
+      <label class="control-label"></label>
+      <div class="controls">
+        <input type="text" class="text" id="" value="">
+      </div>
+    </div>
+    <input type="button" class="btn save" value="Click">
+  </form>
+  {{#if showStatus}}
+    {{message}}
+  {{/if}}
+  {{#with offer}}
+    {{> offer}}
+  {{/with}}
 </template>

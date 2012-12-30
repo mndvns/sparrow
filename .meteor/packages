@@ -7,8 +7,6 @@ amplify
 accounts-ui
 accounts-password
 
-bootstrap
-
 jquery
 jquery-history
 jquery-layout
@@ -19,4 +17,10 @@ stylus
 underscore
 backbone
 
+bootstrap
+
 d3
+moment
+router
+transitioner
+blade

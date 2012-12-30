@@ -1,0 +1,69 @@
+- console.log("MADE IS THIS FAR")
+body
+  .container
+    .row.span2.pane.west
+      - var j = "DERP"
+      nav
+        | HERP
+        // | {{loginButtons}}
+        // | {{#if currentUser}}
+        // br
+        // a(href='/account') Account
+        // br
+        // a(href='/') Main
+        // br
+        // | {{/if}}
+    .row.span9
+      | DERP
+      // | {{renderPage}}
+      // | {{#each getOffers}}
+      // | {{offer}}
+      // | {{/each}}
+
+// template(name='offer')
+//   // | {{#if checkVote this._id}}
+//   // {{this._id .offer.voted
+//   //   | {{else}}
+//   //   {{this._id}}.offer
+//   //     | {{/if}}
+//   span.name(data-value='{{this.name}}') {{this.name}}
+//   br
+//   span.price(data-value='{{this.price}}') {{this.price}}
+//   br
+//   span Votes: {{this.votes}}
+//   br
+//   span Created: {{styleDate this.createdAt}}
+//   br
+//   span Updated: {{this.updatedAt}}
+//   br
+//   i.icon-ok.upvote
+
+// template(name='account')
+//   | {{
+//   | myOffer}}
+// template(name='myOffer')
+//   form.form-horizontal(action='')
+//     //
+//        <div class="control-group"> 
+//     //
+//          <label class="control-label">Offer Name</label> 
+//     //
+//          <div class="controls"> 
+//     //
+//            <input type="text" id="offerName" value="{{offer.name}}"> 
+//     //
+//          </div> 
+//     //
+//        </div> 
+//     .control-group
+//       label.control-label
+//       .controls
+//         input.text(type='text', value='')
+//     input.btn.save(type='button', value='Click')
+//   | {{#if showStatus}}
+//   | {{message}}
+//   | {{/if}}
+//   | {{#with offer}}
+//   | {{
+//   | offer}}
+//   | {{/with}}

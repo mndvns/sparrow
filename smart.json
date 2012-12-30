@@ -1,0 +1,10 @@
+{
+  "packages": {
+    "moment": {},
+    "bootstrap-updated": {},
+    "isotope": {},
+    "router": {},
+    "transitioner": {},
+    "blade": {}
+  }
+}
