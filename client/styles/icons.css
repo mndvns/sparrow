@@ -1,0 +1,305 @@
+@font-face {
+	font-family: 'icomoon';
+	src:url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.eot');
+	src:url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.eot?#iefix') format('embedded-opentype'),
+		url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.svg#icomoon') format('svg'),
+		url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.woff') format('woff'),
+		url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.ttf') format('truetype');
+	font-weight: normal;
+	font-style: normal;
+}
+
+/* Use the following CSS code if you want to use data attributes for inserting your icons */
+[data-icon]:before {
+	font-family: 'icomoon';
+	content: attr(data-icon);
+	speak: none;
+	font-weight: normal;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Use the following CSS code if you want to have a class per icon */
+[class^="icon-"]:before, [class*=" icon-"]:before {
+	font-family: 'icomoon';
+	font-style: normal;
+	speak: none;
+	font-weight: normal;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+}
+.icon-drink:before {
+	content: "\e000";
+}
+.icon-drink-2:before {
+	content: "\e001";
+}
+.icon-drink-3:before {
+	content: "\e002";
+}
+.icon-drink-4:before {
+	content: "\e003";
+}
+.icon-coffee:before {
+	content: "\e004";
+}
+.icon-mug:before {
+	content: "\e005";
+}
+.icon-ice-cream:before {
+	content: "\e006";
+}
+.icon-cake:before {
+	content: "\e007";
+}
+.icon-phone:before {
+	content: "\e008";
+}
+.icon-tablet:before {
+	content: "\e009";
+}
+.icon-ipod:before {
+	content: "\e00a";
+}
+.icon-tv:before {
+	content: "\e00b";
+}
+.icon-camera:before {
+	content: "\e00c";
+}
+.icon-pictures:before {
+	content: "\e00e";
+}
+.icon-android:before {
+	content: "\e00f";
+}
+.icon-pacman:before {
+	content: "\e010";
+}
+.icon-cassette:before {
+	content: "\e011";
+}
+.icon-watch:before {
+	content: "\e012";
+}
+.icon-headphones:before {
+	content: "\e013";
+}
+.icon-film:before {
+	content: "\e00d";
+}
+.icon-gamepad:before {
+	content: "\e014";
+}
+.icon-lab:before {
+	content: "\e015";
+}
+.icon-graduate:before {
+	content: "\e016";
+}
+.icon-tie:before {
+	content: "\e017";
+}
+.icon-sale:before {
+	content: "\e018";
+}
+.icon-open:before {
+	content: "\e019";
+}
+.icon-direction:before {
+	content: "\e01a";
+}
+.icon-3d-glasses:before {
+	content: "\e01b";
+}
+.icon-bowling-pin:before {
+	content: "\e01c";
+}
+.icon-bowling:before {
+	content: "\e01d";
+}
+.icon-baseball:before {
+	content: "\e01e";
+}
+.icon-batman:before {
+	content: "\e01f";
+}
+.icon-space-invaders:before {
+	content: "\e020";
+}
+.icon-skeletor:before {
+	content: "\e021";
+}
+.icon-transformers:before {
+	content: "\e022";
+}
+.icon-moon-and-star:before {
+	content: "\e023";
+}
+.icon-cross:before {
+	content: "\e024";
+}
+.icon-david-star:before {
+	content: "\e025";
+}
+.icon-lamp:before {
+	content: "\e026";
+}
+.icon-umbrella:before {
+	content: "\e027";
+}
+.icon-diamond:before {
+	content: "\e028";
+}
+.icon-paper-plane:before {
+	content: "\e029";
+}
+.icon-bike:before {
+	content: "\e02a";
+}
+.icon-plane:before {
+	content: "\e02b";
+}
+.icon-presentation:before {
+	content: "\e02c";
+}
+.icon-heart:before {
+	content: "\e02d";
+}
+.icon-piano:before {
+	content: "\e02e";
+}
+.icon-badge:before {
+	content: "\e02f";
+}
+.icon-target:before {
+	content: "\e030";
+}
+.icon-ticket:before {
+	content: "\e031";
+}
+.icon-ticket-2:before {
+	content: "\e032";
+}
+.icon-microphone:before {
+	content: "\e033";
+}
+.icon-ying-yang:before {
+	content: "\e034";
+}
+.icon-compass:before {
+	content: "\e035";
+}
+.icon-shipping:before {
+	content: "\e036";
+}
+.icon-usb:before {
+	content: "\e037";
+}
+.icon-ampersand:before {
+	content: "\e038";
+}
+.icon-disk:before {
+	content: "\e039";
+}
+.icon-button:before {
+	content: "\e03a";
+}
+.icon-appbarcontrollerxbox:before {
+	content: "\e03b";
+}
+.icon-appbarcontrollersnes:before {
+	content: "\e03c";
+}
+.icon-appbarbaby:before {
+	content: "\e03d";
+}
+.icon-appbaralien:before {
+	content: "\e03e";
+}
+.icon-appbarclothestie:before {
+	content: "\e03f";
+}
+.icon-appbarclothesshirt:before {
+	content: "\e040";
+}
+.icon-appbarcity:before {
+	content: "\e041";
+}
+.icon-appbarcityseattle:before {
+	content: "\e042";
+}
+.icon-appbarcitysanfrancisco:before {
+	content: "\e043";
+}
+.icon-appbarcitychicago:before {
+	content: "\e044";
+}
+.icon-appbarchurch:before {
+	content: "\e045";
+}
+.icon-appbarcandycane:before {
+	content: "\e046";
+}
+.icon-appbarbeerguinness:before {
+	content: "\e047";
+}
+.icon-appbarbed:before {
+	content: "\e048";
+}
+.icon-appbarbath:before {
+	content: "\e049";
+}
+.icon-ticket-3:before {
+	content: "\e04a";
+}
+.icon-ruler:before {
+	content: "\e04b";
+}
+.icon-megaphone:before {
+	content: "\e04c";
+}
+.icon-megaphone-2:before {
+	content: "\e04d";
+}
+.icon-tools:before {
+	content: "\e04e";
+}
+.icon-screwdriver:before {
+	content: "\e04f";
+}
+.icon-paint:before {
+	content: "\e050";
+}
+.icon-hammer:before {
+	content: "\e051";
+}
+.icon-brush:before {
+	content: "\e052";
+}
+.icon-equalizer:before {
+	content: "\e053";
+}
+.icon-microwave:before {
+	content: "\e054";
+}
+.icon-refrigerator:before {
+	content: "\e055";
+}
+.icon-oven:before {
+	content: "\e056";
+}
+.icon-washing-machine:before {
+	content: "\e057";
+}
+.icon-cord:before {
+	content: "\e058";
+}
+.icon-football:before {
+	content: "\e059";
+}
+.icon-eight-ball:before {
+	content: "\e05a";
+}
+
+

@@ -1,4 +1,20 @@
 Offers = new Meteor.Collection("offers")
+Tags = new Meteor.Collection("tags")
+Tagsets = new Meteor.Collection("tagsets")
+
+Offer = Backbone.Model.extend({
+  defaults: {
+    name: "some name",
+    price: "some price",
+    description: "some description",
+    symbol: "",
+    votes: 0,
+    created: "some time",
+    update: "some time"
+  }
+})
+
+newOffer = new Offer()
 
 Meteor.methods({
   editOffer: function (type, options) {
@@ -11,7 +27,10 @@ Meteor.methods({
         owner: this.userId,
         name: options.name,
         price: options.price,
+        description: options.description,
+        symbol: options.symbol,
         loc: [],
+        tags: [],
         createdAt: (moment().unix() * 1000),
         updatedAt: (moment().unix() * 1000),
         votes: 0
@@ -23,33 +42,77 @@ Meteor.methods({
         {$set: {
           name: options.name,
           price: options.price,
+          description: options.description,
+          symbol: options.symbol,
           updatedAt: (moment().unix() * 1000)
         }
       })
     }
+  },
+  isAdmin: function (id) {
+    var type = Meteor.users.findOne({_id: id}).type
+    console.log(type)
+    if(type != "admin") {
+      console.log("false!")
+      return false
+    } else {
+      console.log("true!")
+      return true
+    } 
   }
 })
 
 if (Meteor.isClient) {
-
-  Meteor.Router.add({
-    '/': 'index',
-    '/account': 'account'
-  })
 
   Accounts.ui.config({
     passwordSignupFields: 'USERNAME_AND_OPTIONAL_EMAIL'
   })
 
   Meteor.subscribe("offers")
+  Meteor.subscribe("tags")
   Meteor.subscribe("allUserData")
 
-  Template.index.getOffers = function () {
-    return Offers.find({}, {sort: {votes: -1}})
+  Handlebars.registerHelper("styleDate", function (date) {
+    return moment(date).fromNow()
+  })
+
+  Handlebars.registerHelper("getTagsets", function (date) {
+    return Tagsets.find()
+  })
+
+  Handlebars.registerHelper('getTags', function() {
+    return Tags.find({tagset: this.name})
+  })
+
+  Handlebars.registerHelper('getLocation', function() {
+    var output;
+    navigator.geolocation.getCurrentPosition(foundLocation, noLocation);
+    outpout = Session.get('loc');
+    return Session.get('loc');
+  })
+
+  function foundLocation(location) {
+    console.log(location);
+    Session.set('loc','lat: '+location.coords.latitude+', lan: '+ location.coords.longitude);
+  }
+  function noLocation() {
+    alert('no location');
   }
 
-  Template.index.events({
-    'click .upvote': function(event, template) {
+  Template.sidebar.getUserType = function (type) {
+    var user = Meteor.user()
+    if (!user){
+      return false
+    } else if (user.type == type) {
+      return true
+    }
+  }
+
+  Template.home.events({
+    'click .votes': function(event, template) {
+      if (! Meteor.user()) {
+        return false
+      }
       var parent = $(event.currentTarget).parent()
         , selection = parent.attr('id')
         , user = Meteor.user()
@@ -64,63 +127,26 @@ if (Meteor.isClient) {
     }
   });
 
-  Template.index.styleDate = function (date) {
+  Template.home.getOffers = function () {
+    return Offers.find({}, {sort: {votes: 1}})
+  }
+
+  Template.home.styleDate = function (date) {
     return moment(date).fromNow()
   }
 
-  // Template.offer.checkVote = function (selection) {
-  //   var user = Meteor.user()
-  //     , users = Meteor.users
+  Template.offer.checkVote = function (selection) {
+    var user = Meteor.user()
+      , users = Meteor.users
 
-  //   if (_.contains(user.votes, selection)) {
-  //     return true
-  //   }
-  // }
+    if (!user) {
+      return false
+    }
 
-  // Template.myOffer.events({
-  //   'click .save' : function (event, tmpl) {
-  //     var name = $("span.name").text()
-  //       , price = $("span.price").text()
-  //       , type = Offers.findOne({owner: Meteor.userId()}) ? 'update' : 'insert'
-
-  //     Meteor.call('editOffer', type, {
-  //       name: name,
-  //       price: price
-  //     }, function (error) {
-  //       if (error)
-  //         Session.set('showStatus', error.reason)
-  //       else
-  //         Session.set('showStatus', "Success!")
-  //     })
-  //   },
-  //   'click .offer span': function (event, tmpl) {
-  //     var target = $(event.target)
-  //       , attr = target.attr('class')
-  //       , val = this[attr]
-
-  //     $(tmpl.find("label")).text(attr)
-  //     $(tmpl.find("input.text")).attr('id', attr).val(val)
-
-  //   },
-  //   'keyup input.text': function (event, tmpl) {
-  //     var target = $(event.currentTarget)
-  //       , attr = target.attr('id')
-  //       , val = target.val()
-
-  //     $("span."+attr).text(val)
-  //   }
-  // })
-
-  // Template.myOffer.message = function () {
-  //   return Session.get('showStatus')
-  // }
-
-  // Template.myOffer.showStatus = function () {
-  //   return Session.get('showStatus')
-  // }
-  // Template.myOffer.offer = function () {
-  //   return Offers.findOne({owner: userId})
-  // }
+    if (_.contains(user.votes, selection)) {
+      return true
+    }
+  }
 
 }
 
@@ -128,28 +154,53 @@ Users = new Meteor.Collection("userData")
 
 if (Meteor.isServer) {
   Meteor.startup(function () {
-    // var require = __meteor_bootstrap__.require
-    //   , moment = require("moment")
   });
 
   Accounts.onCreateUser(function(options, user) {
     user.type = 'basic'
     user.votes = []
+    user.votes.push(user._id)
+    user.points = 10
     if (options.profile)
       user.profile = options.profile;
     return user;
   });
 
   Meteor.users.allow({
+    insert: function(userId, docs) {
+      if (Meteor.users.findOne({_id: userId}).type === "admin") {
+        return _.all(docs)
+      } else {
+        return false
+      }
+    },
     update: function(userId, docs, fields, modifier) {
       return _.all(docs, function (doc) {
-        return doc._id === userId
+        if (Meteor.users.findOne({_id: userId}).type === "admin") {
+          console.log("You're an admin!")
+          return doc
+        } else {
+          return doc._id === userId
+        }
       })
+    },
+    remove: function(userId, docs) {
+      if (Meteor.users.findOne({_id: userId}).type === "admin") {
+        console.log("You're an admin!")
+        return _.all(docs)
+      } else {
+        return false
+      }
     }
   })
+  
 
   Meteor.publish("offers", function() {
     return Offers.find({})
+  })
+
+  Meteor.publish("tags", function() {
+    return Tags.find({})
   })
 
   Meteor.publish("allUserData", function () {
