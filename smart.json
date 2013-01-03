@@ -4,11 +4,6 @@
     "bootstrap-updated": {},
     "isotope": {},
     "router": {},
-    "transitioner": {},
-    "blade": {},
-    "form2js": {},
-    "datatables": {},
-    "foundation-icons": {},
-    "leaflet": {}
+    "datatables": {}
   }
 }
