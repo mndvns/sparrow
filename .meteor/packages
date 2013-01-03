@@ -22,7 +22,4 @@ bootstrap
 d3
 moment
 router
-transitioner
-blade
 datatables
-leaflet
