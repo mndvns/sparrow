@@ -3,6 +3,11 @@
 li
   list-style none
 
+a:hover
+  text-decoration none
+
+html
+  cursor default
 
 nav
   fixed left
@@ -26,60 +31,62 @@ nav
     padding-right 30px
 
 .offer
+  height = 170px
   relative top
   width 100%
-  height 170px
+  height height
   border-bottom 1px solid #ddd
-  float left
+  section
+    float left
+    height 100%
+    padding 0 10px
+    &:hover
+      background #ddd
   &.voted
     background #eee
   .votes
-    absolute top left
     height 100%
     font-size 20px
-    width 40px
+    width 50px
     text-align center
-    line-height 170px
+    line-height height
     font-weight bold
-    margin-left 20px
-  .symbol-wrapper
-    height 100%
-    width 220px
-    float left
-    .symbol
-      font-size 5em
-      line-height 1.65em
-      margin-left 1.1em
-      height 1.5em
-      width 1.5em
+  .symbol
+    div
+      font-size 4em
+      line-height 100px
+      height 100px
+      width 100px
       color white
       background red
       text-align center
       border-radius 2em
-      margin-top 0.4em
-  span
-    &[data-field-value=name]
+      margin 35px 0
+  .main
+    width 300px
+  .field
+    &[data-field=name]
       font-weight bold
       font-size 32px
       margin 40px 0 15px
       display block
-    &[data-field-value=price]
+    &[data-field=business]
       font-weight 900
       color #585858
       text-transform uppercase
       font-size 11px
       letter-spacing 1px
 
-
-
-
 #tagsets
   ul
     li
       display inline
-#tags
+
+.tag-list
   ul
     float left
+    [data-active]
+      background #ddd
 
 table
   th
@@ -109,3 +116,7 @@ table
   line-height 1.5em
   div
     font-size 2em
+
+
+#map_canvas
+  height 300px

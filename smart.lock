@@ -14,7 +14,8 @@
       "blade": {},
       "form2js": {},
       "datatables": {},
-      "foundation-icons": {}
+      "foundation-icons": {},
+      "leaflet": {}
     },
     "packages": {
       "moment": {
@@ -61,6 +62,11 @@
         "git": "https://github.com/IainShigeoka/meteor-foundation-icons-all.git",
         "tag": "v1.0.1",
         "commit": "da3b8f7452f9019c904274f1ad00bf2949bc735c"
+      },
+      "leaflet": {
+        "git": "https://github.com/bevanhunt/meteor-leaflet.git",
+        "tag": "v0.1.8",
+        "commit": "8a3d0f53734e4fe3efc3e6e39aa3da0209e2ec8e"
       },
       "page-js": {
         "git": "https://github.com/tmeasday/meteor-page-js.git",
