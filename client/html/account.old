@@ -2,7 +2,7 @@
   <h1>This is your account</h1>
 </template>
 
-<template name="profile">
+<template name="account_profile">
   <h1>PROFILE</h1><br>
   <ul>
     <li>Username: {{user.username}}</li>
@@ -13,12 +13,12 @@
   </ul>
 </template>
 
-<template name="metrics">
-<h1>Offers: {{offers}}</h1>
-<h1>Votes: {{votes}}</h1>
+<template name="account_metrics">
+  <h1>Offers: {{offers}}</h1>
+  <h1>Votes: {{votes.length}}</h1>
 </template>
 
-<template name="myOffer">
+<template name="account_offer">
   <div class="myOffer">
     {{#with getOffer}}
       {{> offer}}
@@ -28,10 +28,20 @@
 
   <!-- <div id="map_canvas" style="top:30px;"></div> -->
 
-  {{#if showStatus}}
-    {{message}}
+  {{#if status_alert}}
+    {{#with status_alert}}
+    <div class="alert alert-block fade in {{this.type}}">
+      <button type="button" class="close" data-dismiss="alert">×</button>
+      <h4 class="alert-heading">{{this.heading}}</h4>
+      <p>{{this.message}}</p>
+    </div>
+    {{/with}}
   {{/if}}
-  <input type="button" class="btn save" value="Save">
+
+  <div class="clearfix"></div>
+
+  <div class="container">
+    <input type="button" class="btn save" value="Save">
   <div class="clearfix"></div>
 
   {{#if show "main"}}
@@ -55,8 +65,14 @@
           <input type="text" class="text" tabindex=3 value="{{this.business}}" id="business">
         </div>
       </div>
-      <input type="button" class="btn save" value="Save">
     </form>
+    {{/with}}
+  {{/if}}
+
+  {{#if show "votes"}}
+    {{#with getOffer}}
+      <input type="button" class="btn" id="qr-button" value="QR Code">
+      <div id="qr-code"></div>
     {{/with}}
   {{/if}}
 
@@ -127,39 +143,9 @@
     {{/with}}
   {{/if}}
 
-</template>
-
-<template name="offer">
-{{#if checkVote this._id}}
-<div class="offer voted" id="{{this._id}}">
-  {{else}}
-  <div class="offer" id="{{this._id}}">
-    {{/if}}
-    <section class="votes">{{this.votes.length}}</section>
-    <section class="symbol">
-      <div data-icon="{{this.symbol}}"></div>
-    </section>
-    <section class="main">
-      <span class="field" data-field="name">{{this.name}}</span>
-      <span class="field" data-field="description">{{this.description}}</span><br>
-      <span class="field" data-field="business">{{this.business}}</span><br>
-    </section>
-    <section class="tags">
-      <ul>
-        <li></li>
-        {{#each tags}}
-          <li>{{this}}</li>
-        {{/each}}
-      </ul>
-    </section>
-    <section class="price">
-      <span class="field" data-field="price">{{this.price}}</span>
-    </section>
-    <section class="location">
-      {{getDistance this.loc}}
-    </section>
   </div>
-  </template>
+
+</template>
 
 
   <template name="myTags">

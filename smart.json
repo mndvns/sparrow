@@ -4,6 +4,9 @@
     "bootstrap-updated": {},
     "isotope": {},
     "router": {},
-    "datatables": {}
+    "datatables": {},
+    "jade-handlebars": {},
+    "bafa": {},
+    "cron": {}
   }
 }

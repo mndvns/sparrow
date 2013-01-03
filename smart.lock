@@ -10,7 +10,10 @@
       "bootstrap-updated": {},
       "isotope": {},
       "router": {},
-      "datatables": {}
+      "datatables": {},
+      "jade-handlebars": {},
+      "bafa": {},
+      "cron": {}
     },
     "packages": {
       "moment": {
@@ -37,6 +40,21 @@
         "git": "https://github.com/TimHeckel/meteor-datatables.git",
         "tag": "v0.1.2",
         "commit": "9b10b88d1e99bb08f4f62d6446349649e46ba458"
+      },
+      "jade-handlebars": {
+        "git": "https://github.com/SimonDegraeve/meteor-jade-handlebars.git",
+        "tag": "v0.2.2",
+        "commit": "e5ea451cc554748f1a0050219ac66e3a1bb204fc"
+      },
+      "bafa": {
+        "git": "https://github.com/jackp/BAFA.git",
+        "tag": "v0.2.2",
+        "commit": "9d5e2f8605126c908949f550dc6a1f4e01e7ff62"
+      },
+      "cron": {
+        "git": "https://github.com/tmeasday/meteor-cron.git",
+        "tag": "v0.0.1",
+        "commit": "8cecc021c1fb681bfa1de2aa8242448a4516049a"
       },
       "page-js": {
         "git": "https://github.com/tmeasday/meteor-page-js.git",

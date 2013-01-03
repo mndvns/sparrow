@@ -1,6 +1,5 @@
 Meteor.startup(function () {
   Offers._ensureIndex({loc: "2d"})
-
 });
 
 Accounts.onCreateUser(function(options, user) {
@@ -53,3 +52,4 @@ Meteor.publish("tags", function() {
 Meteor.publish("allUserData", function () {
   return Meteor.users.find({}, {type: 1})
 })
+

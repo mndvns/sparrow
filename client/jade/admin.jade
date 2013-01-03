@@ -1,0 +1,73 @@
+template(name='users')
+  table.table.table-condensed
+    thead
+      tr
+        th Actions
+        th(data-sort-value='username') Username
+        th(data-sort-value='type') Type
+        th(data-sort-value='votes') Votes
+        th(data-sort-value='karma') Karma
+        th(data-sort-value='createdAt') Created
+        th(data-sort-value='_id') ID
+    tbody
+      {{#each getUsers}}
+      tr.thingy
+        td
+          button.btn.remove Remove
+        td
+          input(type='text', value='{{this.username}}')
+        td
+          button.btn(type='button', data-button-type='{{this.type}}') {{this.type}}
+        td
+          span {{this.votes.length}}
+        td
+          {{#with checkExpiration this.karma}}
+          span {{this.length}}
+          {{/with}}
+        td
+          span {{styleDate this.createdAt}}
+        td
+          i.icon-off
+      {{/each}}
+
+template(name='manageTagsets')
+  #tagsets
+    form.form-horizontal(action='')
+      .control-group
+        label.control-label Name
+        .controls
+          input#name.text(type='text')
+      input.btn.save(type='button', value='Save')
+    ul
+      {{#each getTagsets}}
+      li
+        {{this.name}}
+        i.icon-remove
+      {{/each}}
+
+template(name='manageTags')
+  {{> manageTagsets}}
+  #tags
+    form.form-horizontal(action='')
+      .control-group
+        label.control-label Name
+        .controls
+          input#name.text(type='text')
+      .control-group
+        label.control-label Tagset
+        .controls
+          .btn-group(data-toggle='buttons-radio')
+            {{#each getTagsets}}
+            button.btn.btn-primary(type='button') {{this.name}}
+            {{/each}}
+      input.btn.save(type='button', value='Save')
+    {{#each getTagsets}}
+    ul
+      strong {{this.name}}
+      {{#each getTags}}
+      li
+        {{this.name}}
+        i.icon-remove
+      {{/each}}
+    {{/each}}
+

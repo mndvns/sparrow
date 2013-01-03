@@ -1,11 +1,37 @@
 Meteor.Router.add({
-  '/': 'home',
-  '/account': 'account',
-  '/account/profile': 'profile',
-  '/account/offer': 'myOffer',
-  '/account/metrics': 'metrics',
-  '/admin/users': 'users',
-  '/admin/tags': 'manageTags'
+  '/': function () {
+    Session.set("header", false)
+    return 'home'
+  },
+  '/account': function () {
+    Session.set("header", "Account")
+    return 'account'
+  },
+  '/account/profile': function () {
+    Session.set("header", "Profile")
+    return 'account_profile'
+  },
+  '/account/offer': function () {
+    Session.set("header", "Offer")
+    return 'account_offer'
+  },
+  '/account/metrics': function () {
+    Session.set("header", "Metrics")
+    return 'account_metrics'
+  },
+  '/admin/users': function () {
+    Session.set("header", "Users")
+    return 'users'
+  },
+  '/admin/tags': function () {
+    Session.set("header", "Tags")
+    return 'manageTags'
+  },
+  '/offer/:id': function (id) {
+    Session.set("showThisOffer", Offers.findOne({ name: id }))
+    Session.set("header", null)
+    return 'thisOffer'
+  }
 })
 
 Meteor.Router.filters({
@@ -24,6 +50,9 @@ Meteor.Router.filters({
       return 'home'
     }
   }
+})
+
+Meteor.Router.add({
 })
 
 Meteor.Router.filter('checkLoggedIn')

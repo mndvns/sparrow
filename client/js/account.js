@@ -1,6 +1,6 @@
 as = amplify.store
 
-Template.myOffer.events({
+Template.account_offer.events({
   'click .save' : function (event, tmpl) {
     var type = Offers.findOne({owner: Meteor.userId()}) ? 'update' : 'insert'
       , geo = new google.maps.Geocoder()
@@ -15,13 +15,30 @@ Template.myOffer.events({
         })
       Meteor.call('editOffer', type, as(), function (error) {
         if (error)
-          Session.set('showStatus', error.reason)
+          Session.set('status_alert', {
+            heading: "Uh-oh...",
+            message: error.reason,
+            type: "alert-error",
+            time: moment().unix()
+          })
         else
-          Session.set('showStatus', "Success!")
+          Session.set('status_alert', {
+            heading: "Nice!",
+            message: "You're good to go.",
+            type: "alert-success",
+            time: moment().unix()
+          })
+        /* Meteor.setTimeout(hideAlert, 5000) */
+
       })
       }
     })
 
+  },
+  'click .alert button': function (event, tmpl) {
+    $(".alert").fadeOut('fast', function () {
+      Session.set("status_alert", false)
+    })
   },
   'click section': function (event, tmpl) {
     var area = event.currentTarget.getAttribute("class")
@@ -35,13 +52,19 @@ Template.myOffer.events({
     $(".field[data-field='"+attr+"']").text(val)
     as(attr, val)
   },
+  'keyup input.color': function (event, tmpl) {
+    var color = event.target.value
+    $("section.symbol .large").css("background", color)
+    as("color", color)
+  },
   'click .glyph div': function (event, tmpl) {
-    var attr = event.target.getAttribute("data-icon")
-    tmpl.find(".symbol div").setAttribute("data-icon", attr)
+    var attr = event.target.getAttribute("class")
+    tmpl.find(".symbol div").setAttribute("class", attr)
     as("symbol", attr)
   },
   'click .tag-list span': function (event, tmpl) {
-    if (! event.target.hasAttribute("data-active")) {
+    var tar = event.target
+    if (! tar.hasAttribute("data-active")) {
       event.target.setAttribute("data-active")
       $(tmpl.find("section.tags li:last")).after("<li>"+ this.name+"</li>" )
       var tags = as("tags") || []
@@ -54,20 +77,38 @@ Template.myOffer.events({
       as("tags", tags)
     }
   },
-  'click .add-address': function (event, tmpl) {
-    console.log(event, tmpl)
+  'click #qr-button': function (event, tmpl) {
+    var offerId = this.business
+
+    var draw_qrcode = function(text, typeNumber, errorCorrectLevel) {
+      document.write(create_qrcode(text, typeNumber, errorCorrectLevel) );
+    };
+
+    var create_qrcode = function(text, typeNumber, errorCorrectLevel, table) {
+
+      var qr = qrcode(typeNumber || 4, errorCorrectLevel || 'M');
+      qr.addData(text);
+      qr.make();
+      /* return qr.createImgTag(); */
+      return qr.createTableTag();
+    };
+
+    var update_qrcode = function() {
+      $("#qr-code").html(create_qrcode(offerId))
+        .find("td")
+        .css({width:'10px', height:'10px'})
+    };
+
+    update_qrcode()
   }
 })
 
-Template.myOffer.helpers({
+Template.account_offer.helpers({
   getOffer: function () {
     return as()
   },
-  message: function () {
-    return Session.get('showStatus')
-  },
-  showStatus: function () {
-    return Session.get('showStatus')
+  status_alert: function () {
+    return Session.get('status_alert')
   },
   show: function (options) {
     if (Session.get("show") === options) {
@@ -75,21 +116,38 @@ Template.myOffer.helpers({
     }
   },
   getIcons: function () {
-    var count = []
-    for(var o = 0; o < 6; o++){
-      for(var i = 0; i < 15; i++){
-        var j
-        if (i < 10){j = i}
-        else if (i === 10){j = "a"}
-        else if (i === 11){j = "b"}
-        else if (i === 12){j = "c"}
-        else if (i === 13){j = "d"}
-        else if (i === 14){j = "e"}
+    // var count = []
+    // for(var o = 0; o < 6; o++){
+    //   for(var i = 0; i < 15; i++){
+    //     var j
+    //     if (i < 10){j = i}
+    //     else if (i === 10){j = "a"}
+    //     else if (i === 11){j = "b"}
+    //     else if (i === 12){j = "c"}
+    //     else if (i === 13){j = "d"}
+    //     else if (i === 14){j = "e"}
 
-        count.push(o.toString() + j.toString())
-      }
-    }
-    return count
+    //     count.push(o.toString() + j.toString())
+    //   }
+    // }
+    // return count
+    return [
+      "drink",
+      "drink-2",
+      "drink-3",
+      "microphone",
+      "coffee",
+      "ice-cream",
+      "cake",
+      "pacman",
+      "wallet",
+      "gamepad",
+      "bowling",
+      "space-invaders",
+      "batman",
+      "lamp",
+      "lamp-2"
+    ]
   },
   checkTagActive: function (data) {
     var tag = {}
@@ -99,7 +157,7 @@ Template.myOffer.helpers({
   }
 })
 
-Template.myOffer.created = function () {
+Template.account_offer.created = function () {
   var id = Meteor.userId()
     , offer = Offers.findOne({ owner: id })
 
@@ -108,6 +166,7 @@ Template.myOffer.created = function () {
     if (offer) {
       as("business", offer.business)
       as("city_state", offer.city_state)
+      as("color", offer.color)
       as("description", offer.description)
       as("loc", offer.loc)
       as("name", offer.name)
@@ -116,7 +175,7 @@ Template.myOffer.created = function () {
       as("symbol", offer.symbol)
       as("tags", offer.tags)
       as("updatedAt", offer.updatedAt)
-      as("votes", offer.votes)
+      as("votes", offer.votes.length)
       as("zip", offer.zip)
     } else {
       _.each( _.keys(as()), function (key) {
@@ -125,19 +184,18 @@ Template.myOffer.created = function () {
       })
     }
   }
-  Meteor.flush()
 }
 
 
-Template.profile.user = function () {
+Template.account_profile.user = function () {
   return Meteor.user()
 }
 
-Template.metrics.offers = function () {
+Template.account_metrics.offers = function () {
   return Offers.find().count()
 }
 
-Template.metrics.votes = function () {
+Template.account_metrics.votes = function () {
   var votes = _.pluck(Offers.find().fetch(), "votes")
   , total = 0
   for (var i = 0; i < votes.length; i++) {

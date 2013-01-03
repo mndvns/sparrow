@@ -1,0 +1,46 @@
+head
+  title Sparrow
+  meta(name='viewport',content='initial-scale=1.0, user-scalable=no')
+  meta(charset='utf-8')
+
+body
+  {{> sidebar}}
+  {{> content}}
+
+template(name="sidebar")
+  nav.row.span2
+    {{loginButtons}}
+    br
+    {{#with currentUser}}
+    ul.top
+      li {{this.votes.length}}
+    {{/with}}
+    {{#if getUserType "admin"}}
+    ul.account
+      a(href="/account/offer") Offer
+      a(href="/account/profile") Profile
+      a(href="/account/metrics") Metrics
+      br
+      br
+      a(href="/admin/users") Users
+      a(href="/admin/tags") Tags
+    ul.main
+      a(href="/account") Account
+      a(href="/") Home
+    {{/if}}
+
+template(name='content')
+  div.row.offset2.content
+    {{#with page}}
+    {{#if this.name}}
+    header
+      h2 {{this.name}}
+    {{/if}}
+    div(class="{{this.pageClass}}")
+      {{renderPage}}
+    {{/with}}
+
+template(name='home')
+  {{#each getOffers}}
+  {{> offer}}
+  {{/each}}

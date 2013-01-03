@@ -1,4 +1,5 @@
 @import 'nib'
+@import 'icons.css'
 
 li
   list-style none
@@ -8,6 +9,14 @@ a:hover
 
 html
   cursor default
+
+.content
+  header
+    margin-top 2em
+    padding-left 2em
+    border-bottom 1px solid #ddd
+  .pad
+    margin-top 2em
 
 nav
   fixed left
@@ -25,6 +34,9 @@ nav
       absolute top 40%
     li
       cursor pointer
+    a
+      width 100%
+      display block
 
 @media (min-width: 1200px)
   nav
@@ -40,8 +52,9 @@ nav
     float left
     height 100%
     padding 0 10px
-    &:hover
-      background #ddd
+    .accountOffer &
+      &:hover
+        background #ddd
   &.voted
     background #eee
   .votes
@@ -85,6 +98,20 @@ nav
 .tag-list
   ul
     float left
+    user-select none
+    strong
+      font-weight 900
+      color #555
+      text-transform uppercase
+      font-size 11px
+      letter-spacing 1px
+      line-height 3em
+    li
+      border-left 1px solid #ddd
+      span
+        padding 5px 10px
+        line-height 2em
+        border-radius 0 2px 2px 0
     [data-active]
       background #ddd
 
@@ -117,6 +144,9 @@ table
   div
     font-size 2em
 
+.actions
+  padding-bottom 15px
+  text-align center
 
 #map_canvas
   height 300px

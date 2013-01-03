@@ -49,6 +49,9 @@
 
 <template name="content">
   <div class="row offset2">
+    {{#with header "main"}}
+      <h1>{{this}}</h1>
+    {{/with}}
     {{renderPage}}
   </div>
 </template>

@@ -17,6 +17,7 @@ Meteor.methods({
         description: options.description,
         business: options.business,
         symbol: options.symbol,
+        color: options.color,
         loc: options.loc,
         tags: options.tags,
         createdAt: (moment().unix() * 1000),
@@ -38,6 +39,7 @@ Meteor.methods({
           loc: options.loc,
           tags: options.tags,
           symbol: options.symbol,
+          color: options.color,
           updatedAt: (moment().unix() * 1000),
           street: options.street,
           city_state: options.city_state,
@@ -56,6 +58,47 @@ Meteor.methods({
       console.log("true!")
       return true
     } 
+  },
+  upvote: function (type, user, offer) {
+
+    var id = type === "id" ? user : Meteor.users.findOne({username: user })
+
+
+    // if (parent.hasClass("voted") || _.contains(user.votes, selection)) {
+    //   return false
+    // } else {
+    var vote = Meteor.uuid()
+      , now = moment().unix()
+      , exp = moment().add("seconds", 30).unix()
+      Meteor.users.update({ _id: user },
+        {
+          $push: {votes: { vid: vote, exp: exp },
+
+      }})
+      Offers.update( offer._id, {$push: {votes: {
+          vid: vote,
+          exp: exp
+        }
+      }})
+      Meteor.users.update({ _id: offer.owner }, {$push: {karma: {
+        vid: vote,
+        exp: exp
+      }}})
+    /* } */
+
   }
+
 })
+if (Meteor.isServer) {
+ var MyCron = new Cron();
+
+  // this job will happen every 1 second
+  MyCron.addJob(1, function() {
+    console.log('1 tick');
+  });
+  MyCron.addJob(5, function() {
+    console.log('5 tick');
+  });
+}
+
 
