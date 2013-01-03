@@ -79,6 +79,7 @@ Template.account_offer.events({
   },
   'click #qr-button': function (event, tmpl) {
     var offerId = this.business
+      , url = "http://deffenbaugh.herokuapp.com/offer/"
 
     var draw_qrcode = function(text, typeNumber, errorCorrectLevel) {
       document.write(create_qrcode(text, typeNumber, errorCorrectLevel) );
@@ -94,7 +95,7 @@ Template.account_offer.events({
     };
 
     var update_qrcode = function() {
-      $("#qr-code").html(create_qrcode(offerId))
+      $("#qr-code").html(create_qrcode(url + offerId))
         .find("td")
         .css({width:'10px', height:'10px'})
     };

@@ -28,7 +28,7 @@ Meteor.Router.add({
     return 'manageTags'
   },
   '/offer/:id': function (id) {
-    Session.set("showThisOffer", Offers.findOne({ name: id }))
+    Session.set("showThisOffer", Offers.findOne({ business: id }))
     Session.set("header", null)
     return 'thisOffer'
   }
