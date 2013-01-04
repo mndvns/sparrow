@@ -11,7 +11,9 @@ template(name='offer')
   div.offer(id="{{this._id}}")
     section.votes {{this.votes.length}}
     section.symbol
-      div(class='{{this.symbol}}', style="background: {{this.color}}")
+      div(class='glyph-wrapper')
+        // .mask(style="background: {{this.color}}")
+        .symbol-glyph(class='{{this.symbol}}', style="background: {{this.color}}")
     section.main
       span.field(data-field='name') {{this.name}}
       p.field(data-field='description') {{this.description}}

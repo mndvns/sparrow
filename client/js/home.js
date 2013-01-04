@@ -15,8 +15,29 @@ Template.sidebar.events({
 })
 
 Template.home.events({
-  'click .votes': function(event, template) {
+  'click section.symbol': function(event, tmpl) {
     Meteor.call("upvote", "id", Meteor.userId(), this)
+  },
+  'mouseenter section.symbol': function(event, tmpl) {
+  //   console.log(event)
+  //   $(event.target).find('.mask').animate({
+  //     height: 50,
+  //     width: 50,
+  //     padding: 25,
+  //     top: 0,
+  //     left: 0,
+  //     borderRadius: 100
+  //   }, 500)
+  // },
+  // 'mouseleave section.symbol': function(event, tmpl) {
+  //   $(event.target).find('.mask').stop().animate({
+  //     height: 0,
+  //     width: 0,
+  //     padding: 0,
+  //     top: 50,
+  //     left: 50,
+  //     borderRadius: 0
+  //   }, 'slow')
   }
 });
 

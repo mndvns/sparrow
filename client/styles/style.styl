@@ -14,6 +14,11 @@ a:hover
   visibility visible
 
 html
+body
+.content
+  height 100%
+
+html
   cursor default
   visibility hidden
   -webkit-font-smoothing antialiased
@@ -25,6 +30,7 @@ html
     text-transform uppercase
 
 .content
+  background #F2F2F2
   header
     margin-top 2em
     padding-left 2em
@@ -53,6 +59,9 @@ nav
     a
       width 100%
       display block
+      color black
+      &:hover
+        color #666
 
 @media (min-width: 1200px)
   nav
@@ -90,23 +99,41 @@ nav
     line-height height
     font-weight bold
   .symbol
-    div
+    positon relative
+    .glyph-wrapper
       font-size 4em
       line-height 100px
       height 100px
       width 100px
-      color white
-      background red
       text-align center
-      border-radius 2em
       margin 35px 0
+      color black
+      position relative
+      overflow hidden
+      display block
+      .mask
+        position absolute
+        opacity 0
+        z-index 1
+        height 90px
+        width 90px
+        top 5px
+        left 5px
+        border-radius 100px
+
+      .symbol-glyph
+        z-index 2
+        color white
+        position relative
+        border-radius 50px
+
   .main
     width 30%
   .field
     &[data-field=name]
       font-weight 600
       font-size 32px
-      margin 45px 0 10px -2px
+      margin 45px 0 15px -2px
       display block
       text-transform lowercase
     &[data-field=business]
@@ -237,3 +264,11 @@ i.icon-trash
   font-size 2em
   margin-left 10px
   line-height 45px
+
+.accounts-dialog
+  .additional-link
+    text-transform none
+    letter-spacing 0
+    font-weight normal
+    text-decoration none!important
+    padding 3px 3px 0
