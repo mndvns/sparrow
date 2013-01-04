@@ -14,8 +14,7 @@ template(name='offer')
       div(class='{{this.symbol}}', style="background: {{this.color}}")
     section.main
       span.field(data-field='name') {{this.name}}
-      span.field(data-field='description') {{this.description}}
-      br
+      p.field(data-field='description') {{this.description}}
       span.field(data-field='business') {{this.business}}
       br
     section.tags

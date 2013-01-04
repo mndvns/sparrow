@@ -104,16 +104,23 @@ nav
     width 30%
   .field
     &[data-field=name]
-      font-weight bold
+      font-weight 600
       font-size 32px
-      margin 40px 0 15px
+      margin 45px 0 10px -2px
       display block
+      text-transform lowercase
     &[data-field=business]
       font-weight 900
       color #585858
       text-transform uppercase
       font-size 11px
       letter-spacing 1px
+    &[data-field=description]
+      line-height 12px
+      text-transform none
+      font-weight normal
+      letter-spacing 0px
+      margin-bottom 5px
   .price
     font-size 5em
     font-weight 300
