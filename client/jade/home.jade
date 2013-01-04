@@ -13,7 +13,7 @@ template(name="sidebar")
     br
     {{#with currentUser}}
     ul.top
-      li {{this.votes.length}}
+      li {{this.karma.length}}
     {{/with}}
     {{#if getUserType "admin"}}
     ul.account

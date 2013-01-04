@@ -4,22 +4,32 @@ template(name='account')
 template(name='account_profile')
   {{#with getUser}}
   ul
-    li Username: {{this.username}}
-    li Votes: {{this.votes.length}}
-    li Type: {{this.type}}
-    li Points: {{this.points}}
-    li Age: {{styleDate this.createdAt}}
+    li
+      strong Username: 
+      {{this.username}}
+    li
+      strong Votes: 
+      {{this.votes.length}}
+    li 
+      strong Type: 
+      {{this.type}}
+    li 
+      strong Karma: 
+      {{this.karma.length}}
+    li 
+      strong Age: 
+      {{styleDate this.createdAt}}
   {{/with}}
 
 template(name='account_metrics')
   {{#with getUser}}
-  span
-    strong Offers: 
-    {{offers}}
-  br
-  span
-    strong Votes: 
-    {{votes.length}}
+  ul
+    li
+      strong Offers: 
+      {{offers}}
+    li
+      strong Votes: 
+      {{votes.length}}
   {{/with}}
   
 template(name='account_offer')
@@ -42,7 +52,10 @@ template(name='account_offer')
   .clearfix.pad
 
     .actions
-      input.btn.save(type='button', value='Save')
+      div.icon
+        i.icon-save.save
+        br
+        span save
 
     .clearfix
     {{#if show "main"}}
@@ -65,7 +78,11 @@ template(name='account_offer')
 
     {{#if show "votes"}}
     {{#with getOffer}}
-    input#qr-button.btn(type='button', value='QR Code')
+    .actions
+      div.icon
+        i.icon-qrcode#qr-button
+        br
+        span qr code
     #qr-code
     {{/with}}
     {{/if}}
@@ -85,7 +102,7 @@ template(name='account_offer')
     {{#if show "tags"}}
     .tag-list
       {{#each getTagsets}}
-      ul.span2.offset1
+      ul.span2
         strong {{this.name}}
         {{#each getTags}}
         li

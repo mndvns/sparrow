@@ -69,36 +69,47 @@ Meteor.methods({
     // } else {
     var vote = Meteor.uuid()
       , now = moment().unix()
-      , exp = moment().add("seconds", 30).unix()
-      Meteor.users.update({ _id: user },
-        {
-          $push: {votes: { vid: vote, exp: exp },
-
-      }})
-      Offers.update( offer._id, {$push: {votes: {
-          vid: vote,
-          exp: exp
-        }
-      }})
-      Meteor.users.update({ _id: offer.owner }, {$push: {karma: {
-        vid: vote,
-        exp: exp
-      }}})
+      , exp = moment().add("minutes", 15).unix()
+    Meteor.users.update({ _id: user }, { $push: {votes: {
+      vid: vote,
+      exp: exp
+    }}})
+    Offers.update( offer._id, {$push: {votes: {
+      vid: vote,
+      exp: exp
+    }}})
+    Meteor.users.update({ _id: offer.owner }, {$push: {karma: {
+      vid: vote,
+      exp: exp
+    }}})
     /* } */
 
   }
 
 })
-if (Meteor.isServer) {
- var MyCron = new Cron();
 
-  // this job will happen every 1 second
-  MyCron.addJob(1, function() {
-    console.log('1 tick');
-  });
-  MyCron.addJob(5, function() {
-    console.log('5 tick');
-  });
+if (Meteor.isServer) {
+
+  Meteor.setInterval(function() {
+
+    var now = moment().unix()
+      , offers = Offers.find({ votes: {$gt: {exp: now }}}).fetch()
+      , voters = Meteor.users.find({ votes: {$gt: {exp: now }}}).fetch()
+
+    for (var i=0; i < offers.length; i++) {
+      var filter =_.filter(offers[i].votes, function(data) {
+        return data.exp > now
+      })
+      Offers.update({ _id: offers[i]._id}, {$set: {votes: filter}})
+    }
+    for (var i=0; i < voters.length; i++) {
+      var filter =_.filter( voters[i].votes, function(data) {
+        return data.exp > now
+      })
+      Meteor.users.update({ _id: voters[i]._id}, {$set: {votes: filter}})
+    }
+  }, 3000)
+
 }
 
 

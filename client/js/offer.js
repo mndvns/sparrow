@@ -18,7 +18,7 @@ Template.offer.getDistance = function (loc) {
   var myLoc = Session.get("loc")
   if (myLoc && loc) {
     var dist = distance(myLoc.lat, myLoc.long, loc.lat, loc.long, "M")
-    return Math.round(dist * 10)/10 + " miles"
+    return Math.round(dist * 10)/10
   } else {
     return false
   }
@@ -35,6 +35,12 @@ Template.offer.checkVote = function (selection) {
   if (_.contains(user.votes, selection)) {
     return true
   }
+}
+
+Template.offer.rendered = function () {
+  var tagsEl = this.find("section.tags ul") 
+  j = tagsEl.querySelectorAll("li").length - 1
+  $(tagsEl).css({marginTop: (-(20 * j)/2) + "px" })
 }
 
 Template.thisOffer.events({

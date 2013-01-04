@@ -13,7 +13,7 @@ template(name='users')
       {{#each getUsers}}
       tr.thingy
         td
-          button.btn.remove Remove
+          i.icon-trash.remove
         td
           input(type='text', value='{{this.username}}')
         td
@@ -62,7 +62,7 @@ template(name='manageTags')
             {{/each}}
       input.btn.save(type='button', value='Save')
     {{#each getTagsets}}
-    ul
+    ul.span2
       strong {{this.name}}
       {{#each getTags}}
       li

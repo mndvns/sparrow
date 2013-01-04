@@ -25,7 +25,9 @@ template(name='offer')
         li {{this}}
         {{/each}}
     section.price
-      span.field(data-field='price') {{this.price}}
+      span.field(data-field='price') ${{this.price}}
     section.location
       {{getDistance this.loc}}
+      br
+      | miles
 
