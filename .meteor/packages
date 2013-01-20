@@ -1,4 +1,3 @@
-autopublish
 insecure
 preserve-inputs
 
@@ -7,22 +6,21 @@ amplify
 accounts-ui
 accounts-password
 
-jquery
-jquery-history
-jquery-layout
-jquery-waypoints
 
 stylus
 
 underscore
 backbone
 
-bootstrap
-
 d3
 moment
-router
-datatables
 jade-handlebars
-bafa
-cron
+http
+code-prettify
+accounts-base
+email
+showdown
+router
+isotope
+transitioner
+jquery-waypoints

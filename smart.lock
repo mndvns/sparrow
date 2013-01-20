@@ -2,18 +2,18 @@
   "meteor": {
     "git": "https://github.com/meteor/meteor.git",
     "branch": "master",
-    "commit": "067113a37dd4e7824db1a16d5f7a90c3739eed9c"
+    "commit": "4d98d8cb4e5a95e9e98953f44c872c9332a042a3"
   },
   "dependencies": {
     "basePackages": {
       "moment": {},
       "bootstrap-updated": {},
-      "isotope": {},
-      "router": {},
-      "datatables": {},
-      "jade-handlebars": {},
+      "font-awesome": {},
       "bafa": {},
-      "cron": {}
+      "router": {},
+      "transitioner": {},
+      "jade-handlebars": {},
+      "handlebar-helpers": {}
     },
     "packages": {
       "moment": {
@@ -26,40 +26,40 @@
         "tag": "v1.0.1",
         "commit": "bdd5fcc8e134e62bcbb9d11aad8270534ffb6493"
       },
-      "isotope": {
-        "git": "https://github.com/digioak/meteor-isotope.git",
-        "tag": "v0.0.1",
-        "commit": "e5f91aee4814b05b7dcea877a7a8e572cccc293f"
+      "font-awesome": {
+        "git": "https://github.com/nate-strauser/meteor-font-awesome.git",
+        "tag": "v0.1.1",
+        "commit": "0d8a0ea81a74d8229dc247d068e961144be9d507"
+      },
+      "bafa": {
+        "git": "https://github.com/jackp/BAFA.git",
+        "tag": "v0.3.0",
+        "commit": "cf8c9b0be42b21cb0203c6d08926529c4e00b0c6"
       },
       "router": {
         "git": "https://github.com/tmeasday/meteor-router.git",
         "tag": "v0.3.4",
         "commit": "8f0d5303de5b93771e91f21f818be27358c2fb30"
       },
-      "datatables": {
-        "git": "https://github.com/TimHeckel/meteor-datatables.git",
-        "tag": "v0.1.2",
-        "commit": "9b10b88d1e99bb08f4f62d6446349649e46ba458"
+      "transitioner": {
+        "git": "https://github.com/tmeasday/meteor-transitioner.git",
+        "tag": "v0.2.2",
+        "commit": "ffbef8e7e10dfcefc61394ea8a11f07a6ff97cd9"
       },
       "jade-handlebars": {
         "git": "https://github.com/SimonDegraeve/meteor-jade-handlebars.git",
-        "tag": "v0.2.2",
-        "commit": "e5ea451cc554748f1a0050219ac66e3a1bb204fc"
+        "tag": "v0.2.4",
+        "commit": "52def281573302a79e1a3d0b368e77f3b14d0d09"
       },
-      "bafa": {
-        "git": "https://github.com/jackp/BAFA.git",
-        "tag": "v0.2.2",
-        "commit": "9d5e2f8605126c908949f550dc6a1f4e01e7ff62"
-      },
-      "cron": {
-        "git": "https://github.com/tmeasday/meteor-cron.git",
-        "tag": "v0.0.1",
-        "commit": "8cecc021c1fb681bfa1de2aa8242448a4516049a"
+      "handlebar-helpers": {
+        "git": "https://github.com/raix/Meteor-handlebar-helpers.git",
+        "tag": "v0.0.5",
+        "commit": "bedecf71d04097773b359ccbf6e5bd97fcb53f8e"
       },
       "page-js": {
         "git": "https://github.com/tmeasday/meteor-page-js.git",
-        "tag": "v1.3.1",
-        "commit": "ee0b651869928abe50b5d06d7f32ccd2e657883a"
+        "tag": "v1.3.3",
+        "commit": "c1e9832af3fc2b2f5139a16d93a82ca6fa0655da"
       }
     }
   }

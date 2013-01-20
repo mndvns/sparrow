@@ -2,11 +2,11 @@
   "packages": {
     "moment": {},
     "bootstrap-updated": {},
-    "isotope": {},
-    "router": {},
-    "datatables": {},
-    "jade-handlebars": {},
+    "font-awesome": {},
     "bafa": {},
-    "cron": {}
+    "router": {},
+    "transitioner": {},
+    "jade-handlebars": {},
+    "handlebar-helpers": {}
   }
 }

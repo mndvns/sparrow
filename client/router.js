@@ -1,36 +1,61 @@
+
+
 Meteor.Router.add({
   '/': function () {
-    Session.set("header", false)
+    Session.set("shift_current", "home")
     return 'home'
   },
-  '/account': function () {
-    Session.set("header", "Account")
+  '/home': function () {
+    Session.set("shift_current", "home")
+    return 'home'
+  },
+  '/about': function (area) {
+    Session.set("shift_current", "about")
+    return 'about'
+  },
+  '/account': function (area) {
+    Session.set("shift_current", "account")
     return 'account'
   },
+  '/:area/:id': function (area, id) {
+    Session.set("shift_current", area)
+    return area + '_' + id
+  },
   '/account/profile': function () {
-    Session.set("header", "Profile")
+    Session.set("shift_current", "account")
     return 'account_profile'
-  },
-  '/account/offer': function () {
-    Session.set("header", "Offer")
-    return 'account_offer'
-  },
-  '/account/metrics': function () {
-    Session.set("header", "Metrics")
-    return 'account_metrics'
-  },
-  '/admin/users': function () {
-    Session.set("header", "Users")
-    return 'users'
-  },
-  '/admin/tags': function () {
-    Session.set("header", "Tags")
-    return 'manageTags'
   },
   '/offer/:id': function (id) {
     Session.set("showThisOffer", Offers.findOne({ business: id }))
     Session.set("header", null)
     return 'thisOffer'
+  },
+  '/access/*': function () {
+    var urlParams = {};
+    (function () {
+        var match,
+            pl     = /\+/g,
+            search = /([^&=]+)=?([^&]*)/g,
+            decode = function (s) { return decodeURIComponent(s.replace(pl, " ")); },
+            query  = window.location.search.substring(1);
+
+        while (match = search.exec(query))
+           urlParams[decode(match[1])] = decode(match[2]);
+    })();
+    if (urlParams.code && Session.get("callingServer") != true) {
+      Session.set("callingServer", true)
+      Meteor.call('oauth', urlParams.code, function () {
+        console.log("Got to Router")
+        return Meteor.Router.to("/user/account/profile")
+      });
+    }
+    else if (urlParams.error) {
+      console.log(urlParams)
+    }
+  },
+  '/*': function () {
+    Session.set("shift_current", "home")
+    return '404'
   }
 })
 
@@ -50,9 +75,6 @@ Meteor.Router.filters({
       return 'home'
     }
   }
-})
-
-Meteor.Router.add({
 })
 
 Meteor.Router.filter('checkLoggedIn')

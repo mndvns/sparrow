@@ -1,13 +1,58 @@
+
+Handlebars.registerHelper("key_value", function (a, fn) {
+  var out = "", key
+  for (key in a) {
+    if (a.hasOwnProperty(key)) {
+      out += fn({ key: key, value:a[key]})
+    }
+  }
+  return out
+})
+
+Handlebars.registerHelper("derp", function (a) {
+  console.log(this, a)
+})
+
+Handlebars.registerHelper("grab", function (a, z) {
+  var m
+
+  if (a === "Users"){
+    m = Meteor.users.find().fetch() }
+  else if (a === "User"){
+    m = [Meteor.user()] }
+  else {
+    m = window[a].find().fetch() }
+
+  var out = {
+    name: a,
+    collection: m,
+    keys: function () {
+      var out = {}
+      var first = this.collection[0]
+      if (!first) return false
+        return Object.keys(first)
+    },
+  }
+  return z.fn(out)
+})
+
+Handlebars.registerHelper("first", function (a, options) {
+  var that = _.first(a)
+  console.log(this, that)
+  return options.fn(that)
+})
+
+
+
+
 as = amplify.store
 
 Template.account_offer.events({
   'click .save' : function (event, tmpl) {
     var type = Offers.findOne({owner: Meteor.userId()}) ? 'update' : 'insert'
       , geo = new google.maps.Geocoder()
-   
     
     geo.geocode({ address: as().street +" "+ as().city_state +" "+ as().zip}, function (results, status) {
-      console.log(results, status)
       if (status === "OK") {
         as("loc", {
           lat: results[0].geometry.location.Ya,
@@ -28,9 +73,7 @@ Template.account_offer.events({
             type: "alert-success",
             time: moment().unix()
           })
-        /* Meteor.setTimeout(hideAlert, 5000) */
-
-      })
+        })
       }
     })
 
@@ -49,32 +92,52 @@ Template.account_offer.events({
     , attr = target.attr('id')
     , val = target.val()
 
-    $(".field[data-field='"+attr+"']").text(val)
+    if (event.currentTarget.id === "price") {
+      console.log("RIGHT HERE")
+      val = parseInt(target.val())
+    }
+
     as(attr, val)
+    Session.set("currentOffer", as())
   },
   'keyup input.color': function (event, tmpl) {
-    var color = event.target.value
-    $("section.symbol .large").css("background", color)
-    as("color", color)
+    if (event.keyCode == 13) {
+      var color = event.target.value
+      as("color", color)
+      Session.set("currentOffer", as())
+    }
   },
   'click .glyph div': function (event, tmpl) {
     var attr = event.target.getAttribute("class")
-    tmpl.find(".symbol div").setAttribute("class", attr)
     as("symbol", attr)
+    Session.set("currentOffer", as())
+  },
+  'click .tagset': function (event, tmpl) {
+    var tar = $(event.currentTarget)
+    if (tar.attr("data-status") === "active")
+      return false
+    tar.attr("data-status", "active")
+    tar.siblings()
+      .attr("data-status", "inactive")
+      .find("span")
+      .removeAttr("data-active")
+    as("tagset", tar.attr("data-tagset"))
+    as("tags", [])
+    Session.set("currentOffer", as())
   },
   'click .tag-list span': function (event, tmpl) {
     var tar = event.target
     if (! tar.hasAttribute("data-active")) {
       event.target.setAttribute("data-active")
-      $(tmpl.find("section.tags li:last")).after("<li>"+ this.name+"</li>" )
       var tags = as("tags") || []
       tags.push(this.name)
       as("tags", tags)
+      Session.set("currentOffer", as())
     } else {
       event.target.removeAttribute("data-active")
-      $(tmpl.find("section.tags li:contains('"+this.name+"')")).remove()
       var tags = _.without(as("tags"), this.name)
       as("tags", tags)
+      Session.set("currentOffer", as())
     }
   },
   'click #qr-button': function (event, tmpl) {
@@ -106,7 +169,7 @@ Template.account_offer.events({
 
 Template.account_offer.helpers({
   getOffer: function () {
-    return as()
+    return Session.get("currentOffer")
   },
   status_alert: function () {
     return Session.get('status_alert')
@@ -117,21 +180,6 @@ Template.account_offer.helpers({
     }
   },
   getIcons: function () {
-    // var count = []
-    // for(var o = 0; o < 6; o++){
-    //   for(var i = 0; i < 15; i++){
-    //     var j
-    //     if (i < 10){j = i}
-    //     else if (i === 10){j = "a"}
-    //     else if (i === 11){j = "b"}
-    //     else if (i === 12){j = "c"}
-    //     else if (i === 13){j = "d"}
-    //     else if (i === 14){j = "e"}
-
-    //     count.push(o.toString() + j.toString())
-    //   }
-    // }
-    // return count
     return [
       "drink",
       "drink-2",
@@ -147,8 +195,15 @@ Template.account_offer.helpers({
       "space-invaders",
       "batman",
       "lamp",
-      "lamp-2"
+      "lamp-2",
+      "appbarmoon"
     ]
+  },
+  checkTagsetActive: function (data) {
+    var tagset = {}
+    tagset.name = this.name
+    tagset.attr = as("tagset") === this.name ? "active" : "inactive"
+    return tagset
   },
   checkTagActive: function (data) {
     var tag = {}
@@ -157,6 +212,10 @@ Template.account_offer.helpers({
     return tag
   }
 })
+
+Template.account_offer.rendered = function () {
+  Session.set("currentOffer", as())
+}
 
 Template.account_offer.created = function () {
   var id = Meteor.userId()
@@ -175,22 +234,18 @@ Template.account_offer.created = function () {
       as("street", offer.street)
       as("symbol", offer.symbol)
       as("tags", offer.tags)
+      as("tagset", offer.tagset)
       as("updatedAt", offer.updatedAt)
-      as("votes", offer.votes.length)
+      as("votes", offer.votes)
       as("zip", offer.zip)
     } else {
       _.each( _.keys(as()), function (key) {
         as( key, null )
-        console.log("Cleared key: ", key)
       })
     }
   }
 }
 
-
-Template.account_profile.user = function () {
-  return Meteor.user()
-}
 
 Template.account_metrics.offers = function () {
   return Offers.find().count()
@@ -198,10 +253,11 @@ Template.account_metrics.offers = function () {
 
 Template.account_metrics.votes = function () {
   var votes = _.pluck(Offers.find().fetch(), "votes")
-  , total = 0
-  for (var i = 0; i < votes.length; i++) {
-    total += votes[i]
-  }
-  return total
+  return votes
+  // , total = 0
+  // for (var i = 0; i < votes.length; i++) {
+  //   total += votes[i]
+  // }
+  // return total
 }
 

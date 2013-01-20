@@ -1,77 +1,43 @@
-Meteor.startup( function () {
 
-  window.distance = function (lat1, lon1, lat2, lon2, unit) {
-      var radlat1 = Math.PI * lat1/180
-      var radlat2 = Math.PI * lat2/180
-      var radlon1 = Math.PI * lon1/180
-      var radlon2 = Math.PI * lon2/180
-      var theta = lon1-lon2
-      var radtheta = Math.PI * theta/180
-      var dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta);
-      dist = Math.acos(dist)
-      dist = dist * 180/Math.PI
-      dist = dist * 60 * 1.1515
-      if (unit=="K") { dist = dist * 1.609344 }
-      if (unit=="N") { dist = dist * 0.8684 }
-      return dist
-  }
+//                                                //
+//           ______            _____              //
+//          / ____/___  ____  / __(_)___ _        //
+//         / /   / __ \/ __ \/ /_/ / __ `/        //
+//        / /___/ /_/ / / / / __/ / /_/ /         //
+//        \____/\____/_/ /_/_/ /_/\__, /          //
+//                               /____/           //
+//                                                //
+
+
+/* Stripe.setPublishableKey("pk_test_xB8tcSbkx4mwjHjxZtSMuZDf") */
+
+Meteor.startup( function () {
 
   window.initialize = function initialize () {
 
-    console.log("Google Maps initialized")
+    console.log("GM INITIALIZED")
 
-    // map = {}
-    // directionsDisplay = {}
-    // j = new google.maps.DirectionsService()
-
-    // origin = Session.get("loc")
-    // gorigin = new google.maps.LatLng( origin.lat, origin.long )
-    // dest = as("loc")
-    // gdest = new google.maps.LatLng( dest.lat, dest.long )
-
-    // j.route({
-    //   origin: gorigin,
-    //   destination: gdest,
-    //   travelMode: google.maps.DirectionsTravelMode.DRIVING
-    // }, function (response , status) {
-    //   console.log(response, status)
-
-    //   directionsDisplay = new google.maps.DirectionsRenderer();
-    //   var mapOptions = {
-    //     mapTypeId: google.maps.MapTypeId.ROADMAP
-    //   }
-    //   map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
-    //   directionsDisplay.setMap(map);
-    //   directionsDisplay.setDirections(response)
-    // })
-
-    return (function() {
-      var config = {
-        kitId: 'lnp0fti',
-        scriptTimeout: 3000
-      };
-      var h=document.getElementsByTagName("html")[0];h.className+=" wf-loading";var t=setTimeout(function(){h.className=h.className.replace(/(\s|^)wf-loading(\s|$)/g," ");h.className+=" wf-inactive"},config.scriptTimeout);var tk=document.createElement("script"),d=false;tk.src='//use.typekit.net/'+config.kitId+'.js';tk.type="text/javascript";tk.async="true";tk.onload=tk.onreadystatechange=function(){var a=this.readyState;if(d||a&&a!="complete"&&a!="loaded")return;d=true;clearTimeout(t);try{Typekit.load(config)}catch(b){}};var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(tk,s)
-    })();
   }
 
   $.getScript( "https://maps.googleapis.com/maps/api/js?key=AIzaSyCcvzbUpSUtw1mK30ilGnHhGMPhIptp6Z4&sensor=false&callback=initialize" )
-
   $.getScript( "http://d-project.googlecode.com/svn/trunk/misc/qrcode/js/qrcode.js" )
-
 
   navigator.geolocation.getCurrentPosition(foundLocation, noLocation);
 
   function foundLocation(location) {
-    console.log("Got user location")
     Session.set('loc', {lat: location.coords.latitude, long: location.coords.longitude});
   }
   function noLocation() {
     alert('no location');
   }
+  (function() {
+    var config = {
+      kitId: 'lnp0fti',
+      scriptTimeout: 3000
+    };
+    var h=document.getElementsByTagName("html")[0];h.className+=" wf-loading";var t=setTimeout(function(){h.className=h.className.replace(/(\s|^)wf-loading(\s|$)/g," ");h.className+=" wf-inactive"},config.scriptTimeout);var tk=document.createElement("script"),d=false;tk.src='//use.typekit.net/'+config.kitId+'.js';tk.type="text/javascript";tk.async="true";tk.onload=tk.onreadystatechange=function(){var a=this.readyState;if(d||a&&a!="complete"&&a!="loaded")return;d=true;clearTimeout(t);try{Typekit.load(config)}catch(b){}};var s=document.getElementsByTagName("script")[0];s.parentNode.insertBefore(tk,s)
+  })();
 
-  myOffer = function () {
-    return Offers.findOne({ owner: Meteor.userId() }) || "User hasn't made an offer."
-  }
 })
 
 Accounts.ui.config({
@@ -79,38 +45,20 @@ Accounts.ui.config({
 })
 
 Meteor.subscribe("offers", Session.get("loc"))
+Meteor.subscribe("tagsets")
 Meteor.subscribe("tags")
-Meteor.subscribe("allUserData")
+Meteor.subscribe("sorts")
+Meteor.subscribe("userData")
+Meteor.subscribe("metrics")
 
 Handlebars.registerHelper("styleDate", function (date) {
   return moment(date).fromNow()
 })
 
-Handlebars.registerHelper("getTagsets", function (data) {
-  if (data) {
-    j = Tagsets.find({ name: data })
-  } else {
-    j = Tagsets.find()
-  }
-  return Tagsets.find()
-})
-
-Handlebars.registerHelper('getTags', function() {
-  return Tags.find({tagset: this.name})
-})
-
-Handlebars.registerHelper('getThisOffer', function () {
-  return Session.get("showThisOffer")
-})
-
-Handlebars.registerHelper("getUser", function () {
-  return Meteor.user()
-})
-
 Handlebars.registerHelper("page", function () {
   var out = {}
   out.name = Session.get("header")
-  if (out.name !== "Offer" && out.name !== false){
+  if (out.name !== "offer" && out.name !== false){
     out.pageClass = "span12 pad"
   }
   else if (out.name === "Offer") {
@@ -119,14 +67,3 @@ Handlebars.registerHelper("page", function () {
   return out
 })
 
-Handlebars.registerHelper("tagTable", function (data) {
-})
-
-
-Handlebars.registerHelper("checkExpiration", function (data) {
-  // j = data
-  // return _.filter(j, function (data) {
-  //   return data.exp > moment().unix()
-  // })
-  return data
-})

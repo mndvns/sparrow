@@ -13,40 +13,191 @@ a:hover
 .wf-active
   visibility visible
 
-html
-body
-.content
-  height 100%
+
+.capitalize
+  text-transform capitalize
 
 html
   cursor default
-  visibility hidden
-  -webkit-font-smoothing antialiased
-  body
-    font-family "proxima-nova"
-    font-weight 600
-    letter-spacing 0.15em
-    font-size 0.75em
-    text-transform uppercase
+  overflow-x hidden
+  // transform scale(0.7)
+
+html
+body
+.content
+.container
+.current
+.next
+  height 100%!important
+
+trans(a)
+  transition-property a
+  transition 600ms ease-out 0
+
+body
+  font-family "proxima-nova"
+  color #888
+  background-color rgba(0, 0, 0, 0)
+  background-image url("/images/bg/maze.png")
+  position relative
+  overflow-x hidden
+  overflow-y scroll
+  &.transitioning
+    background-color rgba(1, 0, 0, 0)
+    trans(background-color)
+
+.greeting
+  h1
+    font-size 6em
+    line-height 1em
+    color #444
 
 .content
-  background #F2F2F2
-  header
-    margin-top 2em
-    padding-left 2em
-    border-bottom 1px solid #ddd
-  .pad
-    margin-top 2em
-    // width 80%
-    // margin-left 10%
+  left 0
+  width 200%
+  position absolute
+  .transitioning.from_account &
+  .transitioning.to_about &
+    trans(left)
+    left 100%
+  .transitioning.to_account &
+  .transitioning.from_about &
+    trans(left)
+    left -100%
+
+.container
+  height 100%
+  padding-top 80px
+  position relative
+
+.current
+.next
+  width 50%
+  height 100%
+  position absolute
+
+.next
+  display none
+  .transitioning.to_account &
+  .transitioning.from_about &
+    left 50%
+    display block
+  .transitioning.from_account &
+  .transitioning.to_about &
+    left -50%
+    display block
+
+.navbar
+  width 100%
+  z-index 100
+  opacity 1
+  fixed top
+  .transitioning &
+    absolute top
+  .container
+    padding-top 0
+  .navbar-inner
+    border-radius 0
+    border-right none
+    border-left none
+    background linear-gradient(top, white, rgba(white, 0.9))
+    height 75px
+    .links
+      margin 0 auto
+      text-align center
+    a.active
+      i
+        color blue
+    a
+    .shift
+      padding 10px
+      display inline-block
+      &[data-shift-direction=left]
+        float left
+      &[data-shift-direction=right]
+        float right
+      span
+      i
+        display inline-block
+        font-size 30px
+        color gray
+        line-height 40px
+        height 40px
+      i
+        margin 10px 10px 0
+        cursor pointer
+        &:hover
+          color black
+      #login-buttons a
+        text-decoration none
+      #login-dropdown-list
+        left -110px
+
+.hero
+  .headline
+    padding 20px
+    height 100px
+    line-height 100px
+    .inner
+      border-bottom 3px solid
+      relative bottom
+    text-align center
+    background none
+    text-transform uppercase
+    font-weight 900
+    div
+      &.tagset span
+        &:after
+          content "\00a0 the "
+      &.tag span
+        &:nth-child(n+2)
+          &:before
+            content ",\00a0"
+    div
+      display inline
+    span
+      display inline-block
+      opacity 0
+      font-size 0px
+  ul
+    text-transform uppercase
+    font-weight bold
+    letter-spacing 1px
+    padding 10px 0
+    &.tagset-list
+    &.tagset-list
+      text-align right
+    &.sort-list
+      text-align center
+    &.noun-list
+      text-align left
+    li
+      padding 10px
+      overflow hidden
+      border none
+      &.inactive
+        opacity .5
+        &:hover
+          opacity .8
+      &.active
+        &:hover
+          opacity .9
+
+
+.ninja
+text
+svg
+  stroke blue
+  fill steelblue
+  font-family 'Helvetica'
+
+
 
 nav
-  fixed left
-  border-right 1px solid #ccc
+  fixed top left
+  z-index 20
   height 100%
   text-align center
-  padding-right 20px
-  z-index 2
   ul
     width 100%
     margin 0 0 20px 0
@@ -73,16 +224,23 @@ nav
     visibility hidden
 
 .offer
-  overflow hidden
   height = 170px
   relative top
   width 100%
-  height height
-  border-bottom 1px solid #ddd
+  float left
+  min-height height
+  overflow hidden
+  border-top 1px solid #efefef
+  border-right 1px solid #ddd
+  border-bottom 1px solid #ccc
+  border-left 1px solid #ddd
+  margin 5px 0
+  border-radius 4px
+  box-shadow 0 2px 5px rgba(black, 0.1)
+  background white
   section
     float left
-    height 100%
-    padding 0 10px
+    padding 0 20px 0 0
     .accountOffer &
       &.active
         background #dadada
@@ -90,55 +248,30 @@ nav
         background #eee
   &.voted
     background #eee
-  .votes
-    user-select none
-    height 100%
-    font-size 20px
-    width 50px
-    text-align center
-    line-height height
-    font-weight bold
   .symbol
-    positon relative
-    .glyph-wrapper
+    user-select none
+    div
       font-size 4em
       line-height 100px
       height 100px
       width 100px
       text-align center
+      border-radius 2em
       margin 35px 0
-      color black
-      position relative
-      overflow hidden
-      display block
-      .mask
-        position absolute
-        opacity 0
-        z-index 1
-        height 90px
-        width 90px
-        top 5px
-        left 5px
-        border-radius 100px
-
-      .symbol-glyph
-        z-index 2
-        color white
-        position relative
-        border-radius 50px
-
   .main
     width 30%
+  .main
+  .stats
+    color #ccc
   .field
     &[data-field=name]
-      font-weight 600
+      font-weight 300
       font-size 32px
       margin 45px 0 15px -2px
       display block
       text-transform lowercase
     &[data-field=business]
       font-weight 900
-      color #585858
       text-transform uppercase
       font-size 11px
       letter-spacing 1px
@@ -148,46 +281,85 @@ nav
       font-weight normal
       letter-spacing 0px
       margin-bottom 5px
-  .price
-    font-size 5em
-    font-weight 300
-    line-height 160px
-    text-align center
-    &:first-letter
-      font-size 0.4em
-      vertical-align super
-      font-weight 600
-  .location
-    line-height 2em
-    text-align center
-    padding-top 72px
-    &:first-line
-      font-size 3em
-      font-weight 500
-  .tags
-  .price
-  .location
-    position relative
-    width 12.5%
-  .tags
-    ul
-      height 0
-      position absolute
-      overflow visible
-      width 100%
-      top 50%
-      margin 0
-      li
-        text-align center
-        margin-left -15px
+  .stats
+    height 100%
+    margin-top 60px
+    .location
+    .price
+      height auto
+      float none
+  section.actions
+    float right
+    padding 0 0 0 0
+    height height
+    box-shadow 10px 0 20px -10px rgba(black, 0.2)
+    span
+      text-shadow 0 -1px 0 rgba(black, 0.2)
+      color rgba(white, 0.9)
+    div
+      &.votes
+      &.distance
+      &.price
+        box-shadow inset 0 0 20px rgba(white, 0.05)
+      float left
+      width 80px
+      height 100%
+      position relative
+      border-right 1px solid transparent
+      border-left 1px solid transparent
+      .bg
+      .metric
+        position absolute
+        bottom 0
+      .metric
+        padding-bottom 80px
+        box-shadow 0 20px 30px -10px rgba(white, 0.3) inset, 0 -5px 20px -10px rgba(black, 0.3)
+        z-index 3
+        border-left 1px solid rgba(white, 0.1)
+        height 100%
+        max-height 90px
+      .bg
+        height 100%
+        opacity .4
+        z-index 2
 
-#tagsets
+
+    i.full-icon
+      absolute bottom left
+      font-size 25px
+      padding 10px 0
+      width 100%
+      z-index 10
+      opacity 1
+      &[data-status=inactive]
+        color white
+        opacity 0.8
+        text-shadow 0 -1px 0 rgba(black, 0.6)
+
+  .extension
+    height 170px
+    width 100%
+    display none
+
+  .metrics
+    width 50px
+    .votes
+      height 30px
+      width 30px
+      display block
+      background-color gray
+
+
+#Tagsets
   ul
     li
+      margin-right 20px
+      font-size 20px
       display inline
 #tags
   ul
     float left
+
 
 .tag-list
   ul
@@ -209,22 +381,27 @@ nav
     [data-active]
       background #ddd
 
-table
-  th
-    cursor pointer
-    &.active
-      background #ccc
-  td
-    input
-    select
-    button
-    span
-    i
-      margin-top 10px
-      display block
-    i
-      cursor pointer
-      margin-top 15px!important
+.editor
+  h1
+    text-align center
+    padding 20px 0
+
+// table
+//   th
+//     cursor pointer
+//     &.active
+//       background #ccc
+//   td
+//     input
+//     select
+//     button
+//     span
+//     i
+//       margin-top 10px
+//       display block
+//     i
+//       cursor pointer
+//       margin-top 15px!important
 
 .glyph
   float left
@@ -272,3 +449,23 @@ i.icon-trash
     font-weight normal
     text-decoration none!important
     padding 3px 3px 0
+
+iframe
+  position fixed
+  background whiteSmoke
+  display none
+  top 30px
+  left 50%
+  margin-left -300px
+  z-index 2
+
+#formModal.modal
+  top 50%
+
+// .modal
+//   position fixed
+//   top 40%
+//   left 50%
+//   height 550px
+//   width 600px
+

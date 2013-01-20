@@ -4,43 +4,384 @@ head
   meta(charset='utf-8')
 
 body
-  {{> sidebar}}
-  {{> content}}
+  {{> body }}
+
+mixin shifter(dir, area, hide, icon)
+  if (hide)
+    name = null
+  else
+    name = area
+  .shift(data-shift-direction="#{dir}", data-shift-area="#{area}")
+    if (dir === "left")
+      i(class="icon-" + icon)
+      span #{name}
+    else
+      if (area === "account")
+        span {{loginButtons}}
+        i(class="icon-" + icon)
+      else
+        span #{name}
+        i(class="icon-" + icon)
+
+mixin topnav(name)
+  .navbar: .navbar-inner: .container
+    if (name === "home")
+      mixin shifter("left", "about", true, "fighter-jet")
+      mixin shifter("right", "account", true, "user")
+    if (name === "about")
+      mixin shifter("right", "home", true, "chevron-right")
+    if (name === "account")
+      mixin shifter("left", "home", true, "chevron-left")
+      .links
+        a(href="/account"): i.glyph-pacman
+        a(href="/account/offer"): i.glyph-cassette
+        a(href="/account/metrics"): i.glyph-presentation
+        a(href="/account/profile"): i.icon-cogs
+
+template(name="body")
+  .content
+    .current
+      {{#constant}}{{/constant}}
+
+      {{#if_topnav_current "home"}}
+      mixin topnav("home") {{/if_topnav_current}}
+      {{#if_topnav_current "account"}}
+      mixin topnav("account") {{/if_topnav_current}}
+      {{#if_topnav_current "about"}}
+      mixin topnav("about") {{/if_topnav_current}}
+
+      .container
+        {{renderPage}}
+
+    .next
+      {{#constant}}{{/constant}}
+
+      {{#if_topnav_area "home"}}
+      mixin topnav("home") {{/if_topnav_area}}
+      {{#if_topnav_area "account"}}
+      mixin topnav("account") {{/if_topnav_area}}
+      {{#if_topnav_area "about"}}
+      mixin topnav("about") {{/if_topnav_area}}
+
+      .container
+        {{#if page_next "about"}} {{> about }} {{/if}}
+        {{#if page_next "home"}} {{> home }} {{/if}}
+        {{#if page_next "account"}} {{> account }} {{/if}}
+
+
+template(name="about")
+  .greeting
+    h1 Sparrow
+    h2 Loremy ipsum set loret
+    p.
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+      Suspendisse congue convallis eleifend.
+      Sed at nisl ut eros interdum lacinia rutrum ac neque. Aliquam 
+      convallis aliquet laoreet. Quisque lacus lacus, blandit eu iaculis
+    p.
+      Sit amet, aliquet sit amet purus. Vivamus nec nulla eu elit convallis consequat.
+      Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
+      Nam a consectetur odio. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+      Vivamus vitae eros eget justo dapibus mattis at sit amet enim. Cras enim nisi,
+      consectetur sit amet convallis ut, ultricies ut eros. Maecenas at diam et
+      nisl faucibus rhoncus et in neque.
+    p.
+      Suspendisse congue convallis eleifend.
+      Sed at nisl ut eros interdum lacinia rutrum ac neque. Aliquam 
+      convallis aliquet laoreet. Quisque lacus lacus, blandit eu iaculis
+
+template(name='home')
+  {{> hero}}
+  {{#each getOffers}}
+  {{> offer}}
+  {{/each}}
+
+template(name="hero")
+  .hero.row
+    {{#constant}}
+
+    .headline
+      .inner
+        .tagset
+        .sort
+        .tag
+        .noun
+
+    .list
+      ul.tagset-list.span2(data-constant=true)
+      ul.sort-list.span2(data-constant=true)
+      ul.tag-list.span6
+      ul.noun-list.span2(data-constant=true)
+
+    {{/constant}}
 
 template(name="sidebar")
-  nav.row.span2
-    {{loginButtons}}
-    br
-    {{#with currentUser}}
-    ul.top
-      li {{this.karma.length}}
-    {{/with}}
-    {{#if getUserType "admin"}}
+  nav
+    {{#if getSidebar "account"}}
     ul.account
       a(href="/account/offer") Offer
       a(href="/account/profile") Profile
       a(href="/account/metrics") Metrics
-      br
-      br
+    {{/if}}
+    {{#if getSidebar "admin"}}
+    ul.account
       a(href="/admin/users") Users
       a(href="/admin/tags") Tags
+      a(href="/admin/sorts") Sorts
+      a(href="/admin/offers") Offers
+      a(href="/admin/metrics") Metrics
+    {{/if}}
     ul.main
-      a(href="/account") Account
       a(href="/") Home
-    {{/if}}
+      a(href="/account/offer") Account
+      a(href="/admin/metrics") Admin
 
-template(name='content')
-  div.row.offset2.content
-    {{#with page}}
-    {{#if this.name}}
-    header
-      h2 {{this.name}}
-    {{/if}}
-    div(class="{{this.pageClass}}")
-      {{renderPage}}
+template(name="404")
+  h1.
+    Are you lost?
+
+template(name='editor')
+  div.editor(id="{{name}}").row
+    h1.capitalize {{name}}
+
+    table.table.table-hover.span4.offset1
+      thead: tr
+        {{#each keys}}
+        th(id="{{this}}") {{this}}
+        {{/each}}
+      tbody
+        {{#each collection}}
+        tr(id="{{this._id}}")
+          {{#key_value this}}
+          td(id="{{key}}") {{value}}
+          {{/key_value}}
+        {{/each}}
+
+    form(action='').span4.offset1
+      {{#each keys}}
+      .control-group(id="{{this}}")
+        label.control-label.capitalize {{this}}
+        .controls
+          input.text(type="text", id="{{this}}")
+      {{/each}}
+      .btn-group
+        button.btn.save(type='button')#update Update
+        button.btn.save(type='button')#add Add
+        button.btn.btn-warning.remove(type='button')#remove Remove
+
+
+template(name='admin_users')
+  {{#grab "Users"}}
+  {{> editor }}
+  {{/grab}}
+
+template(name='admin_tags')
+  {{#grab "Tagsets"}}
+  {{> editor }}
+  {{/grab}}
+
+  {{#grab "Tags"}}
+  {{> editor }}
+  {{/grab}}
+
+template(name="admin_sorts")
+  {{#grab "Sorts"}}
+  {{> editor }}
+  {{/grab}}
+
+template(name="admin_offers")
+  {{#grab "Offers"}}
+  {{> editor }}
+  {{/grab}}
+
+template(name="admin_metrics")
+  h1 DERP
+
+template(name='account')
+  {{#grab "User"}}
+  {{#first this.collection}}
+  .greeting 
+    h1 Hi, {{this.username}}!
+  {{/first}}
+  {{/grab}}
+
+template(name='account_profile')
+  {{#grab "User"}}
+  {{this.collection.username}}
+  {{> editor }}
+  {{/grab}}
+
+template(name='account_metrics')
+  {{#with getUser}}
+  ul
+    li
+      strong Offers: 
+      {{offers}}
+    li
+      strong Votes: 
+      {{votes.length}}{{/with}}
+
+template(name='account_offer')
+  .myOffer
+    section.tags: h2: i.icon-tag
+    {{#with getOffer}}
+    {{> offer}}
     {{/with}}
 
-template(name='home')
-  {{#each getOffers}}
-  {{> offer}}
-  {{/each}}
+  .clearfix
+
+  {{#if status_alert}}
+  {{#with status_alert}}
+  div(class="{{this.type}}").alert.alert-block
+    button.close(type='button', data-dismiss='alert') ×
+    h4.alert-heading {{this.heading}}
+    p {{this.message}}
+  {{/with}}
+  {{/if}}
+
+  .clearfix.pad
+
+    .actions
+      div.icon
+        i.icon-save.save
+        br
+        span save
+
+    .clearfix
+    {{#if show "main"}}
+    {{#with getOffer}}
+    form.form-horizontal
+      .control-group
+        label.control-label Name
+        .controls
+          input#name.text(type='text', tabindex='1', value='{{this.name}}')
+      .control-group
+        label.control-label Description
+        .controls
+          input#description.text(type='text', tabindex='2', value='{{this.description}}')
+      .control-group
+        label.control-label Business
+        .controls
+          input#business.text(type='text', tabindex='3', value='{{this.business}}')
+    {{/with}}
+    {{/if}}
+
+    {{#if show "votes"}}
+    {{#with getOffer}}
+    .actions
+      div.icon
+        i.icon-qrcode#qr-button
+        br
+        span qr code
+    #qr-code
+    {{/with}}
+    {{/if}}
+
+    {{#if show "symbol"}}
+    {{#with getOffer}}
+    .row.offset1
+      input.text.color(type='text', value='{{this.color}}')
+      .clearfix
+      {{#each getIcons}}
+      .glyph
+        .large(class="glyph-{{this}}")
+      {{/each}}
+    {{/with}}
+    {{/if}}
+
+    {{#if show "tags"}}
+    .tag-list
+      {{#each getTagsets}}
+      {{#with checkTagsetActive}}
+      ul.span2.tagset(data-tagset="{{this.name}}", data-status="{{this.attr}}")
+        strong {{this.name}}
+        {{#each getTags}}
+        li
+          {{#with checkTagActive}}
+          | <span {{attr}}>{{name}}</span>
+          {{/with}}
+        {{/each}}
+      {{/with}}
+      {{/each}}
+    {{/if}}
+
+    {{#if show "price"}}
+    {{#with getOffer}}
+    form.form-horizontal
+      .control-group
+        label.control-label Price
+        .controls
+          input#price.text(type='text', tabindex='1', value='{{this.price}}')
+    {{/with}}
+    {{/if}}
+
+    {{#if show "location"}}
+    {{#with getOffer}}
+    form#location.form-horizontal
+      .control-group
+        label.control-label Street
+        .controls
+          input#street.text(type='text', tabindex='1', value='{{this.street}}')
+      .control-group
+        label.control-label City & State
+        .controls
+          input#city_state.text(type='text', tabindex='1', value='{{this.city_state}}')
+      .control-group
+        label.control-label Zip
+        .controls
+          input#zip.text(type='text', tabindex='1', value='{{this.zip}}')
+    {{/with}}
+    {{/if}}
+
+
+template(name='thisOffer')
+  div.thisOffer
+    h1 ASDASDAS
+    {{#with getThisOffer}}
+    {{> offer}}
+    .input-append
+      input.text(type="text")
+      button.btn Go!
+    {{/with}}
+
+template(name='offer')
+  div.offer(data-tagset="{{this.tagset}}", style="color: {{this.color}}")
+    section.symbol
+      div(class='{{this.symbol}}')
+    section.main
+      span.field(data-field='name') {{this.name}}
+      p.field(data-field='description') {{this.description}}
+      span.field(data-field='business') {{this.business}}
+      br
+    section.actions
+      .votes
+        i.icon-arrow-up.full-icon(data-status="inactive", data-selector="vote")
+        .metric
+          span {{this.votes}} votes
+        .bg
+      .map.distance
+        i.icon-map-marker.full-icon(data-status="inactive", data-selector="map")
+        .metric
+          span {{this.distance}} mi.
+        .bg
+      .buy.price
+        i.icon-shopping-cart.full-icon(data-status="inactive", data-selector="buy")
+        .metric
+          span ${{this.price}}
+        .bg
+    section.extension(data-extension="map")
+    section.extension(data-extension="message")
+      {{> message}}
+    section.extension(data-extension="buy")
+
+template(name="message")
+  form.form-horizontal
+    .control-group
+      label.control-label LABEL
+      .controls
+        textarea(rows=3)
+
+
+
+template(name="redirect")
+  button.btn All done!
