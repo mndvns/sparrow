@@ -150,7 +150,7 @@ Meteor.methods({
         tagset: opts.tagset,
         createdAt: (moment().unix() * 1000),
         updatedAt: (moment().unix() * 1000),
-        votes: [],
+        votes: 1,
         street: opts.street,
         city: opts.city,
         state: opts.state,

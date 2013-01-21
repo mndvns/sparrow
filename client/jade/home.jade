@@ -22,7 +22,7 @@ mixin topnav(name)
       .shift(data-shift-direction="left", data-shift-area="home"): i.glyph-arrow-left
       ul.links
         li(data-page="offer")
-          i.glyph-sale
+          i.glyph-clipboard
           span offer
         li(data-page="metrics")
           i.glyph-presentation
@@ -220,11 +220,11 @@ template(name='account_offer')
         li(class= c, data-value= a)
           i(class="glyph-" + b)
           | #{a}
-      mixin nav-item("main", "book-2", "show")
+      mixin nav-item("text", "feather", "show")
       mixin nav-item("tags", "tag-2", "show")
-      mixin nav-item("votes", "qrcode", "show")
       mixin nav-item("symbol", "palette", "show")
       mixin nav-item("location", "map", "show")
+      mixin nav-item("qr", "qrcode", "show")
       mixin nav-item("save", "disk", "save")
       mixin nav-item("help", "help", "help")
 
@@ -241,9 +241,9 @@ template(name='account_offer')
         help text by hitting the toggle in the upper left.
       br
       p: strong Ready to make an offer?
-      button.btn.btn-large.show(data-value="main", color="{{this.color}}"): em Let's go!
+      button.btn.btn-large.show(data-value="text", color="{{this.color}}"): em Let's go!
     {{/if}}
-    {{#if sessionEquals 'show' 'main'}}
+    {{#if sessionEquals 'show' 'text'}}
     .span12
       h3 What are we selling?
     .span5.offset1
@@ -290,7 +290,7 @@ template(name='account_offer')
         if b == "textarea"
           .controls: textarea(class= b +" "+ m, id= a, type= b, tabindex= c, value= z, rows= r) #{z}
 
-    {{#if show "main"}}
+    {{#if show "text"}}
     .area
       form
         .span5.offset1
@@ -303,7 +303,7 @@ template(name='account_offer')
     {{/if}}
 
 
-    {{#if show "votes"}}
+    {{#if show "qr"}}
     .area
       .actions
         div.icon
@@ -316,9 +316,9 @@ template(name='account_offer')
 
     {{#if show "symbol"}}
     .area
-      .glyph-list.row
+      .glyphs-list.row
         .span11.inner
-          input.text.color(type='text', value='{{this.color}}')
+          input.text.color(type='text', style='background: {{this.color}}', value="{{this.color}}")
           .clearfix
           {{#each getIcons}}
           .glyph
@@ -380,12 +380,12 @@ template(name='offer')
           span {{this.votes}} votes
         .bg
       .map.distance(style="background: {{this.color}}").span2.margin.left
-        i.glyph-map.full-icon(data-status="inactive", data-selector="map")
+        i.glyph-location.full-icon(data-status="inactive", data-selector="map")
         .metric(style="background: {{this.color}}")
           span {{this.distance}} mi.
         .bg
       .buy.price(style="background: {{this.color}}").span2.margin.left
- 
+        i.glyph-tag-2.full-icon(data-status="inactive", data-selector="buy")
         .metric(style="background: {{this.color}}")
           span ${{this.price}}
         .bg

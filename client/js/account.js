@@ -70,6 +70,7 @@ Template.account.created = function () {
 
 Template.account_offer.events({
   'click li.save' : function (event, tmpl) {
+    Session.set("currentOffer", as())
     var type = Offers.findOne({owner: Meteor.userId()}) ? 'update' : 'insert'
       , geo = new google.maps.Geocoder()
     
@@ -139,7 +140,7 @@ Template.account_offer.events({
     var target = $(tmpl.find(".offer")).find(".symbol, .main, .metric")
     colorPicker.exportColor = function(){
       var color = event.target.value
-      as("color", color)
+      as("color", color )
       target.css("background", color)
     }
     colorPicker(event)

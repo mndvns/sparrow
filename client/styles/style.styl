@@ -327,16 +327,16 @@ Spanner( 940px )
 
 .hero
   .headline
-    padding 20px
-    height 100px
-    line-height 100px
-    .inner
-      border-bottom 3px solid
-      relative bottom
+    absolute top 25px left 10%
+    z-index 100
+    width 80%
     text-align center
     background none
     text-transform uppercase
     font-weight 900
+    .inner
+      border-bottom 3px solid
+      relative bottom
     div
       &.tagset span
         &:after
@@ -389,13 +389,13 @@ Spanner( 940px )
   overflow hidden
   margin (gap / 2) 0
   color white
+  .account_offer &
+    .symbol
+    .main
+    .metric
+      background teal
   section
     float left
-    .accountOffer &
-      &.active
-        background #dadada
-      &:hover
-        background #eee
   &.voted
     background #eee
   .symbol
@@ -547,7 +547,7 @@ Spanner( 940px )
 //       margin-top 15px!important
 
 
-.glyph-list
+.glyphs-list
   .inner
     margin 0 auto
     float none
