@@ -190,7 +190,6 @@ Meteor.methods({
     } 
   },
   upvoteEvent: function (type, user, offer) {
-    this.unblock()
     var id = type === "id" ? user : Meteor.users.findOne({username: user })
       , vote = Meteor.uuid()
       , now = moment().unix()

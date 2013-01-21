@@ -170,13 +170,7 @@ Template.hero.created = function () {
               },
               "opacity": "1",
               "color": function () {
-                return color.normal }
-            })
-
-          d3.select(".headline .inner")
-            .transition()
-            .style({
-              "border-color": function () { return color.bright },
+                return color.dark }
             })
 
           var list = d3.select("ul." + b + "-list")
@@ -206,10 +200,11 @@ Template.hero.created = function () {
                   var Col = Color( d.color )
                   var white = Color("#fff")
                   color.normal = Col
-                  color.bright = color.normal
+                  color.bright = Col.desaturateByAmount( .3 )
                   color.hue = Col.getHue()
-                  color.light = Col.blend( white, .8 ).desaturateByAmount( 0.3 ).toString()
-                  color.desat = Col.desaturateByAmount( 0.8 ).darkenByAmount( 0.2).toString()
+                  color.light = Col.blend( white, .8 ).desaturateByAmount( .3 ).toString()
+                  color.desat = Col.desaturateByAmount( .8 ).darkenByAmount( 0.2).toString()
+                  color.dark = Col.desaturateByAmount( .2 ).darkenByAmount( .5).toString()
 
                   d3.select("html")
                     .transition()
@@ -227,7 +222,7 @@ Template.hero.created = function () {
             .style({
               background: function (d) {
                 if (c) {
-                  return color.light
+                  return "transparent"
                 } else {
                   return color.bright
                 }
