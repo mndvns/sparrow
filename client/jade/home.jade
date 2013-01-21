@@ -10,19 +10,19 @@ mixin topnav(name)
   .topnav.navbar: .navbar-inner: .container
     if (name === "home")
       .shift(data-shift-direction="left", data-shift-area="about").home.left
-        i.icon-angle-left
+        i.glyph-arrow-left
         // i.icon-large.logo.glyph-cassette
       .shift(data-shift-direction="right", data-shift-area="account").home.right
         span {{loginButtons}}
         {{#if signedIn}}
-        i.icon-angle-right {{/if}}
+        i.glyph-arrow-right {{/if}}
     if (name === "about")
-      .shift(data-shift-direction="right", data-shift-area="home"): i.icon-angle-right
+      .shift(data-shift-direction="right", data-shift-area="home"): i.glyph-arrow-right
     if (name === "account")
-      .shift(data-shift-direction="left", data-shift-area="home"): i.icon-angle-left
+      .shift(data-shift-direction="left", data-shift-area="home"): i.glyph-arrow-left
       ul.links
         li(data-page="offer")
-          i.glyph-cassette
+          i.glyph-sale
           span offer
         li(data-page="metrics")
           i.glyph-presentation
@@ -105,10 +105,10 @@ template(name="hero")
         .noun
 
     .list.long
-      ul.tagset-list.span2(data-constant=true)
-      ul.sort-list.span2(data-constant=true).margin.left
-      ul.tag-list.span6.margin.left
-      ul.noun-list.span2(data-constant=true).margin.left
+      ul.tagset-list.span3(data-constant=true)
+      ul.sort-list.span3(data-constant=true).margin.left
+      ul.tag-list.span3.margin.left
+      ul.noun-list.span3(data-constant=true).margin.left
 
     {{/constant}}
 
@@ -218,15 +218,15 @@ template(name='account_offer')
     ul.nav
       mixin nav-item(a, b, c)
         li(class= c, data-value= a)
-          i(class="icon-" + b)
+          i(class="glyph-" + b)
           | #{a}
-      mixin nav-item("main", "home", "show")
-      mixin nav-item("tags", "tag", "show")
-      mixin nav-item("votes", "arrow-up", "show")
-      mixin nav-item("symbol", "beaker", "show")
-      mixin nav-item("location", "map-marker", "show")
-      mixin nav-item("save", "save", "save")
-      mixin nav-item("help", "question-sign", "help")
+      mixin nav-item("main", "book-2", "show")
+      mixin nav-item("tags", "tag-2", "show")
+      mixin nav-item("votes", "qrcode", "show")
+      mixin nav-item("symbol", "palette", "show")
+      mixin nav-item("location", "map", "show")
+      mixin nav-item("save", "disk", "save")
+      mixin nav-item("help", "help", "help")
 
   .clearfix
 
@@ -307,7 +307,7 @@ template(name='account_offer')
     .area
       .actions
         div.icon
-          i.icon-qrcode#qr-button
+          i.glyph-qrcode#qr-button
           br
           span qr code
       #qr-code
@@ -375,12 +375,12 @@ template(name='offer')
       br
     section.actions
       .votes(style="background: {{this.color}}").span2.margin.left
-        i.icon-arrow-up.full-icon(data-status="inactive", data-selector="vote")
+        i.glyph-plus.full-icon(data-status="inactive", data-selector="vote")
         .metric(style="background: {{this.color}}")
           span {{this.votes}} votes
         .bg
       .map.distance(style="background: {{this.color}}").span2.margin.left
-        i.icon-map-marker.full-icon(data-status="inactive", data-selector="map")
+        i.glyph-map.full-icon(data-status="inactive", data-selector="map")
         .metric(style="background: {{this.color}}")
           span {{this.distance}} mi.
         .bg
