@@ -152,8 +152,8 @@ Meteor.methods({
         updatedAt: (moment().unix() * 1000),
         votes: [],
         street: opts.street,
-        city_state: opts.city_state,
-        zip: opts.zip,
+        city: opts.city,
+        state: opts.state,
         metrics: {
           created: 1
         }
@@ -174,7 +174,8 @@ Meteor.methods({
           color: opts.color,
           updatedAt: (moment().unix() * 1000),
           street: opts.street,
-          city_state: opts.city_state,
+          city: opts.city,
+          state: opts.state,
           zip: opts.zip
         }
       })

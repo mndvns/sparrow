@@ -1,12 +1,4 @@
 
-// Template.body.events({
-//   'click': function(event, tmpl) {
-//     if (Meteor.user()) {
-//       Meteor.call("thingy")
-//     }
-//   }
-// })
-
 Template.hero.events({
   'click .list li': function (event, tmpl) {
 
@@ -85,6 +77,15 @@ statCollection = function () {
   return [tagsets, tags, sorts]
 }
 
+function hexToRgb(hex) {
+    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+    } : null;
+}
+
 Template.hero.created = function () {
   Session.set("heroRendered", false)
 
@@ -122,6 +123,10 @@ Template.hero.created = function () {
             return _.contains(current.tagset, d.tagset) }),
           sort   : Collection[2],
           noun   : Collection[0],
+        }
+
+        if (_.isEmpty(current)) {
+          console.log("empty object")
         }
 
         // HeroList elements
@@ -195,32 +200,47 @@ Template.hero.created = function () {
             .remove()
 
           var active = list.selectAll("li.active")
-            .transition()
             .style({
               background: function (d) {
                 if (c) {
-                  color.normal = d3.rgb( d.color ).hsl()
-                  color.bright = color.normal.brighter( 1 )
+                  var Col = Color( d.color )
+                  var white = Color("#fff")
+                  color.normal = Col
+                  color.bright = color.normal
+                  color.light = Col.blend( white, .8 ).desaturateByAmount( 0.3 ).toString()
+                  color.desat = Col.desaturateByAmount( 0.8 ).darkenByAmount( 0.2).toString()
+
+                  d3.select("html")
+                    .transition()
+                    .style("background", function () {
+                      return color.light
+                    })
                 }
                 return color.normal
               },
               color: "rgba(255, 255, 255, 0.9)"
             })
 
+
           var inactive = list.selectAll("li.inactive")
-            .transition()
             .style({
               background: function (d) {
                 if (c) {
-                  return "gray"
+                  return color.light
                 } else {
                   return color.bright
                 }
               },
-              color: "rgba(255,255,255, 0.5)"
+              color: function (d) {
+                if (c) {
+                  return color.desat
+                } else {
+                  return "rgba(255,255,255, 0.9)"
+                }
+              }
             })
 
-          return [list, hero]
+          return [ list, hero ]
         }
 
         var tagsetList = new HeroList( "tagset", "name", "leader" )
@@ -303,21 +323,6 @@ Sparrow.shift = function () {
   return Session.get("shift_area")
 }
 
-Handlebars.registerHelper("active_link", function (a, b) {
-  console.log(a, this)
-})
-
-Handlebars.registerHelper('if_topnav_current', function (a, options) {
-  if (a == Session.get("shift_current"))
-    return options.fn(this)
-  return
-})
-
-Handlebars.registerHelper('if_topnav_area', function (a, options) {
-  if (a == Session.get("shift_area"))
-    return options.fn(this)
-  return
-})
 
 Handlebars.registerHelper('page_next', function (area) {
   if (area !== Session.get("shift_area")) { return false }
@@ -330,10 +335,6 @@ Handlebars.registerHelper('page_next', function (area) {
   })
   return area
 })
-
-var countLetters = function (str) {
-  return str.replace(/[^A-Z]/gi, "").length
-}
 
 Template.hero.rendered = function (tmpl) {
   if (! Session.get("heroRendered")){
@@ -367,14 +368,14 @@ function distance(lat1, lon1, lat2, lon2, unit) {
 statRange = function () {
   var out = {
     max: {
-      distance: Session.get("max_distance"),
-      votes: Session.get("max_votes"),
-      price: Session.get("max_price")
+      distance : Session.get("max_distance"),
+      votes    : Session.get("max_votes"),
+      price    : Session.get("max_price")
     },
     min: {
-      distance: Session.get("min_distance"),
-      votes: Session.get("min_votes"),
-      price: Session.get("min_price")
+      distance : Session.get("min_distance"),
+      votes    : Session.get("min_votes"),
+      price    : Session.get("min_price")
     }
   }
   return out
@@ -395,7 +396,6 @@ Template.home.getOffers = function () {
   current.sort.order    = Session.get("current_sorts_order")
 
   for (key in current) {
-
     if (current.hasOwnProperty(key)) {
       if (current[key] && current[key].length) {
         if (key === "tag") {
@@ -410,7 +410,6 @@ Template.home.getOffers = function () {
       }
     }
   }
-  /* console.log("QUERY", query, "SORT", sort) */
 
   var result = Offers.find(query, {sort: sort}).fetch()
   var myLoc = Session.get("loc")
@@ -424,13 +423,13 @@ Template.home.getOffers = function () {
     var range = {
       max: {
         distance : _.max(result, function (o) { return o.distance }),
-        votes : _.max(result, function (o) { return o.votes }),
-        price : _.max(result, function (o) { return o.price })
+        votes    : _.max(result, function (o) { return o.votes }),
+        price    : _.max(result, function (o) { return o.price })
       },
       min: {
         distance : _.min(result, function (o) { return o.distance }),
-        votes : _.min(result, function (o) { return o.votes }),
-        price : _.min(result, function (o) { return o.price })
+        votes    : _.min(result, function (o) { return o.votes }),
+        price    : _.min(result, function (o) { return o.price })
       }
     }
 

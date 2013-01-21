@@ -4,8 +4,6 @@
 li
   list-style none
 
-a:hover
-  text-decoration none
 
 .wf-loading
   visibility hidden
@@ -17,10 +15,24 @@ a:hover
 .capitalize
   text-transform capitalize
 
+
+
+gap = 2px
+
+
+.alert .close
+a
+  &:hover
+    cursor default!important
+    text-decoration none
+
+bg-color = #fcfcfc
+
 html
   cursor default
   overflow-x hidden
   // transform scale(0.7)
+  background-color bg-color
 
 html
 body
@@ -38,7 +50,7 @@ body
   font-family "proxima-nova"
   color #888
   background-color rgba(0, 0, 0, 0)
-  background-image url("/images/bg/maze.png")
+  // background-image url("/images/bg/maze.png")
   position relative
   overflow-x hidden
   overflow-y scroll
@@ -65,10 +77,11 @@ body
     trans(left)
     left -100%
 
-.container
+.content > div > .container
   height 100%
   padding-top 80px
   position relative
+  // background-color bg-color
 
 .current
 .next
@@ -87,51 +100,230 @@ body
     left -50%
     display block
 
+.account_offer
+  .offer
+    margin-bottom 40px
+
+.area
+  min-height 500px
+
+textarea
+input
+  border-radius 0!important
+
+label
+  cursor default
+  i
+    text-indent 10px
+    opacity 0.4
+    &:hover
+      opacity 0.9
+
 .navbar
-  width 100%
-  z-index 100
-  opacity 1
-  fixed top
-  .transitioning &
-    absolute top
-  .container
-    padding-top 0
   .navbar-inner
     border-radius 0
-    border-right none
-    border-left none
-    background linear-gradient(top, white, rgba(white, 0.9))
-    height 75px
-    .links
-      margin 0 auto
+  &.account
+    padding-top 20px
+    border-bottom 2px solid #ddd
+    .navbar-inner
+      padding 0 0
+      background none
+      border none
+      box-shadow none
+    ul
+      width 100%
+    li
+      height = 40px
+      font-size 12px
+      line-height height
+      height height
+      text-transform uppercase
+      width 13.7%
       text-align center
-    a.active
+      border 2px solid transparent
+      color #333
+      opacity 0.4
+      &.active
+        opacity 1
+      &:hover
+        opacity 0.9
       i
-        color blue
-    a
-    .shift
-      padding 10px
-      display inline-block
-      &[data-shift-direction=left]
-        float left
-      &[data-shift-direction=right]
-        float right
-      span
-      i
+        font-size 15px
+        padding-right 5px
+  &.topnav
+    width 100%
+    z-index 100
+    opacity 1
+    fixed top
+    .transitioning &
+      absolute top
+    .container
+      padding-top 0
+    .navbar-inner
+      border-right none
+      border-left none
+      background linear-gradient(top, white, rgba(white, 0.9))
+      height 75px
+      .links
+        margin 0 auto
+        text-align center
+        li
+          opacity 0.7
+          display inline-block
+          font-size 30px
+          height 75px
+          line-height 35px
+          margin 12px 20px 0
+          cursor default
+          &.active
+            i
+              color black
+          span
+            display block
+            font-size 12px
+            text-transform uppercase
+            line-height 20px
+            letter-spacing 1px
+          i
+            height 30px
+            line-height 30px
+            font-size 28px
+            margin-top 5px
+      .shift
+        padding 10px
         display inline-block
-        font-size 30px
-        color gray
-        line-height 40px
-        height 40px
-      i
-        margin 10px 10px 0
-        cursor pointer
-        &:hover
-          color black
-      #login-buttons a
-        text-decoration none
-      #login-dropdown-list
-        left -110px
+        &[data-shift-direction=left]
+          float left
+        &[data-shift-direction=right]
+          float right
+        &.home
+          position relative
+          line-height 70px
+          // &.left
+          //   padding-left 0
+          //   left -5px
+          // &.right
+          //   padding-right 0
+          //   right -5px
+          // .logo
+          //   margin 0
+          //   top 4px
+          //   position relative
+          //   font-size 32px
+        i
+          display inline-block
+          font-size 30px
+          color gray
+          line-height 40px
+          height 40px
+          margin 10px 10px 0
+          cursor default
+          &:hover
+            color black
+        #login-buttons a.login-link-text
+          relative top -5px
+          text-decoration none
+          color #bbb
+          text-transform uppercase
+          font-size 14px
+          letter-spacing 1px
+          display block
+        #login-dropdown-list
+          left -140px
+        .accounts-dialog
+          border 1px solid #ccc
+          border-radius 0
+          box-shadow none
+        .accounts-dialog
+        #login-buttons
+          .login-button
+            border-radius 0
+            box-shadow none
+            background #ccc
+            border 1px solid #aaa
+            color #777
+            text-shadow none
+            cursor default
+            font-size 11px
+            text-transform uppercase
+            line-height 20px
+            letter-spacing 1px
+            opacity 0.7
+            &:hover
+              opacity 1
+
+spanner(a, b)
+  width floor(a * b)
+  margin-left 0
+  &.margin
+    width floor((a * b) - gap)
+    &.left
+      margin-left gap
+    &.right
+      margin-right gap
+    &.left.right
+      width floor((a * b) - (gap * 2))
+
+Spanner(a)
+  u = (a / 12)
+  .container
+  .navbar-static-top .container
+  .navbar-fixed-top .container
+  .navbar-fixed-bottom.container
+    width a
+  .long
+    .span12
+    &.span12
+      spanner(u, 12)
+    .span11 
+    &.span11 
+      spanner(u, 11)
+    .span10 
+    &.span10 
+      spanner(u, 10)
+    .span9 
+    &.span9 
+      spanner(u, 9)
+    .span8 
+    &.span8 
+      spanner(u, 8)
+    .span7 
+    &.span7 
+      spanner(u, 7)
+    .span6 
+    &.span6 
+      spanner(u, 6)
+    .span5 
+    &.span5 
+      spanner(u, 5)
+    .span4 
+    &.span4 
+      spanner(u, 4)
+    .span3 
+    &.span3 
+      spanner(u, 3)
+    .span2 
+    &.span2 
+      spanner(u, 2)
+    .span1 
+    &.span1 
+      spanner(u, 1)
+
+
+Spanner( 940px )
+
+@media (min-width: 768px) and (max-width: 979px)
+  Spanner( 724px )
+
+@media (min-width: 1200px)
+  Spanner( 1170px )
+
+@media (max-width: 767px)
+  .container
+    width auto
+  .long
+    [class*="span"]
+      width 100%
 
 .hero
   .headline
@@ -164,18 +356,12 @@ body
     font-weight bold
     letter-spacing 1px
     padding 10px 0
-    &.tagset-list
-    &.tagset-list
-      text-align right
-    &.sort-list
-      text-align center
-    &.noun-list
-      text-align left
+    text-align center
     li
       padding 10px
       overflow hidden
-      border none
       &.inactive
+        background "transparent"
         opacity .5
         &:hover
           opacity .8
@@ -183,36 +369,6 @@ body
         &:hover
           opacity .9
 
-
-.ninja
-text
-svg
-  stroke blue
-  fill steelblue
-  font-family 'Helvetica'
-
-
-
-nav
-  fixed top left
-  z-index 20
-  height 100%
-  text-align center
-  ul
-    width 100%
-    margin 0 0 20px 0
-    &.main 
-      absolute bottom
-    &.account
-      absolute top 40%
-    li
-      cursor pointer
-    a
-      width 100%
-      display block
-      color black
-      &:hover
-        color #666
 
 @media (min-width: 1200px)
   nav
@@ -223,6 +379,7 @@ nav
     display none!important
     visibility hidden
 
+
 .offer
   height = 170px
   relative top
@@ -230,17 +387,10 @@ nav
   float left
   min-height height
   overflow hidden
-  border-top 1px solid #efefef
-  border-right 1px solid #ddd
-  border-bottom 1px solid #ccc
-  border-left 1px solid #ddd
-  margin 5px 0
-  border-radius 4px
-  box-shadow 0 2px 5px rgba(black, 0.1)
-  background white
+  margin (gap / 2) 0
+  color white
   section
     float left
-    padding 0 20px 0 0
     .accountOffer &
       &.active
         background #dadada
@@ -254,15 +404,8 @@ nav
       font-size 4em
       line-height 100px
       height 100px
-      width 100px
       text-align center
-      border-radius 2em
       margin 35px 0
-  .main
-    width 30%
-  .main
-  .stats
-    color #ccc
   .field
     &[data-field=name]
       font-weight 300
@@ -281,47 +424,34 @@ nav
       font-weight normal
       letter-spacing 0px
       margin-bottom 5px
-  .stats
-    height 100%
-    margin-top 60px
-    .location
-    .price
-      height auto
-      float none
+
+  section.main
+    height height
+
   section.actions
-    float right
     padding 0 0 0 0
     height height
-    box-shadow 10px 0 20px -10px rgba(black, 0.2)
     span
-      text-shadow 0 -1px 0 rgba(black, 0.2)
       color rgba(white, 0.9)
     div
-      &.votes
-      &.distance
-      &.price
-        box-shadow inset 0 0 20px rgba(white, 0.05)
       float left
-      width 80px
       height 100%
       position relative
-      border-right 1px solid transparent
-      border-left 1px solid transparent
       .bg
       .metric
+        width 100%
         position absolute
         bottom 0
       .metric
         padding-bottom 80px
-        box-shadow 0 20px 30px -10px rgba(white, 0.3) inset, 0 -5px 20px -10px rgba(black, 0.3)
         z-index 3
-        border-left 1px solid rgba(white, 0.1)
         height 100%
         max-height 90px
       .bg
         height 100%
         opacity .4
         z-index 2
+        background white
 
 
     i.full-icon
@@ -386,6 +516,19 @@ nav
     text-align center
     padding 20px 0
 
+.help-unit
+  .intro
+  h3
+    text-align center
+  div
+    padding-bottom 2em
+
+.btn
+  border-radius 0
+  cursor default
+  margin 0 auto
+
+
 // table
 //   th
 //     cursor pointer
@@ -403,17 +546,23 @@ nav
 //       cursor pointer
 //       margin-top 15px!important
 
-.glyph
-  float left
-  text-align center
-  background #eee
-  padding .75em
-  margin .75em 1.5em .75em 0
-  width 7em
-  border-radius .25em
-  line-height 1.5em
-  div
-    font-size 2em
+
+.glyph-list
+  .inner
+    margin 0 auto
+    float none
+    position relative
+    left 50px
+  .glyph
+    float left
+    text-align center
+    background #eee
+    margin 1px
+    width 100px
+    height 100px
+    line-height 100px
+    div
+      font-size 35px
 
 .actions
   padding-bottom 15px
@@ -450,17 +599,8 @@ i.icon-trash
     text-decoration none!important
     padding 3px 3px 0
 
-iframe
-  position fixed
-  background whiteSmoke
-  display none
-  top 30px
-  left 50%
-  margin-left -300px
-  z-index 2
-
-#formModal.modal
-  top 50%
+.alert
+  border-radius 0
 
 // .modal
 //   position fixed

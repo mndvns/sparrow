@@ -13,10 +13,13 @@ Template.editor.events({
     var collection = tmpl.find(".editor").id
     var inputs     = tmpl.findAll("input")
 
-    var keys       = _.pluck(inputs, "id")
-    var values     = _.pluck(inputs, "value")
+    // user_.rest so we igore the #_id input
+    var keys       = _.rest(_.pluck(inputs, "id"))
+    var values     = _.rest(_.pluck(inputs, "value"))
 
     var updated    = _.object(keys, values)
+
+    console.log(keys, values)
 
     if (event.target.id === "update") {
       window[collection].update({_id: selector }, updated )

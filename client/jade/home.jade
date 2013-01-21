@@ -6,49 +6,46 @@ head
 body
   {{> body }}
 
-mixin shifter(dir, area, hide, icon)
-  if (hide)
-    name = null
-  else
-    name = area
-  .shift(data-shift-direction="#{dir}", data-shift-area="#{area}")
-    if (dir === "left")
-      i(class="icon-" + icon)
-      span #{name}
-    else
-      if (area === "account")
-        span {{loginButtons}}
-        i(class="icon-" + icon)
-      else
-        span #{name}
-        i(class="icon-" + icon)
-
 mixin topnav(name)
-  .navbar: .navbar-inner: .container
+  .topnav.navbar: .navbar-inner: .container
     if (name === "home")
-      mixin shifter("left", "about", true, "fighter-jet")
-      mixin shifter("right", "account", true, "user")
+      .shift(data-shift-direction="left", data-shift-area="about").home.left
+        i.icon-angle-left
+        // i.icon-large.logo.glyph-cassette
+      .shift(data-shift-direction="right", data-shift-area="account").home.right
+        span {{loginButtons}}
+        {{#if signedIn}}
+        i.icon-angle-right {{/if}}
     if (name === "about")
-      mixin shifter("right", "home", true, "chevron-right")
+      .shift(data-shift-direction="right", data-shift-area="home"): i.icon-angle-right
     if (name === "account")
-      mixin shifter("left", "home", true, "chevron-left")
-      .links
-        a(href="/account"): i.glyph-pacman
-        a(href="/account/offer"): i.glyph-cassette
-        a(href="/account/metrics"): i.glyph-presentation
-        a(href="/account/profile"): i.icon-cogs
+      .shift(data-shift-direction="left", data-shift-area="home"): i.icon-angle-left
+      ul.links
+        li(data-page="offer")
+          i.glyph-cassette
+          span offer
+        li(data-page="metrics")
+          i.glyph-presentation
+          span metrics
+        li(data-page="profile")
+          i.glyph-paper-plane
+          span profile
+
+        // a(href="/account/offer"): i.glyph-cassette
+        // a(href="/account/metrics"): i.glyph-presentation
+        // a(href="/account/profile"): i.icon-cogs
 
 template(name="body")
   .content
     .current
       {{#constant}}{{/constant}}
 
-      {{#if_topnav_current "home"}}
-      mixin topnav("home") {{/if_topnav_current}}
-      {{#if_topnav_current "account"}}
-      mixin topnav("account") {{/if_topnav_current}}
-      {{#if_topnav_current "about"}}
-      mixin topnav("about") {{/if_topnav_current}}
+      {{#if sessionEquals 'shift_current' 'home'}}
+      mixin topnav("home") {{/if}}
+      {{#if sessionEquals 'shift_current' 'account'}}
+      mixin topnav("account") {{/if}}
+      {{#if sessionEquals 'shift_current' 'about'}}
+      mixin topnav("about") {{/if}}
 
       .container
         {{renderPage}}
@@ -56,12 +53,12 @@ template(name="body")
     .next
       {{#constant}}{{/constant}}
 
-      {{#if_topnav_area "home"}}
-      mixin topnav("home") {{/if_topnav_area}}
-      {{#if_topnav_area "account"}}
-      mixin topnav("account") {{/if_topnav_area}}
-      {{#if_topnav_area "about"}}
-      mixin topnav("about") {{/if_topnav_area}}
+      {{#if sessionEquals 'shift_area' 'home'}}
+      mixin topnav("home") {{/if}}
+      {{#if sessionEquals 'shift_area' 'account'}}
+      mixin topnav("account") {{/if}}
+      {{#if sessionEquals 'shift_area' 'about'}}
+      mixin topnav("about") {{/if}}
 
       .container
         {{#if page_next "about"}} {{> about }} {{/if}}
@@ -97,7 +94,7 @@ template(name='home')
   {{/each}}
 
 template(name="hero")
-  .hero.row
+  .hero
     {{#constant}}
 
     .headline
@@ -107,34 +104,13 @@ template(name="hero")
         .tag
         .noun
 
-    .list
+    .list.long
       ul.tagset-list.span2(data-constant=true)
-      ul.sort-list.span2(data-constant=true)
-      ul.tag-list.span6
-      ul.noun-list.span2(data-constant=true)
+      ul.sort-list.span2(data-constant=true).margin.left
+      ul.tag-list.span6.margin.left
+      ul.noun-list.span2(data-constant=true).margin.left
 
     {{/constant}}
-
-template(name="sidebar")
-  nav
-    {{#if getSidebar "account"}}
-    ul.account
-      a(href="/account/offer") Offer
-      a(href="/account/profile") Profile
-      a(href="/account/metrics") Metrics
-    {{/if}}
-    {{#if getSidebar "admin"}}
-    ul.account
-      a(href="/admin/users") Users
-      a(href="/admin/tags") Tags
-      a(href="/admin/sorts") Sorts
-      a(href="/admin/offers") Offers
-      a(href="/admin/metrics") Metrics
-    {{/if}}
-    ul.main
-      a(href="/") Home
-      a(href="/account/offer") Account
-      a(href="/admin/metrics") Admin
 
 template(name="404")
   h1.
@@ -198,18 +174,32 @@ template(name="admin_metrics")
   h1 DERP
 
 template(name='account')
-  {{#grab "User"}}
-  {{#first this.collection}}
-  .greeting 
-    h1 Hi, {{this.username}}!
-  {{/first}}
-  {{/grab}}
+
+  {{#if sessionEquals 'accountPage' 'profile'}}
+  {{> account_profile }}
+  {{/if}}
+
+  {{#if sessionEquals 'accountPage' 'offer'}}
+  {{> account_offer }}
+  {{/if}}
+
+  {{#if sessionEquals 'accountPage' 'metrics'}}
+  {{> account_metrics }}
+  {{/if}}
+
 
 template(name='account_profile')
   {{#grab "User"}}
   {{this.collection.username}}
   {{> editor }}
   {{/grab}}
+
+  // {{#grab "User"}}
+  // {{#first this.collection}}
+  // .greeting 
+  //   h1 Hi, {{this.username}}!
+  // {{/first}}
+  // {{/grab}}
 
 template(name='account_metrics')
   {{#with getUser}}
@@ -222,121 +212,151 @@ template(name='account_metrics')
       {{votes.length}}{{/with}}
 
 template(name='account_offer')
-  .myOffer
-    section.tags: h2: i.icon-tag
-    {{#with getOffer}}
-    {{> offer}}
-    {{/with}}
+
+  {{#with getOffer}}
+  .account.navbar: .navbar-inner: .container
+    ul.nav
+      mixin nav-item(a, b, c)
+        li(class= c, data-value= a)
+          i(class="icon-" + b)
+          | #{a}
+      mixin nav-item("main", "home", "show")
+      mixin nav-item("tags", "tag", "show")
+      mixin nav-item("votes", "arrow-up", "show")
+      mixin nav-item("symbol", "beaker", "show")
+      mixin nav-item("location", "map-marker", "show")
+      mixin nav-item("save", "save", "save")
+      mixin nav-item("help", "question-sign", "help")
 
   .clearfix
 
-  {{#if status_alert}}
-  {{#with status_alert}}
+  {{#if sessionEquals 'help' 'true'}}
+  .help-unit.row
+    {{#if sessionEquals 'show' 'intro'}}
+    .span6.offset3.intro
+      h3 Welcome to your offer area!
+      p.
+        Here you can create, edit, and publish your offer in a matter of seconds. The "help" selection
+        is on by default, so you'll see more of this text. Whenever you want, you can turn off the
+        help text by hitting the toggle in the upper left.
+      br
+      p: strong Ready to make an offer?
+      button.btn.btn-large.show(data-value="main", color="{{this.color}}"): em Let's go!
+    {{/if}}
+    {{#if sessionEquals 'show' 'main'}}
+    .span12
+      h3 What are we selling?
+    .span5.offset1
+      p.
+        Although everyone buys differently, we all want
+        to know what the product is, who is selling it, and for how much.
+      p.
+        You might notice that we limit the amount you can write. Sorry 'bout that. If you're having
+        trouble condensing your product's information, try this little exercise out...
+      p.
+        Pretend you're dangling from a cliff and you needed this object to save your life. Your friend
+        wants to help you, but he is up some distance at the top of the cliff, unable to reach you.
+    .span5
+      p.
+        At this moment, he is waiting for you yell up and describe the object to him so he can
+        retrive it from your car and lower it to you with a rope.
+      p.
+        What do you yell to him?
+      p.
+        Did that help? Maybe? It's a weird exercise. Me, personally, I would just yell for the rope,
+        but I think that's against the rules.
+    {{/if}}
+  {{/if}}
+
+
+  {{#if status_alert}} {{#with status_alert}}
   div(class="{{this.type}}").alert.alert-block
     button.close(type='button', data-dismiss='alert') ×
     h4.alert-heading {{this.heading}}
     p {{this.message}}
-  {{/with}}
-  {{/if}}
+  {{/with}} {{/if}}
+
+  .account_offer
+    {{#if sessionEquals 'show' 'intro'}} {{else}}
+    {{> offer}} {{/if}}
 
   .clearfix.pad
 
-    .actions
-      div.icon
-        i.icon-save.save
-        br
-        span save
+    mixin field(a, z, b, m, c, r)
+      .control-group
+        label.control-label #{a}
+        if b == "text"
+          .controls: input(class= b +" "+ m, id= a, type= b, tabindex= c, value= z)
+        if b == "textarea"
+          .controls: textarea(class= b +" "+ m, id= a, type= b, tabindex= c, value= z, rows= r) #{z}
 
-    .clearfix
     {{#if show "main"}}
-    {{#with getOffer}}
-    form.form-horizontal
-      .control-group
-        label.control-label Name
-        .controls
-          input#name.text(type='text', tabindex='1', value='{{this.name}}')
-      .control-group
-        label.control-label Description
-        .controls
-          input#description.text(type='text', tabindex='2', value='{{this.description}}')
-      .control-group
-        label.control-label Business
-        .controls
-          input#business.text(type='text', tabindex='3', value='{{this.business}}')
-    {{/with}}
+    .area
+      form
+        .span5.offset1
+          mixin field("name", "{{this.name}}", "text", "span4", 1)
+          mixin field("description", "{{this.description}}", "textarea", "span4", 2, 3)
+        .span5
+          mixin field("business", "{{this.business}}", "text", "span4", 3)
+          mixin field("price", "{{this.price}}", "text", "span2", 4)
+      .clearfix
     {{/if}}
 
+
     {{#if show "votes"}}
-    {{#with getOffer}}
-    .actions
-      div.icon
-        i.icon-qrcode#qr-button
-        br
-        span qr code
-    #qr-code
-    {{/with}}
+    .area
+      .actions
+        div.icon
+          i.icon-qrcode#qr-button
+          br
+          span qr code
+      #qr-code
+      .clearfix
     {{/if}}
 
     {{#if show "symbol"}}
-    {{#with getOffer}}
-    .row.offset1
-      input.text.color(type='text', value='{{this.color}}')
-      .clearfix
-      {{#each getIcons}}
-      .glyph
-        .large(class="glyph-{{this}}")
-      {{/each}}
-    {{/with}}
-    {{/if}}
+    .area
+      .glyph-list.row
+        .span11.inner
+          input.text.color(type='text', value='{{this.color}}')
+          .clearfix
+          {{#each getIcons}}
+          .glyph
+            .large(class="glyph-{{this}}")
+          {{/each}}
+        {{/if}}
 
-    {{#if show "tags"}}
-    .tag-list
-      {{#each getTagsets}}
-      {{#with checkTagsetActive}}
-      ul.span2.tagset(data-tagset="{{this.name}}", data-status="{{this.attr}}")
-        strong {{this.name}}
-        {{#each getTags}}
-        li
-          {{#with checkTagActive}}
-          | <span {{attr}}>{{name}}</span>
-          {{/with}}
+      {{#if show "tags"}}
+      h1
+      .tag-list
+        {{#each find 'Tagsets' '{}'}}
+        {{#with checkTagsetActive}}
+        ul.span2.tagset(data-tagset="{{this.name}}", data-status="{{this.attr}}")
+          strong {{this.name}}
+          {{#each getTags}}
+          li
+            {{#with checkTagActive}}
+            | <span {{attr}}>{{name}}</span>
+            {{/with}}
+          {{/each}}
+        {{/with}}
         {{/each}}
-      {{/with}}
-      {{/each}}
-    {{/if}}
-
-    {{#if show "price"}}
-    {{#with getOffer}}
-    form.form-horizontal
-      .control-group
-        label.control-label Price
-        .controls
-          input#price.text(type='text', tabindex='1', value='{{this.price}}')
-    {{/with}}
     {{/if}}
 
     {{#if show "location"}}
-    {{#with getOffer}}
-    form#location.form-horizontal
-      .control-group
-        label.control-label Street
-        .controls
-          input#street.text(type='text', tabindex='1', value='{{this.street}}')
-      .control-group
-        label.control-label City & State
-        .controls
-          input#city_state.text(type='text', tabindex='1', value='{{this.city_state}}')
-      .control-group
-        label.control-label Zip
-        .controls
-          input#zip.text(type='text', tabindex='1', value='{{this.zip}}')
+    .area
+      form#location
+        .span5.offset3
+          mixin field("street", "{{this.street}}", "text", "span5", 1)
+          mixin field("city", "{{this.city}}", "text", "span4", 2 )
+          mixin field("state", "{{this.state}}", "text", "span2", 2 )
+          mixin field("zip", "{{this.zip}}", "text", "span2", 2 )
+      {{/if}}
     {{/with}}
-    {{/if}}
 
 
 template(name='thisOffer')
   div.thisOffer
-    h1 ASDASDAS
     {{#with getThisOffer}}
     {{> offer}}
     .input-append
@@ -345,28 +365,28 @@ template(name='thisOffer')
     {{/with}}
 
 template(name='offer')
-  div.offer(data-tagset="{{this.tagset}}", style="color: {{this.color}}")
-    section.symbol
+  div.offer(data-tagset="{{this.tagset}}").long
+    section.symbol(style="background: {{this.color}}").span2
       div(class='{{this.symbol}}')
-    section.main
+    section.main(style="background: {{this.color}}").span4
       span.field(data-field='name') {{this.name}}
       p.field(data-field='description') {{this.description}}
       span.field(data-field='business') {{this.business}}
       br
     section.actions
-      .votes
+      .votes(style="background: {{this.color}}").span2.margin.left
         i.icon-arrow-up.full-icon(data-status="inactive", data-selector="vote")
-        .metric
+        .metric(style="background: {{this.color}}")
           span {{this.votes}} votes
         .bg
-      .map.distance
+      .map.distance(style="background: {{this.color}}").span2.margin.left
         i.icon-map-marker.full-icon(data-status="inactive", data-selector="map")
-        .metric
+        .metric(style="background: {{this.color}}")
           span {{this.distance}} mi.
         .bg
-      .buy.price
-        i.icon-shopping-cart.full-icon(data-status="inactive", data-selector="buy")
-        .metric
+      .buy.price(style="background: {{this.color}}").span2.margin.left
+ 
+        .metric(style="background: {{this.color}}")
           span ${{this.price}}
         .bg
     section.extension(data-extension="map")
