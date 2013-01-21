@@ -42,9 +42,9 @@
         "commit": "8f0d5303de5b93771e91f21f818be27358c2fb30"
       },
       "transitioner": {
-        "git": "https://github.com/tmeasday/meteor-transitioner.git",
+        "git": "https://github.com/mvanasse/meteor-transitioner.git",
         "tag": "v0.2.2",
-        "commit": "ffbef8e7e10dfcefc61394ea8a11f07a6ff97cd9"
+        "commit": "0dc708e955ad675ba52cf1d668f337167557e88f"
       },
       "jade-handlebars": {
         "git": "https://github.com/SimonDegraeve/meteor-jade-handlebars.git",

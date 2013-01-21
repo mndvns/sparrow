@@ -207,6 +207,7 @@ Template.hero.created = function () {
                   var white = Color("#fff")
                   color.normal = Col
                   color.bright = color.normal
+                  color.hue = Col.getHue()
                   color.light = Col.blend( white, .8 ).desaturateByAmount( 0.3 ).toString()
                   color.desat = Col.desaturateByAmount( 0.8 ).darkenByAmount( 0.2).toString()
 
