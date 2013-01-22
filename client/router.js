@@ -77,5 +77,5 @@ Meteor.Router.filters({
   }
 })
 
-Meteor.Router.filter('checkLoggedIn')
+Meteor.Router.filter('checkLoggedIn', {except: ['about']})
 Meteor.Router.filter('checkAdmin', {only: ['/admin/users']})

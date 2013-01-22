@@ -53,6 +53,7 @@ Accounts.onCreateUser(function(options, user) {
   user.votes = []
   user.votes.push(user._id)
   user.points = 10
+  user.logins = 0
   if (options.profile)
     user.profile = options.profile;
   return user;
@@ -204,6 +205,19 @@ Meteor.methods({
       vid: vote,
       exp: exp
     }}})
+  },
+  registerLogin: function () {
+    this.unblock()
+    Meteor.users.update({ _id: Meteor.userId() }, {$inc: {logins: 1}})
+    console.log(Meteor.user())
+
+    /* return */
+  },
+  getLogin: function (res) {
+    this.unblock()
+    var j = Meteor.user()
+    console.log(j.logins)
+    return j.logins
   },
   thingy: function () {
     Meteor.users.update({_id: Meteor.userId()}, {$set: {"lastActivity": moment().unix() }})

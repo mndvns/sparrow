@@ -220,22 +220,25 @@ label
           cursor default
           &:hover
             color black
-        #login-buttons a.login-link-text
-          relative top -5px
-          text-decoration none
-          color #bbb
-          text-transform uppercase
-          font-size 14px
-          letter-spacing 1px
-          display block
         #login-dropdown-list
-          left -140px
+          left -132px
+          top 40px
         .accounts-dialog
           border 1px solid #ccc
           border-radius 0
           box-shadow none
         .accounts-dialog
         #login-buttons
+          .login-close-text
+            float right
+          a.login-link-text
+            relative top -5px
+            text-decoration none
+            color #bbb
+            text-transform uppercase
+            font-size 14px
+            letter-spacing 1px
+            display block
           .login-button
             border-radius 0
             box-shadow none
@@ -253,16 +256,25 @@ label
               opacity 1
 
 spanner(a, b)
-  width floor(a * b)
+  if odd(b)
+    width floor(a * b)
+  if even(b)
+    width ceil(a * b)
   margin-left 0
   &.margin
-    width floor((a * b) - gap)
+    if odd(b)
+      width floor((a * b) - gap)
+    if even(b)
+      width floor((a * b) - gap)
     &.left
       margin-left gap
     &.right
       margin-right gap
     &.left.right
-      width floor((a * b) - (gap * 2))
+      if odd(b)
+        width floor((a * b) - (gap * 2))
+      if even(b)
+        width ceil((a * b) - (gap * 2))
 
 Spanner(a)
   u = (a / 12)
@@ -327,9 +339,9 @@ Spanner( 940px )
 
 .hero
   .headline
-    absolute top 25px left 10%
+    absolute top 25px left 15%
     z-index 100
-    width 80%
+    width 70%
     text-align center
     background none
     font-weight 900
@@ -390,7 +402,7 @@ Spanner( 940px )
     .symbol
     .main
     .metric
-      background teal
+      background #ccc
   section
     float left
   &.voted
@@ -418,12 +430,14 @@ Spanner( 940px )
     &[data-field=description]
       line-height 12px
       text-transform none
-      font-weight normal
+      font-weight 100
       letter-spacing 0px
       margin-bottom 5px
 
   section.main
     height height
+    *
+      padding-right 20px
 
   section.actions
     padding 0 0 0 0
@@ -461,7 +475,6 @@ Spanner( 940px )
       &[data-status=inactive]
         color white
         opacity 0.8
-        text-shadow 0 -1px 0 rgba(black, 0.6)
 
   .extension
     height 170px
@@ -565,6 +578,10 @@ Spanner( 940px )
   padding-bottom 15px
   text-align center
 
+input.color
+  color white
+  text-align center
+
 #map_canvas
   height 300px
 
@@ -595,6 +612,21 @@ i.icon-trash
     font-weight normal
     text-decoration none!important
     padding 3px 3px 0
+
+.wrapper
+  relative top
+  overflow hidden
+  // opacity 0
+  height 100px
+  trans(height)
+  &.out
+    height 32px
+    opacity 0
+    trans(height)
+  &.in
+    height 100px
+    opacity 1
+    trans(height)
 
 .alert
   border-radius 0

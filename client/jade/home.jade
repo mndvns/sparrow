@@ -30,6 +30,9 @@ mixin topnav(name)
         li(data-page="profile")
           i.glyph-paper-plane
           span profile
+        // li(data-page="info")
+        //   i.glyph-question-mark
+        //   span info
 
         // a(href="/account/offer"): i.glyph-cassette
         // a(href="/account/metrics"): i.glyph-presentation
@@ -174,7 +177,6 @@ template(name="admin_metrics")
   h1 DERP
 
 template(name='account')
-
   {{#if sessionEquals 'accountPage' 'profile'}}
   {{> account_profile }}
   {{/if}}
@@ -230,7 +232,22 @@ template(name='account_offer')
 
   .clearfix
 
+  {{#if status_alert}}
+  {{#with status_alert}}
+  {{> status_alert }}
+  {{/with}}
+  {{/if}}
+
+  .clearfix
+
+  .account_offer
+    {{#if sessionEquals 'show' 'intro'}} {{else}}
+    {{> offer}} {{/if}}
+
   {{#if sessionEquals 'help' 'true'}}
+
+  .clearfix
+
   .help-unit.row
     {{#if sessionEquals 'show' 'intro'}}
     .span6.offset3.intro
@@ -264,42 +281,75 @@ template(name='account_offer')
         What do you yell to him?
       p.
         Did that help? Maybe? It's a weird exercise. Me, personally, I would just yell for the rope,
-        but I think that's against the rules.
+        but for the sake of the exercise, let's pretend that's against the rules.
+    {{/if}}
+    {{#if sessionEquals 'show' 'tags'}}
+    .span12
+      h3 Tags, tags, and more tags
+    .span5.offset1
+      p.
+        Tags are adjectives that describe your offer. They are the words that <em>you</em> feel are important
+        for others to know -- they should cut to right to the chase.
+      p.
+        In order to get your offer to people who are most likely to buy, we limit the tags that an offer can have.
+        That way, your tag gets in front of the buyers you need, and your competitors offers aren't encroaching on
+        your territory.
+    .span5
+      p.
+        So what tags should you choose? That's up to you. You should pick tags that you think others should know
+        about your good -- something that sets it apart from any offers people may find. A quality that your offer
+        has that the other guy's doesn't.
+      p.
+        What makes your offer unique? Is it a savory burger? An killer concert? A vintage scarf?
+    {{/if}}
+    {{#if sessionEquals 'show' 'symbol'}}
+    .span12
+      h3 What's your sign? No, not that sign...
+    .span5.offset1
+      p.
+        You symbol is simply the sign on the left-hand side of the offer that distinguishes it. You can pick
+        a symbol from our list below and combine it with any color.
+    .span5
+      p.
+        No, you can't upload your logo <em>yet</em>, but it's coming. We want to ensure that every offer has
+        at least some sort of symbol, so that even someone without a flashy logo can be represented equally.
+    {{/if}}
+    {{#if sessionEquals 'show' 'location'}}
+    .span12
+      h3 Oh offer, where art thou?
+    .span5.offset1
+      p.
+        We use the address you list here to provide geolocation to the user, so be sure to list where the
+        <em>offer</em> is, not where you are.
+    .span5
+      p.
+        For now, you can only list one location, but don't cry. We'll be rolling out multiple location features
+        just as soon as enough people bug us about it.
+    {{/if}}
+    {{#if sessionEquals 'show' 'qr'}}
+    .span4.offset4
+      p.
+        Here's a QR code for you. If takes the user to a page where they can vote for your offer. More to
+        come on this.
     {{/if}}
   {{/if}}
 
 
-  {{#if status_alert}} {{#with status_alert}}
-  div(class="{{this.type}}").alert.alert-block
-    button.close(type='button', data-dismiss='alert') ×
-    h4.alert-heading {{this.heading}}
-    p {{this.message}}
-  {{/with}} {{/if}}
-
-  .account_offer
-    {{#if sessionEquals 'show' 'intro'}} {{else}}
-    {{> offer}} {{/if}}
 
   .clearfix.pad
 
-    mixin field(a, z, b, m, c, r)
+    mixin field(a, z, b, m, c, ch)
       .control-group
         label.control-label #{a}
         if b == "text"
           .controls: input(class= b +" "+ m, id= a, type= b, tabindex= c, value= z)
         if b == "textarea"
-          .controls: textarea(class= b +" "+ m, id= a, type= b, tabindex= c, value= z, rows= r) #{z}
+          .controls: textarea(class= b +" "+ m, id= a, type= b, tabindex= c, value= z, rows= 4) #{z}
+        if ch
+          span.badge #{ch}
 
     {{#if show "text"}}
-    .area
-      form
-        .span5.offset1
-          mixin field("name", "{{this.name}}", "text", "span4", 1)
-          mixin field("description", "{{this.description}}", "textarea", "span4", 2, 3)
-        .span5
-          mixin field("business", "{{this.business}}", "text", "span4", 3)
-          mixin field("price", "{{this.price}}", "text", "span2", 4)
-      .clearfix
+    {{> account_offer_text }}
     {{/if}}
 
 
@@ -315,45 +365,72 @@ template(name='account_offer')
     {{/if}}
 
     {{#if show "symbol"}}
-    .area
-      .glyphs-list.row
-        .span11.inner
-          input.text.color(type='text', style='background: {{this.color}}', value="{{this.color}}")
-          .clearfix
-          {{#each getIcons}}
-          .glyph
-            .large(class="glyph-{{this}}")
-          {{/each}}
-        {{/if}}
+    {{> account_offer_symbol }}
+    {{/if}}
 
-      {{#if show "tags"}}
-      h1
-      .tag-list
-        {{#each find 'Tagsets' '{}'}}
-        {{#with checkTagsetActive}}
-        ul.span2.tagset(data-tagset="{{this.name}}", data-status="{{this.attr}}")
-          strong {{this.name}}
-          {{#each getTags}}
-          li
-            {{#with checkTagActive}}
-            | <span {{attr}}>{{name}}</span>
-            {{/with}}
-          {{/each}}
-        {{/with}}
-        {{/each}}
+    {{#if show "tags"}}
+    {{> account_offer_tags }}
     {{/if}}
 
     {{#if show "location"}}
-    .area
-      form#location
-        .span5.offset3
-          mixin field("street", "{{this.street}}", "text", "span5", 1)
-          mixin field("city", "{{this.city}}", "text", "span4", 2 )
-          mixin field("state", "{{this.state}}", "text", "span2", 2 )
-          mixin field("zip", "{{this.zip}}", "text", "span2", 2 )
-      {{/if}}
+    {{> account_offer_location }}
+    {{/if}}
+
     {{/with}}
 
+template(name="status_alert")
+  div(class="{{this.type}}").alert
+    button.close ×
+    // button.close(type='button', data-dismiss='alert') ×
+    strong {{this.heading}} 
+    | {{this.message}}
+
+template(name="account_offer_text")
+  .area
+    form
+      .span5.offset1
+        mixin field("name", "{{this.name}}", "text", "span4 limited", 1, "{{charLength 'name'}}")
+        mixin field("description", "{{this.description}}", "textarea", "span4 limited", 2, "{{charLength 'description'}}")
+      .span5
+        mixin field("business", "{{this.business}}", "text", "span4 limited", 3, "{{charLength 'business'}}")
+        mixin field("price", "{{this.price}}", "text", "span2", 4 )
+    .clearfix
+
+template(name="account_offer_tags")
+  .area
+    .tag-list.long.offset1
+      {{#each find 'Tagsets' '{}'}}
+      {{#with checkTagsetActive}}
+      ul.span2.tagset(data-tagset="{{this.name}}", data-status="{{this.attr}}")
+        strong {{this.name}}
+        {{#each getTags}}
+        li
+          {{#with checkTagActive}}
+          | <span {{attr}}>{{name}}</span>
+          {{/with}}
+        {{/each}}
+      {{/with}}
+      {{/each}}
+
+template(name="account_offer_symbol")
+  .area
+    .glyphs-list.row
+      .span11.inner
+        input.text.color(type='text', style='background: {{this.color}}', value="{{this.color}}").span10
+        .clearfix
+        {{#each getIcons}}
+        .glyph
+          .large(class="glyph-{{this}}")
+        {{/each}}
+
+template(name="account_offer_location")
+  .area
+    form#location
+      .span5.offset3
+        mixin field("street", "{{this.street}}", "text", "span5", 1)
+        mixin field("city", "{{this.city}}", "text", "span4", 2 )
+        mixin field("state", "{{this.state}}", "text", "span2", 2 )
+        mixin field("zip", "{{this.zip}}", "text", "span2", 2 )
 
 template(name='thisOffer')
   div.thisOffer
