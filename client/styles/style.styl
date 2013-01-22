@@ -339,13 +339,15 @@ Spanner( 940px )
 
 .hero
   .headline
-    absolute top 25px left 15%
+    fixed top 25px left 15%
     z-index 100
     width 70%
     text-align center
     background none
     font-weight 900
     font-family "ff-tisa-web-pro"
+    .transitioning &
+      position absolute
     div
       // &.tagset span
       //   &:after
@@ -374,6 +376,7 @@ Spanner( 940px )
         opacity .5
         &:hover
           opacity .8
+      &.limbo
       &.active
         &:hover
           opacity .9

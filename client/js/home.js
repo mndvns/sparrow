@@ -225,7 +225,7 @@ Template.hero.created = function () {
             .style({
               background: function (d) {
                 if (opt.leader) {
-                  shiftColor("teal")
+                  shiftColor("#a9bac9")
                 }
                 return color.normal
               },
