@@ -67,7 +67,24 @@ var values = {
     message: "Zip error"
   },
 }
-
+var icons = [
+      "drink",
+      "drink-2",
+      "drink-3",
+      "microphone",
+      "coffee",
+      "ice-cream",
+      "cake",
+      "pacman",
+      "wallet",
+      "gamepad",
+      "bowling",
+      "space-invaders",
+      "batman",
+      "lamp",
+      "lamp-2",
+      "appbarmoon"
+    ]
 //////////////////////////////////////////////
 //  $$ helpers
 
@@ -128,11 +145,11 @@ Template.body.events({
   }
 })
 
-Template.body.created = function () {
-  if (Meteor.loggingIn()) {
-    Meteor.call("registerLogin")
-  }
-}
+// Template.body.created = function () {
+//   if (Meteor.loggingIn()) {
+//     Meteor.call("registerLogin")
+//   }
+// }
 
 //////////////////////////////////////////////
 //  $$ account
@@ -149,18 +166,28 @@ Template.account.rendered = function () {
 }
 
 Template.account.created = function () {
-  Meteor.call("getLogin", function (err, res) {
-    if (err) { console.log(err) }
-    if (res < 2) {
-      console.log("AAAW YEAH")
-      as("accountPage", "offer")
-      as("show", "intro")
-      as("help", "true")
-      Session.set("accountPage", as("accountPage"))
+  Session.set("status_alert", false)
+  if(! as("accountPage")) {
+    Meteor.call("getLogin", function (err, res) {
+      if (err) { console.log(err) }
+      if (res < 1) {
+        console.log("AAAW YEAH")
+        as("accountPage", "offer")
+        as("show", "intro")
+        as("help", "true")
+        Session.set("accountPage", as("accountPage"))
+        Session.set("show", as("show"))
+        Session.set("help", true)
+      }
+    })
+  } else {
+    if (! as("show")) {
+      as("show", "offer")
       Session.set("show", as("show"))
-      Session.set("help", true)
     }
-  })
+    as("help", false)
+    Session.set("help", as("help"))
+  }
 }
 
 
@@ -384,24 +411,7 @@ Template.account_offer.created = function () {
 
 Template.account_offer_symbol.helpers({
   getIcons: function () {
-    return [
-      "drink",
-      "drink-2",
-      "drink-3",
-      "microphone",
-      "coffee",
-      "ice-cream",
-      "cake",
-      "pacman",
-      "wallet",
-      "gamepad",
-      "bowling",
-      "space-invaders",
-      "batman",
-      "lamp",
-      "lamp-2",
-      "appbarmoon"
-    ]
+    return icons
   }
 })
 

@@ -215,6 +215,7 @@ Meteor.methods({
   },
   getLogin: function (res) {
     this.unblock()
+    Meteor.users.update({ _id: Meteor.userId() }, {$inc: {logins: 1}})
     var j = Meteor.user()
     console.log(j.logins)
     return j.logins

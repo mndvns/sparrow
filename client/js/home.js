@@ -70,12 +70,16 @@ statCurrent = function () {
   return [tagsets, tags, sorts, nouns]
 }
 
-statCollection = function () {
-  var tagsets = Session.get("collection_tagsets")
-  var tags    = Session.get("collection_tags")
-  var sorts   = Session.get("collection_sorts")
-  return [tagsets, tags, sorts]
-}
+// statCollection = function () {
+//   var tagsets = Session.get("collection_tagsets")
+//   var tags    = Session.get("collection_tags")
+//   var sorts   = Session.get("collection_sorts")
+//   var out = [tagsets, tags, sorts]
+// 
+//   as("statCollection", out)
+// 
+//   return out
+// }
 
 function hexToRgb(hex) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -113,16 +117,20 @@ Template.hero.created = function () {
             sort       : Current[2],
             noun       : Current[3]
           }
+          out.tagset = out.tagset && out.tagset.length ? out.tagset : ["find"]
+          out.article = out.sort && out.sort.length ? ["the"] : ["some"]
+          out.noun = out.noun && out.noun.length ? out.noun : ["offer"]
           return out
         }())
 
-        var Collection = statCollection()
+        var Collection = as("collection")
+
         var collection = {
-          tagset : Collection[0],
-          tag    : _.filter(Collection[1], function (d) {
+          tagset : Collection.tagsets,
+          tag    : _.filter(Collection.tags, function (d) {
             return _.contains(current.tagset, d.tagset) }),
-          sort   : Collection[2],
-          noun   : Collection[0],
+          sort   : Collection.sorts,
+          noun   : Collection.tagsets,
         }
 
         if (_.isEmpty(current)) {
@@ -137,12 +145,24 @@ Template.hero.created = function () {
         }
 
         var fontSize
+        var limbo
+
+        var shiftColor = function (a) {
+          var Col = Color(a)
+          var white = Color("#fff")
+          color.normal = Col
+          color.bright = Col.desaturateByAmount( .3 )
+          color.hue = Col.getHue()
+          color.light = Col.blend( white, .8 ).desaturateByAmount( .3 ).toString()
+          color.desat = Col.desaturateByAmount( .8 ).darkenByAmount( 0.2).toString()
+          color.dark = Col.desaturateByAmount( .2 ).darkenByAmount( .5).toString()
+        }
 
         //  HeroList constructor
-        var HeroList = function (b, x, c) {
+        var HeroList = function (opt) {
 
-          var hero = d3.select(".headline ." + b).selectAll("span")
-            .data(current[b])
+          var hero = d3.select(".headline ." + opt.name).selectAll("span")
+            .data( current[opt.name] )
 
           hero
             .enter()
@@ -166,6 +186,7 @@ Template.hero.created = function () {
               "font-size": function (d) {
                 if (!fontSize) {
                   fontSize = (Math.round( 20 + (100 / chars))) + "px" }
+                  console.log("FONT SIZE", fontSize)
                 return fontSize
               },
               "opacity": "1",
@@ -173,10 +194,12 @@ Template.hero.created = function () {
                 return color.dark }
             })
 
-          var list = d3.select("ul." + b + "-list")
+          if (opt.skipList) return false
+
+          var list = d3.select("ul." + opt.name + "-list")
 
           var item = list.selectAll("li")
-            .data(collection[b])
+            .data(collection[opt.name])
 
           item
             .enter()
@@ -184,28 +207,43 @@ Template.hero.created = function () {
 
           item
             .datum( function (d, i) {
-              d.status = _.contains(current[b], d[x]) ? "active" : "inactive"
+              var limbo = current.tagset.toString() === "find" || current.noun.toString() === "offer" ? true : false
+              var active = _.contains(current[opt.name], d[opt.selector]) ? "active" : "inactive"
+
+              d.status = limbo && opt.leader ? "limbo" : active
+
               return d
             })
             .attr("class", function (d) { return d.status })
-            .text(function (d) {return d[x] })
+            .text(function (d) {return d[opt.selector] })
 
           item.exit()
             .remove()
 
+
+          var limbo = list.selectAll("li.limbo")
+            .style({
+              background: function (d) {
+                if (opt.leader) {
+                  shiftColor("teal")
+                }
+                return color.normal
+              },
+              color: "white"
+            })
+            .transition()
+            // .style({
+            //   width: function (d) {
+            //     return "50px"
+            //   },
+            // })
+
+
           var active = list.selectAll("li.active")
             .style({
               background: function (d) {
-                if (c) {
-                  var Col = Color( d.color )
-                  var white = Color("#fff")
-                  color.normal = Col
-                  color.bright = Col.desaturateByAmount( .3 )
-                  color.hue = Col.getHue()
-                  color.light = Col.blend( white, .8 ).desaturateByAmount( .3 ).toString()
-                  color.desat = Col.desaturateByAmount( .8 ).darkenByAmount( 0.2).toString()
-                  color.dark = Col.desaturateByAmount( .2 ).darkenByAmount( .5).toString()
-
+                if (opt.leader) {
+                  shiftColor(d.color)
                   d3.select("html")
                     .transition()
                     .style("background", function () {
@@ -221,14 +259,14 @@ Template.hero.created = function () {
           var inactive = list.selectAll("li.inactive")
             .style({
               background: function (d) {
-                if (c) {
+                if (opt.leader) {
                   return "transparent"
                 } else {
                   return color.bright
                 }
               },
               color: function (d) {
-                if (c) {
+                if (opt.leader) {
                   return color.desat
                 } else {
                   return "rgba(255,255,255, 0.9)"
@@ -239,10 +277,41 @@ Template.hero.created = function () {
           return [ list, hero ]
         }
 
-        var tagsetList = new HeroList( "tagset", "name", "leader" )
-        var sortList   = new HeroList( "sort", "name" )
-        var tagList    = new HeroList( "tag", "name" )
-        var nounList   = new HeroList( "noun", "noun", "leader" )
+        var List = { 
+          tagset: new HeroList({
+            name: "tagset",
+            selector: "name",
+            leader: true,
+            substitute: ["find"]
+          }),
+          article: new HeroList({
+            name: "article",
+            skipItem: true
+          }),
+          sort: new HeroList({
+            name: "sort",
+            selector: "name",
+            leader: false,
+            prepend: "the",
+            substitute: ["some"]
+          }),
+          tag: new HeroList({
+            name: "tag",
+            selector: "name",
+            leader: false
+          }),
+          noun: new HeroList({
+            name: "noun",
+            selector: "noun",
+            leader: true,
+            substitute: ["thing"]
+          })
+        }
+
+        // var tagsetList = new HeroList( "tagset", "name", "leader" )
+        // var sortList   = new HeroList( "sort", "name" )
+        // var tagList    = new HeroList( "tag", "name" )
+        // var nounList   = new HeroList( "noun", "noun", "leader" )
 
       })
     }
@@ -285,9 +354,12 @@ Template.hero.created = function () {
           Session.set("current_sorts_order", "-1" )
           Session.set("current_nouns", [gotNoun.noun] )
 
+          var out = {}
           for (var key in gotCollection) {
-            Session.set("collection_" + key, gotCollection[key] )
+            out[key] = gotCollection[key]
           }
+
+          as("collection", out)
 
         }
 
