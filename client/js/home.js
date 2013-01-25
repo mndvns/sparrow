@@ -59,266 +59,41 @@ Template.hero.events({
 })
 
 statCurrent = function () {
-  var tagsets = Session.get("current_tagsets")
-  var tags    = Session.get("current_tags")
-  var sorts   = Session.get("current_sorts")
-  var nouns   = Session.get("current_nouns")
-  console.log("Current tagsets: ", tagsets)
-  console.log("Current tags: ", tags)
-  console.log("Current sorts: ", sorts)
-  console.log("Current nouns: ", nouns)
-  return [tagsets, tags, sorts, nouns]
-}
 
-// statCollection = function () {
-//   var tagsets = Session.get("collection_tagsets")
-//   var tags    = Session.get("collection_tags")
-//   var sorts   = Session.get("collection_sorts")
-//   var out = [tagsets, tags, sorts]
-// 
-//   as("statCollection", out)
-// 
-//   return out
-// }
+  var out = {
+    query  : {
+      tagset : Session.get("current_tagsets"),
+      tag    : Session.get("current_tags"),
+      sort   : {
+        selector  : Session.get("current_sorts_selector"),
+        order     : Session.get("current_sorts_order"),
+      }
+    },
+    verbose: {
+      tagset : Session.get("current_tagsets"),
+      tag    : Session.get("current_tags"),
+      sort   : Session.get("current_sorts"),
+      noun   : Session.get("current_nouns")
+    }
+  }
 
-function hexToRgb(hex) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : null;
+  out.verbose.tagset = out.verbose.tagset && out.verbose.tagset.length ? out.verbose.tagset : ["find"]
+  out.verbose.noun = out.verbose.noun && out.verbose.noun.length ? out.verbose.noun : ["offer"]
+  out.verbose.article = out.verbose.sort && out.verbose.sort.length ? ["the"] : ["some"]
+
+  if (out.verbose.tagset.toString() === "shop") {
+    var article = out.verbose.article.toString()
+    out.verbose.article = ["for " + article]
+  }
+
+  return out
 }
 
 Template.hero.created = function () {
   Session.set("heroRendered", false)
 
-  var something = function () {
-    var update = function () {
-      ctx = new Meteor.deps.Context()
-      ctx.onInvalidate(update)
-
-      ctx.run( function () {
-
-        if (!Session.get("heroRendered")) {
-          console.log("not rendered")
-          return false
-        }
-        if (!Session.get("heroDataReady")) {
-          console.log("no data")
-          return false
-        }
-
-        var Current = statCurrent()
-        var current = (function () {
-          var out = {
-            tagset     : Current[0],
-            tag        : Current[1],
-            sort       : Current[2],
-            noun       : Current[3]
-          }
-          out.tagset = out.tagset && out.tagset.length ? out.tagset : ["find"]
-          out.article = out.sort && out.sort.length ? ["the"] : ["some"]
-          out.noun = out.noun && out.noun.length ? out.noun : ["offer"]
-          return out
-        }())
-
-        var Collection = as("collection")
-
-        var collection = {
-          tagset : Collection.tagsets,
-          tag    : _.filter(Collection.tags, function (d) {
-            return _.contains(current.tagset, d.tagset) }),
-          sort   : Collection.sorts,
-          noun   : Collection.tagsets,
-        }
-
-        if (_.isEmpty(current)) {
-          console.log("empty object")
-        }
-
-        // HeroList elements
-
-        var color = {
-          normal: "",
-          bright: ""
-        }
-
-        var fontSize
-        var limbo
-
-        var shiftColor = function (a) {
-          var Col = Color(a)
-          var white = Color("#fff")
-          color.normal = Col
-          color.bright = Col.desaturateByAmount( .3 )
-          color.hue = Col.getHue()
-          color.light = Col.blend( white, .8 ).desaturateByAmount( .3 ).toString()
-          color.desat = Col.desaturateByAmount( .8 ).darkenByAmount( 0.2).toString()
-          color.dark = Col.desaturateByAmount( .2 ).darkenByAmount( .5).toString()
-        }
-
-        //  HeroList constructor
-        var HeroList = function (opt) {
-
-          var hero = d3.select(".headline ." + opt.name).selectAll("span")
-            .data( current[opt.name] )
-
-          hero
-            .enter()
-            .append("span")
-
-          hero
-            .exit()
-            .transition()
-            .style({
-              "opacity": 0,
-              "font-size": "0px"
-            })
-            .remove()
-
-          var chars = _.flatten(current).toString().length
-
-          hero
-            .text(function (d) { return d })
-            .transition()
-            .style({
-              "font-size": function (d) {
-                if (!fontSize) {
-                  fontSize = (Math.round( 20 + (100 / chars))) + "px" }
-                  console.log("FONT SIZE", fontSize)
-                return fontSize
-              },
-              "opacity": "1",
-              "color": function () {
-                return color.dark }
-            })
-
-          if (opt.skipList) return false
-
-          var list = d3.select("ul." + opt.name + "-list")
-
-          var item = list.selectAll("li")
-            .data(collection[opt.name])
-
-          item
-            .enter()
-            .insert("li")
-
-          item
-            .datum( function (d, i) {
-              var limbo = current.tagset.toString() === "find" || current.noun.toString() === "offer" ? true : false
-              var active = _.contains(current[opt.name], d[opt.selector]) ? "active" : "inactive"
-
-              d.status = limbo && opt.leader ? "limbo" : active
-
-              return d
-            })
-            .attr("class", function (d) { return d.status })
-            .text(function (d) {return d[opt.selector] })
-
-          item.exit()
-            .remove()
-
-
-          var limbo = list.selectAll("li.limbo")
-            .style({
-              background: function (d) {
-                if (opt.leader) {
-                  shiftColor("#a9bac9")
-                }
-                return color.normal
-              },
-              color: "white"
-            })
-            .transition()
-            // .style({
-            //   width: function (d) {
-            //     return "50px"
-            //   },
-            // })
-
-
-          var active = list.selectAll("li.active")
-            .style({
-              background: function (d) {
-                if (opt.leader) {
-                  shiftColor(d.color)
-                  d3.select("html")
-                    .transition()
-                    .style("background", function () {
-                      return color.light
-                    })
-                }
-                return color.normal
-              },
-              color: "rgba(255, 255, 255, 0.9)"
-            })
-
-
-          var inactive = list.selectAll("li.inactive")
-            .style({
-              background: function (d) {
-                if (opt.leader) {
-                  return "transparent"
-                } else {
-                  return color.bright
-                }
-              },
-              color: function (d) {
-                if (opt.leader) {
-                  return color.desat
-                } else {
-                  return "rgba(255,255,255, 0.9)"
-                }
-              }
-            })
-
-          return [ list, hero ]
-        }
-
-        var List = { 
-          tagset: new HeroList({
-            name: "tagset",
-            selector: "name",
-            leader: true,
-            substitute: ["find"]
-          }),
-          article: new HeroList({
-            name: "article",
-            skipItem: true
-          }),
-          sort: new HeroList({
-            name: "sort",
-            selector: "name",
-            leader: false,
-            prepend: "the",
-            substitute: ["some"]
-          }),
-          tag: new HeroList({
-            name: "tag",
-            selector: "name",
-            leader: false
-          }),
-          noun: new HeroList({
-            name: "noun",
-            selector: "noun",
-            leader: true,
-            substitute: ["thing"]
-          })
-        }
-
-        // var tagsetList = new HeroList( "tagset", "name", "leader" )
-        // var sortList   = new HeroList( "sort", "name" )
-        // var tagList    = new HeroList( "tag", "name" )
-        // var nounList   = new HeroList( "noun", "noun", "leader" )
-
-      })
-    }
-    update()
-  }()
-
   var self = this
+
   if (! self.handle) {
     self.handle = Meteor.autorun( function () {
 
@@ -342,24 +117,25 @@ Template.hero.created = function () {
           var getNoun = function () {
             var out = _.find(gotCollection.tagsets, function (d) {
               return d.name === gotOffer.tagset })
+              console.log(out)
             return out }
           var gotNoun = getNoun()
 
           if (gotNoun) {
 
-          Session.set("current_tagsets", [gotOffer.tagset] )
-          Session.set("current_tags", [] )
-          Session.set("current_sorts", ["best"] )
-          Session.set("current_sorts_selector", "votes" )
-          Session.set("current_sorts_order", "-1" )
-          Session.set("current_nouns", [gotNoun.noun] )
+            Session.set("current_tagsets", [gotOffer.tagset] )
+            Session.set("current_tags", [] )
+            Session.set("current_sorts", ["best"] )
+            Session.set("current_sorts_selector", "votes" )
+            Session.set("current_sorts_order", "-1" )
+            Session.set("current_nouns", [gotNoun.noun] )
 
-          var out = {}
-          for (var key in gotCollection) {
-            out[key] = gotCollection[key]
-          }
+            var out = {}
+            for (var key in gotCollection) {
+              out[key] = gotCollection[key]
+            }
 
-          as("collection", out)
+            as("collection", out)
 
         }
 
@@ -368,6 +144,205 @@ Template.hero.created = function () {
 
     })
   }
+
+  var color = {
+    shiftColor: function (a) {
+      var self = this
+      var Col = Color(a)
+      var white = Color("#fff")
+      self.normal = Col
+      self.bright = Col.desaturateByAmount( .3 )
+      self.hue = Col.getHue()
+      self.light = Col.blend( white, .8 ).desaturateByAmount( .3 ).toString()
+      self.desat = Col.desaturateByAmount( .8 ).darkenByAmount( 0.2).toString()
+      self.dark = Col.desaturateByAmount( .2 ).darkenByAmount( .5).toString()
+    }
+  }
+
+  var renderHero = function () {
+    var updateHero  = function () {
+      ctx = new Meteor.deps.Context()
+
+      ctx.onInvalidate(updateHero)
+
+      ctx.run( function () {
+
+        if (!Session.get("heroRendered")) {
+          console.log("not rendered")
+          return false
+        }
+        if (!Session.get("heroDataReady")) {
+          console.log("no data")
+          return false
+        }
+
+        var current = statCurrent().verbose
+
+        var Collection = as("collection")
+        var collection = {
+          tagset : Collection.tagsets,
+          tag    : _.filter(Collection.tags, function (d) {
+            return _.contains(current.tagset, d.tagset) }),
+          sort   : Collection.sorts,
+          noun   : Collection.tagsets,
+        }
+
+        // HeroList instances
+        var heroList = { 
+          tagset: new HeroList({
+            name: "tagset",
+            selector: "name",
+            leader: true,
+            current: current,
+            collection: collection.tagset
+          }),
+          article: new HeroList({
+            name: "article",
+            skipItem: true,
+            current: current,
+            collection: collection.article
+          }),
+          sort: new HeroList({
+            name: "sort",
+            selector: "name",
+            leader: false,
+            prepend: "the",
+            current: current,
+            collection: collection.sort
+          }),
+          tag: new HeroList({
+            name: "tag",
+            selector: "name",
+            leader: false,
+            current: current,
+            collection: collection.tag
+          }),
+          noun: new HeroList({
+            name: "noun",
+            selector: "noun",
+            leader: true,
+            current: current,
+            collection: collection.noun
+          })
+        }
+
+      })
+    }
+    updateHero()
+  }()
+
+  //  HeroList constructor
+  var HeroList = function (opt) {
+
+    var fontSize
+    var chars = _.flatten(opt.current).toString().length
+
+    var hero = d3.select(".headline ." + opt.name).selectAll("span")
+      .data( opt.current[opt.name] )
+
+      hero
+        .enter()
+        .append("span")
+
+      hero
+        .exit()
+        .transition()
+        .style({
+          "opacity": 0,
+          "font-size": "0px"
+        })
+        .remove()
+
+      hero
+        .text(function (d) { return d })
+        .transition()
+        .style({
+          "font-size": function (d) {
+            if (!fontSize) {
+              fontSize = (Math.round( 20 + (100 / chars))) + "px" }
+            return fontSize
+          },
+          "opacity": "1",
+          "color": function () {
+            return color.dark }
+        })
+
+    if (opt.skipList) return false
+
+    var list = d3.select("ul." + opt.name + "-list")
+
+    var item = list.selectAll("li")
+      .data(opt.collection)
+
+      item
+        .enter()
+        .insert("li")
+
+      item
+        .datum( function (d, i) {
+          var limbo = opt.current.tagset.toString() === "find" || opt.current.noun.toString() === "offer" ? true : false
+          var active = _.contains(opt.current[opt.name], d[opt.selector]) ? "active" : "inactive"
+
+          d.status = limbo && opt.leader ? "limbo" : active
+
+          return d
+        })
+        .attr("class", function (d) { return d.status })
+        .text(function (d) {return d[opt.selector] })
+
+      item.exit()
+        .remove()
+
+
+      var limbo = list.selectAll("li.limbo")
+        .style({
+          background: function (d) {
+            if (opt.leader) {
+              color.shiftColor("teal")
+            }
+            return color.normal
+          },
+          color: "white"
+        })
+
+      var active = list.selectAll("li.active")
+        .style({
+          background: function (d) {
+            if (opt.leader) {
+              color.shiftColor(d.color)
+              d3.select("html")
+                .transition()
+                .style("background", function () {
+                  return color.light
+                })
+            }
+            return color.normal
+          },
+          color: "rgba(255, 255, 255, 0.9)"
+        })
+
+
+      var inactive = list.selectAll("li.inactive")
+        .style({
+          background: function (d) {
+            if (opt.leader) {
+              return "transparent"
+            } else {
+              return color.bright
+            }
+          },
+          color: function (d) {
+            if (opt.leader) {
+              return color.desat
+            } else {
+              return "rgba(255,255,255, 0.9)"
+            }
+          }
+        })
+
+    return [ list, hero ]
+  }
+
 }
 
 Template.body.events({
@@ -407,8 +382,8 @@ Handlebars.registerHelper('page_next', function (area) {
 Template.hero.rendered = function (tmpl) {
   if (! Session.get("heroRendered")){
     Session.set("heroRendered", true)}
-  if (Session.get("heroDataReady")){
-    this.handle && this.handle.stop()}
+  // if (Session.get("heroDataReady")){
+  //   this.handle && this.handle.stop()}
 }
 
 Template.home.events({
@@ -454,26 +429,19 @@ Template.home.getOffers = function () {
   var query = {}
   var sort = {}
 
-  var Current = statCurrent()
-  var current = {}
-
-  current.tagset        = Current[0] || []
-  current.tag           = Current[1] || []
-  current.sort          = Current[2] || []
-  current.sort.selector = Session.get("current_sorts_selector")
-  current.sort.order    = Session.get("current_sorts_order")
+  var current = statCurrent().query
 
   for (key in current) {
     if (current.hasOwnProperty(key)) {
+      if (key === "sort") {
+        sort[current[key].selector] = current[key].order
+      }
       if (current[key] && current[key].length) {
         if (key === "tag") {
           query.tags = { $in: current[key]}
         }
         if (key === "tagset") {
           query[key] = { $in: current[key] }
-        }
-        if (key === "sort") {
-          sort[current[key].selector] = current[key].order
         }
       }
     }
