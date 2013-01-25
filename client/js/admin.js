@@ -1,3 +1,50 @@
+//////////////////////////////////////////////
+//  $$ helpers
+
+Handlebars.registerHelper("key_value", function (a, fn) {
+  var out = "", key
+  for (key in a) {
+    if (a.hasOwnProperty(key)) {
+      if ( _.isObject(a[key]) && ! a[key].length ) {
+      }
+      if ( _.isArray(a[key])) {
+        out += fn({ key: key, value:a[key].length })
+      }
+      else {
+        out += fn({ key: key, value:a[key] })
+      }
+    }
+  }
+  return out
+})
+
+Handlebars.registerHelper("grab", function (a, z) {
+  var m
+  if (a === "Users"){
+    m = Meteor.users.find().fetch() }
+  else if (a === "User"){
+    m = [Meteor.user()] }
+  else {
+    m = window[a].find().fetch() }
+
+  var out = {
+    name: a,
+    collection: m,
+    keys: function () {
+      var self = this
+      return Object.keys(self.collection[0])
+    },
+  }
+  return z.fn(out)
+})
+
+Handlebars.registerHelper("first", function (a, options) {
+  var that = _.first(a)
+  return options.fn(that)
+})
+
+//////////////////////////////////////////////
+//  $$ editor
 
 Template.editor.events({
   'click tbody tr': function (event, tmpl) {

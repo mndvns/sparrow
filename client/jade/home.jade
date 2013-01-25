@@ -1,10 +1,19 @@
-head
-  title Sparrow
-  meta(name='viewport',content='initial-scale=1.0, user-scalable=no')
-  meta(charset='utf-8')
 
-body
-  {{> body }}
+//////////////////////////////////////////////
+//  $$ mixins
+
+mixin field(i, a, z, b, m, c, ch)
+  .control-group
+    label.control-label #{a}
+    d = ch == "disabled" ? "disabled" : null
+      .controls
+        if b == "textarea"
+          | <#{i} class="#{b} #{m}" id="#{a}" type="#{b}" tabindex="#{c}" value="#{z}" #{d} rows=4 > #{z} </#{i}>
+        else
+          | <#{i} class="#{b} #{m}" id="#{a}" type="#{b}" tabindex="#{c}" value="#{z}" #{d}>
+
+    if ch !== "disabled"
+      span.badge #{ch}
 
 mixin topnav(name)
   .topnav.navbar: .navbar-inner: .container
@@ -14,7 +23,7 @@ mixin topnav(name)
         // i.icon-large.logo.glyph-cassette
       .shift(data-shift-direction="right", data-shift-area="account").home.right
         span {{loginButtons}}
-        {{#if signedIn}}
+        {{#if currentUser}}
         i.glyph-arrow-right {{/if}}
     if (name === "about")
       .shift(data-shift-direction="right", data-shift-area="home"): i.glyph-arrow-right
@@ -37,6 +46,22 @@ mixin topnav(name)
         // a(href="/account/offer"): i.glyph-cassette
         // a(href="/account/metrics"): i.glyph-presentation
         // a(href="/account/profile"): i.icon-cogs
+
+//////////////////////////////////////////////
+//  $$ head
+
+
+head
+  title Sparrow
+  meta(name='viewport',content='initial-scale=1.0, user-scalable=no')
+  meta(charset='utf-8')
+
+//////////////////////////////////////////////
+//  $$ body
+
+
+body
+  {{> body }}
 
 template(name="body")
   .content
@@ -103,11 +128,15 @@ template(name="hero")
     .headline
       .inner
         .tagset
-        .preposition
+          span
         .article
+          span
         .sort
+          span
         .tag
+          span
         .noun
+          span
 
     .list.long
       ul.tagset-list.span3(data-constant=true)
@@ -179,9 +208,14 @@ template(name="admin_metrics")
   h1 DERP
 
 template(name='account')
-  {{#if sessionEquals 'accountPage' 'profile'}}
-  {{> account_profile }}
+
+  {{#if getSession 'status_alert'}}
+  {{#with getSession 'status_alert'}}
+  {{> status_alert }}
+  {{/with}}
   {{/if}}
+
+  .clearfix
 
   {{#if sessionEquals 'accountPage' 'offer'}}
   {{> account_offer }}
@@ -191,19 +225,34 @@ template(name='account')
   {{> account_metrics }}
   {{/if}}
 
+  {{#if sessionEquals 'accountPage' 'profile'}}
+  {{> account_profile }}
+  {{/if}}
 
 template(name='account_profile')
+
   {{#grab "User"}}
-  {{this.collection.username}}
-  {{> editor }}
+  {{#first this.collection}}
+  .greeting 
+
+    h2 Hi, {{this.username}}!
+    form.form-horizontal
+      .span12
+        mixin field("input", "username", "{{this.username}}", "text", "span4 limited", 1 )
+        mixin field("input", "email", "{{getEmail.address}}", "text", "span4 limited", 2 )
+        mixin field("input", "password", "123456", "password", "span4 limited", 2, "disabled" )
+
+        br.clearfix
+        mixin field("input", "type", "{{this.type}}", "text", "span4 limited", 3 , "disabled")
+
+    .clearfix
+    button.btn.save Save
+  {{/first}}
   {{/grab}}
 
-  // {{#grab "User"}}
-  // {{#first this.collection}}
-  // .greeting 
-  //   h1 Hi, {{this.username}}!
-  // {{/first}}
-  // {{/grab}}
+template(name="change_password")
+  mixin field("input", "new password", "", "password", "span4 limited", 1 )
+  mixin field("input", "new password (again)", "", "password", "span4 limited", 1 )
 
 template(name='account_metrics')
   {{#with getUser}}
@@ -231,14 +280,6 @@ template(name='account_offer')
       mixin nav-item("qr", "qrcode", "show")
       mixin nav-item("save", "disk", "save")
       mixin nav-item("help", "help", "help")
-
-  .clearfix
-
-  {{#if status_alert}}
-  {{#with status_alert}}
-  {{> status_alert }}
-  {{/with}}
-  {{/if}}
 
   .clearfix
 
@@ -340,16 +381,6 @@ template(name='account_offer')
 
   .clearfix.pad
 
-    mixin field(a, z, b, m, c, ch)
-      .control-group
-        label.control-label #{a}
-        if b == "text"
-          .controls: input(class= b +" "+ m, id= a, type= b, tabindex= c, value= z)
-        if b == "textarea"
-          .controls: textarea(class= b +" "+ m, id= a, type= b, tabindex= c, value= z, rows= 4) #{z}
-        if ch
-          span.badge #{ch}
-
     {{#if show "text"}}
     {{> account_offer_text }}
     {{/if}}
@@ -391,11 +422,11 @@ template(name="account_offer_text")
   .area
     form
       .span5.offset1
-        mixin field("name", "{{this.name}}", "text", "span4 limited", 1, "{{charLength 'name'}}")
-        mixin field("description", "{{this.description}}", "textarea", "span4 limited", 2, "{{charLength 'description'}}")
+        mixin field("input", "name", "{{this.name}}", "text", "span4 limited", 1, "{{charLength 'name'}}")
+        mixin field("textarea", "description", "{{this.description}}", "textarea", "span4 limited", 2, "{{charLength 'description'}}")
       .span5
-        mixin field("business", "{{this.business}}", "text", "span4 limited", 3, "{{charLength 'business'}}")
-        mixin field("price", "{{this.price}}", "text", "span2", 4 )
+        mixin field("input", "business", "{{this.business}}", "text", "span4 limited", 3, "{{charLength 'business'}}")
+        mixin field("input", "price", "{{this.price}}", "text", "span2", 4 )
     .clearfix
 
 template(name="account_offer_tags")
@@ -429,10 +460,10 @@ template(name="account_offer_location")
   .area
     form#location
       .span5.offset3
-        mixin field("street", "{{this.street}}", "text", "span5", 1)
-        mixin field("city", "{{this.city}}", "text", "span4", 2 )
-        mixin field("state", "{{this.state}}", "text", "span2", 2 )
-        mixin field("zip", "{{this.zip}}", "text", "span2", 2 )
+        mixin field("input", "street", "{{this.street}}", "text", "span5", 1)
+        mixin field("input", "city", "{{this.city}}", "text", "span4", 2 )
+        mixin field("input", "state", "{{this.state}}", "text", "span2", 2 )
+        mixin field("input", "zip", "{{this.zip}}", "text", "span2", 2 )
 
 template(name='thisOffer')
   div.thisOffer

@@ -182,6 +182,24 @@ Meteor.methods({
       })
     }
   },
+  updateUser: function (a,z) {
+    console.log("MADE IT", a, z)
+    var b = {$set: a }
+
+    var users = Meteor.users.find(a).fetch()
+    var existingUsers = _.reject( users, function (d) { return d._id === Meteor.userId() })
+
+    if (existingUsers && existingUsers.length > 0) {
+      throw new Meteor.Error(400, "That username is taken")
+    } else {
+      Meteor.users.update({ _id: Meteor.userId()}, b, {}, function (err) {
+        if (err) {
+          return err
+        }
+      })
+    }
+
+  },
   isAdmin: function (id) {
     var type = Meteor.users.findOne({_id: id}).type
     if(type != "admin") {

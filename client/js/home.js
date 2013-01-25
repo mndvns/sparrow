@@ -1,62 +1,12 @@
 
-Template.hero.events({
-  'click .list li': function (event, tmpl) {
 
-    tmpl.handle.stop()
+//////////////////////////////////////////////
+//  $$  globals and locals
 
-    var story = d3.select(event.target).data()[0]
-    var selector = "current_" + story.collection
-    var current = Session.get(selector)
-    var active = event.target.getAttribute("class") === "active"
-    var output
-
-    if (active) {
-
-      output = _.without(current, story.name)
-
-      if (story.collection === "tagsets") {
-        var nouns = Session.get("current_nouns")
-        Session.set("current_nouns", _.without(nouns, story.noun))
-      }
-
-    } else {
-
-
-      if (story.collection === "tags") {
-        output = current.concat(story.name)
-      }
-
-      if (story.collection === "tagsets") {
-        output = [story.name]
-        Session.set("current_nouns", [story.noun])
-        Session.set("current_tags", [])
-        // var nouns = Session.get("current_nouns")
-        // Session.set("current_nouns", nouns.concat(story.noun))
-      }
-
-      if (story.collection === "sorts") {
-        output = [story.name]
-        Session.set("current_sorts_selector", story.selector)
-        var order = story.order
-        if (story.name === "nearest") {
-          var loc = Session.get("loc")
-          order = [loc.lat, loc.long]
-        }
-        Session.set("current_sorts_order", order)
-      }
-    }
-
-    Session.set(selector, output)
-
-  },
-  'click .headline .tag span': function (event, tmpl) {
-    var selector = event.target.textContent
-    var current = Session.get("current_tags")
-    var out = _.without(current, selector)
-
-    Session.set("current_tags", out)
-  }
-})
+Sparrow = {}
+Sparrow.shift = function () {
+  return Session.get("shift_area")
+}
 
 statCurrent = function () {
 
@@ -89,308 +39,21 @@ statCurrent = function () {
   return out
 }
 
-Template.hero.created = function () {
-  Session.set("heroRendered", false)
-
-  var self = this
-
-  if (! self.handle) {
-    self.handle = Meteor.autorun( function () {
-
-      var getOffer = function () {
-        var out = Offers.findOne()
-        return out }
-      var gotOffer = getOffer()
-
-      var getCollection = function () {
-        var out = {
-          "tagsets": Tagsets.find().fetch(),
-          "tags": Tags.find().fetch(),
-          "sorts": Sorts.find().fetch(),
-        }
-        return out }
-      var gotCollection = getCollection()
-
-      if (gotOffer && gotCollection) {
-        console.log("got offer: ", gotOffer, "got collection: ", gotCollection)
-
-          var getNoun = function () {
-            var out = _.find(gotCollection.tagsets, function (d) {
-              return d.name === gotOffer.tagset })
-              console.log(out)
-            return out }
-          var gotNoun = getNoun()
-
-          if (gotNoun) {
-
-            Session.set("current_tagsets", [gotOffer.tagset] )
-            Session.set("current_tags", [] )
-            Session.set("current_sorts", ["best"] )
-            Session.set("current_sorts_selector", "votes" )
-            Session.set("current_sorts_order", "-1" )
-            Session.set("current_nouns", [gotNoun.noun] )
-
-            var out = {}
-            for (var key in gotCollection) {
-              out[key] = gotCollection[key]
-            }
-
-            as("collection", out)
-
-        }
-
-        Session.set("heroDataReady", true)
-      }
-
-    })
-  }
-
-  var color = {
-    shiftColor: function (a) {
-      var self = this
-      var Col = Color(a)
-      var white = Color("#fff")
-      self.normal = Col
-      self.bright = Col.desaturateByAmount( .3 )
-      self.hue = Col.getHue()
-      self.light = Col.blend( white, .8 ).desaturateByAmount( .3 ).toString()
-      self.desat = Col.desaturateByAmount( .8 ).darkenByAmount( 0.2).toString()
-      self.dark = Col.desaturateByAmount( .2 ).darkenByAmount( .5).toString()
+statRange = function () {
+  var out = {
+    max: {
+      distance : Session.get("max_distance"),
+      votes    : Session.get("max_votes"),
+      price    : Session.get("max_price")
+    },
+    min: {
+      distance : Session.get("min_distance"),
+      votes    : Session.get("min_votes"),
+      price    : Session.get("min_price")
     }
   }
-
-  var renderHero = function () {
-    var updateHero  = function () {
-      ctx = new Meteor.deps.Context()
-
-      ctx.onInvalidate(updateHero)
-
-      ctx.run( function () {
-
-        if (!Session.get("heroRendered")) {
-          console.log("not rendered")
-          return false
-        }
-        if (!Session.get("heroDataReady")) {
-          console.log("no data")
-          return false
-        }
-
-        var current = statCurrent().verbose
-
-        var Collection = as("collection")
-        var collection = {
-          tagset : Collection.tagsets,
-          tag    : _.filter(Collection.tags, function (d) {
-            return _.contains(current.tagset, d.tagset) }),
-          sort   : Collection.sorts,
-          noun   : Collection.tagsets,
-        }
-
-        // HeroList instances
-        var heroList = { 
-          tagset: new HeroList({
-            name: "tagset",
-            selector: "name",
-            leader: true,
-            current: current,
-            collection: collection.tagset
-          }),
-          article: new HeroList({
-            name: "article",
-            skipItem: true,
-            current: current,
-            collection: collection.article
-          }),
-          sort: new HeroList({
-            name: "sort",
-            selector: "name",
-            leader: false,
-            prepend: "the",
-            current: current,
-            collection: collection.sort
-          }),
-          tag: new HeroList({
-            name: "tag",
-            selector: "name",
-            leader: false,
-            current: current,
-            collection: collection.tag
-          }),
-          noun: new HeroList({
-            name: "noun",
-            selector: "noun",
-            leader: true,
-            current: current,
-            collection: collection.noun
-          })
-        }
-
-      })
-    }
-    updateHero()
-  }()
-
-  //  HeroList constructor
-  var HeroList = function (opt) {
-
-    var fontSize
-    var chars = _.flatten(opt.current).toString().length
-
-    var hero = d3.select(".headline ." + opt.name).selectAll("span")
-      .data( opt.current[opt.name] )
-
-      hero
-        .enter()
-        .append("span")
-
-      hero
-        .exit()
-        .transition()
-        .style({
-          "opacity": 0,
-          "font-size": "0px"
-        })
-        .remove()
-
-      hero
-        .text(function (d) { return d })
-        .transition()
-        .style({
-          "font-size": function (d) {
-            if (!fontSize) {
-              fontSize = (Math.round( 20 + (100 / chars))) + "px" }
-            return fontSize
-          },
-          "opacity": "1",
-          "color": function () {
-            return color.dark }
-        })
-
-    if (opt.skipList) return false
-
-    var list = d3.select("ul." + opt.name + "-list")
-
-    var item = list.selectAll("li")
-      .data(opt.collection)
-
-      item
-        .enter()
-        .insert("li")
-
-      item
-        .datum( function (d, i) {
-          var limbo = opt.current.tagset.toString() === "find" || opt.current.noun.toString() === "offer" ? true : false
-          var active = _.contains(opt.current[opt.name], d[opt.selector]) ? "active" : "inactive"
-
-          d.status = limbo && opt.leader ? "limbo" : active
-
-          return d
-        })
-        .attr("class", function (d) { return d.status })
-        .text(function (d) {return d[opt.selector] })
-
-      item.exit()
-        .remove()
-
-
-      var limbo = list.selectAll("li.limbo")
-        .style({
-          background: function (d) {
-            if (opt.leader) {
-              color.shiftColor("teal")
-            }
-            return color.normal
-          },
-          color: "white"
-        })
-
-      var active = list.selectAll("li.active")
-        .style({
-          background: function (d) {
-            if (opt.leader) {
-              color.shiftColor(d.color)
-              d3.select("html")
-                .transition()
-                .style("background", function () {
-                  return color.light
-                })
-            }
-            return color.normal
-          },
-          color: "rgba(255, 255, 255, 0.9)"
-        })
-
-
-      var inactive = list.selectAll("li.inactive")
-        .style({
-          background: function (d) {
-            if (opt.leader) {
-              return "transparent"
-            } else {
-              return color.bright
-            }
-          },
-          color: function (d) {
-            if (opt.leader) {
-              return color.desat
-            } else {
-              return "rgba(255,255,255, 0.9)"
-            }
-          }
-        })
-
-    return [ list, hero ]
-  }
-
+  return out
 }
-
-Template.body.events({
-  "click .shift i": function (event, tmpl) {
-
-    var dir = event.target.parentElement.getAttribute("data-shift-direction")
-    var area = event.target.parentElement.getAttribute("data-shift-area")
-    var page = Meteor.Router.page()
-    var current = _.first(page.split("_"))
-
-    Session.set("shift_direction", dir)
-    Session.set("shift_area", area)
-    Session.set("shift_current", current)
-
-    /* console.log("shift: ", dir.toUpperCase(), "area: ", area.toUpperCase(), "current: ", current.toUpperCase()) */
-  }
-})
-
-Sparrow = {}
-Sparrow.shift = function () {
-  return Session.get("shift_area")
-}
-
-
-Handlebars.registerHelper('page_next', function (area) {
-  if (area !== Session.get("shift_area")) { return false }
-
-  Meteor.Transitioner.setOptions({
-    "after": function () {
-      Meteor.Router.to( area === "home" ? "/" : "/" + area)
-      Session.set("shift_current", area)
-    }
-  })
-  return area
-})
-
-Template.hero.rendered = function (tmpl) {
-  if (! Session.get("heroRendered")){
-    Session.set("heroRendered", true)}
-  // if (Session.get("heroDataReady")){
-  //   this.handle && this.handle.stop()}
-}
-
-Template.home.events({
-  'click section.actions .votes i': function(event, tmpl) {
-    Meteor.call("upvoteEvent", "id", Meteor.userId(), this)
-  }
-});
 
 function distance(lat1, lon1, lat2, lon2, unit) {
     var radlat1 = Math.PI * lat1/180
@@ -408,21 +71,48 @@ function distance(lat1, lon1, lat2, lon2, unit) {
     return dist
 }
 
-statRange = function () {
-  var out = {
-    max: {
-      distance : Session.get("max_distance"),
-      votes    : Session.get("max_votes"),
-      price    : Session.get("max_price")
-    },
-    min: {
-      distance : Session.get("min_distance"),
-      votes    : Session.get("min_votes"),
-      price    : Session.get("min_price")
+
+//////////////////////////////////////////////
+//  $$ helpers
+
+Handlebars.registerHelper('page_next', function (area) {
+  if (area !== Session.get("shift_area")) { return false }
+
+  Meteor.Transitioner.setOptions({
+    "after": function () {
+      Meteor.Router.to( area === "home" ? "/" : "/" + area)
+      Session.set("shift_current", area)
     }
+  })
+  return area
+})
+
+//////////////////////////////////////////////
+//  $$ body
+
+Template.body.events({
+  "click .shift i": function (event, tmpl) {
+
+    var dir = event.target.parentElement.getAttribute("data-shift-direction")
+    var area = event.target.parentElement.getAttribute("data-shift-area")
+    var page = Meteor.Router.page()
+    var current = _.first(page.split("_"))
+
+    Session.set("shift_direction", dir)
+    Session.set("shift_area", area)
+    Session.set("shift_current", current)
+
   }
-  return out
-}
+})
+
+//////////////////////////////////////////////
+//  $$ home
+
+Template.home.events({
+  'click section.actions .votes i': function(event, tmpl) {
+    Meteor.call("upvoteEvent", "id", Meteor.userId(), this)
+  }
+});
 
 Template.home.getOffers = function () {
 

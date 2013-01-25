@@ -4,6 +4,25 @@
 
 as = amplify.store
 
+var draw_qrcode = function(text, typeNumber, errorCorrectLevel) {
+  document.write(create_qrcode(text, typeNumber, errorCorrectLevel) );
+};
+
+var create_qrcode = function(text, typeNumber, errorCorrectLevel, table) {
+
+  var qr = qrcode(typeNumber || 4, errorCorrectLevel || 'M');
+  qr.addData(text);
+  qr.make();
+  /* return qr.createImgTag(); */
+  return qr.createTableTag();
+};
+
+var update_qrcode = function() {
+  $("#qr-code").html(create_qrcode(url + offerId))
+    .find("td")
+    .css({width:'10px', height:'10px'})
+};
+
 var permittedKeys = [8, 37, 38, 39, 40, 46, 9, 91, 93]
 
 var values = {
@@ -67,6 +86,7 @@ var values = {
     message: "Zip error"
   },
 }
+
 var icons = [
       "drink",
       "drink-2",
@@ -85,54 +105,19 @@ var icons = [
       "lamp-2",
       "appbarmoon"
     ]
+
 //////////////////////////////////////////////
 //  $$ helpers
 
-Handlebars.registerHelper("signedIn", function (a, fn) {
-  if (!Meteor.user()) { return false } else { return true }
-})
-
-Handlebars.registerHelper("key_value", function (a, fn) {
-  var out = "", key
-  for (key in a) {
-    if (a.hasOwnProperty(key)) {
-      out += fn({ key: key, value:a[key]})
-    }
-  }
-  return out
-})
-
-Handlebars.registerHelper("grab", function (a, z) {
-  var m
-  if (a === "Users"){
-    m = Meteor.users.find().fetch() }
-  else if (a === "User"){
-    m = [Meteor.user()] }
-  else {
-    m = window[a].find().fetch() }
-
-  var out = {
-    name: a,
-    collection: m,
-    keys: function () {
-      var out = {}
-      var first = this.collection[0]
-      if (!first) return false
-        return Object.keys(first)
-    },
-  }
-  return z.fn(out)
-})
-
-Handlebars.registerHelper("first", function (a, options) {
-  var that = _.first(a)
-  return options.fn(that)
-})
 
 Handlebars.registerHelper('charLength', function (a) {
   return values[a].maxLength - (this[a] && this[a].length)
 })
 
+Handlebars.registerHelper('getEmail', function (a) {
+  var user = Meteor.user()
+  return user.emails && user.emails[0]
+})
 
 //////////////////////////////////////////////
 //  $$ body
@@ -144,12 +129,6 @@ Template.body.events({
     Session.set("accountPage", selector)
   }
 })
-
-// Template.body.created = function () {
-//   if (Meteor.loggingIn()) {
-//     Meteor.call("registerLogin")
-//   }
-// }
 
 //////////////////////////////////////////////
 //  $$ account
@@ -171,7 +150,6 @@ Template.account.created = function () {
     Meteor.call("getLogin", function (err, res) {
       if (err) { console.log(err) }
       if (res < 1) {
-        console.log("AAAW YEAH")
         as("accountPage", "offer")
         as("show", "intro")
         as("help", "true")
@@ -190,80 +168,106 @@ Template.account.created = function () {
   }
 }
 
-
 Template.account.events({
-  'click li.save' : function (event, tmpl) {
+  'click .save' : function (event, tmpl) {
 
-    var offer = as()
-    Session.set("currentOffer", offer)
+    var page = Session.get("accountPage")
 
-    /* console.log(offer) */
+    console.log("Saving information in ", page)
 
-    var errors = []
+    if (page === "profile") {
+      var newUsername = { username: tmpl.find("#username").value }
 
-    for (key in values) {
-      if (values[key].hasOwnProperty("maxLength")){
-        if ( !offer[key] ) {
-          errors.push(key)
+      Meteor.call("updateUser", newUsername, function (err) {
+        if (err) {
+          Session.set("status_alert", {
+            heading: "Whoops...",
+            message: err.reason,
+            type: "alert-warning",
+          })
+        } else {
+          Session.set("status_alert", {
+            heading: "Okie-doke!",
+            message: "Everything's good on our end.",
+            type: "alert-success",
+          })
         }
-      }
+      })
+
     }
 
-    if (errors.length) {
-      Session.set("status_alert", {
-        heading: "Whoops...",
-        message: "You didn't enter anything for your " + errors.join(", ") + ".",
-        type: "alert-warning in",
-      })
-      return false
-    } else {
-      Session.set("status_alert", {
-        heading: "Loading...",
-        message: "We're just charging the lasers.",
-        type: "alert-success"
-      })
-    }
+    if (page === "offer") {
+      var offer = as()
+      Session.set("currentOffer", offer)
 
-    var type = Offers.findOne({owner: Meteor.userId()}) ? 'update' : 'insert'
-      , geo = new google.maps.Geocoder()
+      var errors = []
 
-    geo.geocode({ address: offer.street +" "+ offer.city +" "+ offer.state +" "+ offer.zip}, function (results, status) {
-      if (status !== "OK") {
-        Session.set('status_alert', {
-          heading: "Uh-oh...",
-          message: "We couldn't seem to find your location. Did you enter your address correctly?",
-          type: "alert-error",
-          time: moment().unix()
-        })
-      } else {
-        offer.loc = {
-          lat: results[0].geometry.location.Ya,
-          long: results[0].geometry.location.Za
-        }
-      Meteor.call('editOffer', type, offer, function (error) {
-          if (error) {
-            Session.set('status_alert', {
-              heading: "Uh-oh...",
-              message: error.reason,
-              type: "alert-error",
-              time: moment().unix()
-            })
-          } else {
-            Session.set('status_alert', {
-              heading: "Nice!",
-              message: "You're good to go.",
-              type: "alert-success",
-              time: moment().unix()
-            })
-            Meteor.setTimeout(function(){
-              $(".alert").slideUp('fast', function () {
-                Session.set('status_alert', null)
-              })
-            }, 2000 )
+      for (key in values) {
+        if (values[key].hasOwnProperty("maxLength")){
+          if ( !offer[key] ) {
+            errors.push(key)
           }
+        }
+      }
+
+      if (errors.length) {
+        Session.set("status_alert", {
+          heading: "Whoops...",
+          message: "You didn't enter anything for your " + errors.join(", ") + ".",
+          type: "alert-warning in",
+        })
+        return false
+      } else {
+        Session.set("status_alert", {
+          heading: "Loading...",
+          message: "We're just charging the lasers.",
+          type: "alert-success"
         })
       }
-    })
+
+      var type = Offers.findOne({owner: Meteor.userId()}) ? 'update' : 'insert'
+        , geo = new google.maps.Geocoder()
+
+      geo.geocode({ address: offer.street +" "+ offer.city +" "+ offer.state +" "+ offer.zip}, function (results, status) {
+        if (status !== "OK") {
+          Session.set('status_alert', {
+            heading: "Uh-oh...",
+            message: "We couldn't seem to find your location. Did you enter your address correctly?",
+            type: "alert-error",
+            time: moment().unix()
+          })
+        } else {
+          offer.loc = {
+            lat: results[0].geometry.location.Ya,
+            long: results[0].geometry.location.Za
+          }
+        Meteor.call('editOffer', type, offer, function (error) {
+            if (error) {
+              Session.set('status_alert', {
+                heading: "Uh-oh...",
+                message: error.reason,
+                type: "alert-error",
+                time: moment().unix()
+              })
+            } else {
+              Session.set('status_alert', {
+                heading: "Nice!",
+                message: "You're good to go.",
+                type: "alert-success",
+                time: moment().unix()
+              })
+              Meteor.setTimeout(function(){
+                $(".alert").slideUp('fast', function () {
+                  Session.set('status_alert', null)
+                })
+              }, 2000 )
+            }
+          })
+        }
+      })
+
+    }
+
   }
 })
 
@@ -273,9 +277,6 @@ Template.account.events({
 Template.account_offer.helpers({
   getOffer: function () {
     return Session.get("currentOffer")
-  },
-  status_alert: function () {
-    return Session.get('status_alert')
   },
   show: function (a) {
     if (Session.get("show") === a) {
@@ -341,25 +342,6 @@ Template.account_offer.events({
   'click #qr-button': function (event, tmpl) {
     var offerId = this.business
       , url = "http://deffenbaugh.herokuapp.com/offer/"
-
-    var draw_qrcode = function(text, typeNumber, errorCorrectLevel) {
-      document.write(create_qrcode(text, typeNumber, errorCorrectLevel) );
-    };
-
-    var create_qrcode = function(text, typeNumber, errorCorrectLevel, table) {
-
-      var qr = qrcode(typeNumber || 4, errorCorrectLevel || 'M');
-      qr.addData(text);
-      qr.make();
-      /* return qr.createImgTag(); */
-      return qr.createTableTag();
-    };
-
-    var update_qrcode = function() {
-      $("#qr-code").html(create_qrcode(url + offerId))
-        .find("td")
-        .css({width:'10px', height:'10px'})
-    };
 
     update_qrcode()
   }

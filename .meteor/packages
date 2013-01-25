@@ -5,6 +5,7 @@ amplify
 
 accounts-ui
 accounts-password
+email
 
 
 stylus
