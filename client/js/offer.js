@@ -42,9 +42,9 @@ function handleActions(event, tmpl, cb) {
 }
 
 Template.offer.events({
-  'click section.actions .map i': function (event, tmpl) {
+  'click section.actions li.map': function (event, tmpl) {
 
-    var targetEl = tmpl.find("section.extension[data-extension='map']")
+    var targetEl = tmpl.find("section.extension[data-extension='map'] .inner.map")
 
     handleActions(event, tmpl, function () {
 
@@ -96,15 +96,32 @@ Template.offer.rendered = function () {
   if (Meteor.Router.page() === "account") return false
 
   var range = statRange()
-  var keys = ["distance", "votes", "price"]
+  var keys = [
+    { name: "updatedAt",
+      invert: false
+    },
+    { name: "distance",
+      invert: true
+    },
+    { name: "votes",
+      invert: false
+    },
+    { name: "price",
+      invert: true
+    }
+  ]
+
   var self = this
 
   var thingy = function (callback) {
     var ratio = {}
-    _.each(keys, function (d) {
-      var upperRange = self.data[d] - range.min[d][d] + 0.5
+    _.each(keys, function (k) {
+      var d = k.name
+      var upperRange = self.data[d] - range.min[d][d] + 0.01
       var lowerRange = range.max[d][d] - range.min[d][d]
-      ratio[d] = Math.round(( 100 * (upperRange) / (lowerRange))*3)/10
+      var out = Math.ceil(( 100 * (upperRange) / (lowerRange))*5)/10
+      ratio[d] = k.invert === false ? out : Math.abs(out - 50)
+
     })
     callback(ratio)
   }
@@ -112,15 +129,9 @@ Template.offer.rendered = function () {
   thingy(function (ratio) {
     for (key in ratio) {
       if (ratio.hasOwnProperty(key) && ratio[key]) {
-        var action = d3.select(self.find("section.actions ." + key))
+        var data = d3.select(self.find("section.data ." + key))
 
-        // var bg = action.select(".bg")
-        // bg
-        //   .style({
-        //     background: function () { return d3.hsl(self.data.color).darker(3) }
-        //     })
-
-        var metric = action.select(".metric")
+        var metric = data.select(".metric")
         metric
           .style({
             height: function () { return ratio[key] + "%" }

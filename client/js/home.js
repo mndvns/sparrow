@@ -42,11 +42,13 @@ statCurrent = function () {
 statRange = function () {
   var out = {
     max: {
+      updatedAt: Session.get("max_updatedAt"),
       distance : Session.get("max_distance"),
       votes    : Session.get("max_votes"),
       price    : Session.get("max_price")
     },
     min: {
+      updatedAt: Session.get("min_updatedAt"),
       distance : Session.get("min_distance"),
       votes    : Session.get("min_votes"),
       price    : Session.get("min_price")
@@ -109,7 +111,7 @@ Template.body.events({
 //  $$ home
 
 Template.home.events({
-  'click section.actions .votes i': function(event, tmpl) {
+  'click section.actions .vote': function(event, tmpl) {
     Meteor.call("upvoteEvent", "id", Meteor.userId(), this)
   }
 });
@@ -148,23 +150,27 @@ Template.home.getOffers = function () {
 
     var range = {
       max: {
+        updatedAt: _.max(result, function (o) { return o.updatedAt }),
         distance : _.max(result, function (o) { return o.distance }),
         votes    : _.max(result, function (o) { return o.votes }),
         price    : _.max(result, function (o) { return o.price })
       },
       min: {
+        updatedAt: _.min(result, function (o) { return o.updatedAt }),
         distance : _.min(result, function (o) { return o.distance }),
         votes    : _.min(result, function (o) { return o.votes }),
         price    : _.min(result, function (o) { return o.price })
       }
     }
 
-    Session.set("max_distance", range.max.distance)
-    Session.set("max_votes", range.max.votes)
-    Session.set("max_price", range.max.price)
-    Session.set("min_distance", range.min.distance)
-    Session.set("min_votes", range.min.votes)
-    Session.set("min_price", range.min.price)
+    Session.set("max_updatedAt", range.max.updatedAt )
+    Session.set("max_distance", range.max.distance )
+    Session.set("max_votes", range.max.votes )
+    Session.set("max_price", range.max.price )
+    Session.set("min_updatedAt", range.min.updatedAt )
+    Session.set("min_distance", range.min.distance )
+    Session.set("min_votes", range.min.votes )
+    Session.set("min_price", range.min.price )
 
     return result
   }

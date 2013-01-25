@@ -226,8 +226,8 @@ Template.hero.created = function () {
 
             Session.set("current_tagsets", [gotOffer.tagset] )
             Session.set("current_tags", [] )
-            Session.set("current_sorts", ["best"] )
-            Session.set("current_sorts_selector", "votes" )
+            Session.set("current_sorts", ["latest"] )
+            Session.set("current_sorts_selector", "updatedAt" )
             Session.set("current_sorts_order", "-1" )
             Session.set("current_nouns", [gotNoun.noun] )
 

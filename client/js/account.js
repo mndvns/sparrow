@@ -383,6 +383,8 @@ Template.account_offer.created = function () {
     }
   }
 
+  as("updatedAt", moment())
+
   Session.set("currentOffer", as())
 
 }

@@ -483,23 +483,43 @@ template(name='offer')
       p.field(data-field='description') {{this.description}}
       span.field(data-field='business') {{this.business}}
       br
-    section.actions
-      .votes(style="background: {{this.color}}").span2.margin.left
-        i.glyph-plus.full-icon(data-status="inactive", data-selector="vote")
+    section.data
+      .votes(style="background: {{this.color}}").span1.margin.left
+        i.glyph-plus.full-icon
         .metric(style="background: {{this.color}}")
           span {{this.votes}} votes
         .bg
-      .map.distance(style="background: {{this.color}}").span2.margin.left
-        i.glyph-location.full-icon(data-status="inactive", data-selector="map")
+      .map.distance(style="background: {{this.color}}").span1.margin.left
+        i.glyph-location.full-icon
         .metric(style="background: {{this.color}}")
           span {{this.distance}} mi.
         .bg
-      .buy.price(style="background: {{this.color}}").span2.margin.left
-        i.glyph-tag-2.full-icon(data-status="inactive", data-selector="buy")
+      .buy.price(style="background: {{this.color}}").span1.margin.left
+        i.glyph-tag-2.full-icon
         .metric(style="background: {{this.color}}")
           span ${{this.price}}
         .bg
+      .updatedAt(style="background: {{this.color}}").span1.margin.left
+        i.glyph-history.full-icon
+        .metric(style="background: {{this.color}}")
+          span {{styleDate this.updatedAt}}
+        .bg
+
+    section.actions.span2.margin.left
+      ul
+        li.vote(style="background: {{this.color}}", data-status="inactive", data-selector="vote") upvote
+        li.map(style="background: {{this.color}}", data-status="inactive", data-selector="map") directions
+
     section.extension(data-extension="map")
+      header(style="background: {{this.color}}") Directions
+      .inner.map.span8
+      .inner.span4.margin.left(style="background: {{this.color}}")
+        p.address
+          | {{this.street}}
+          br
+          | {{this.city}}, {{this.state}}
+          br
+          | {{#if this.zip}}{{this.zip}}{{/if}}
     section.extension(data-extension="message")
       {{> message}}
     section.extension(data-extension="buy")
