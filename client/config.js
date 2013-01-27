@@ -51,8 +51,14 @@ Meteor.subscribe("sorts")
 Meteor.subscribe("userData")
 Meteor.subscribe("metrics")
 
+Meteor.subscribe("messages")
+
 Handlebars.registerHelper("styleDate", function (date) {
-  return moment(date).fromNow()
+  if (date) {
+    return moment(date).fromNow()
+  } else {
+    return moment().fromNow()
+  }
 })
 
 Handlebars.registerHelper("page", function () {

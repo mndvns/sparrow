@@ -11,9 +11,9 @@
       "font-awesome": {},
       "bafa": {},
       "router": {},
-      "transitioner": {},
       "jade-handlebars": {},
-      "handlebar-helpers": {}
+      "handlebar-helpers": {},
+      "dhtmlx-message": {}
     },
     "packages": {
       "moment": {
@@ -28,8 +28,8 @@
       },
       "font-awesome": {
         "git": "https://github.com/nate-strauser/meteor-font-awesome.git",
-        "tag": "v0.1.1",
-        "commit": "0d8a0ea81a74d8229dc247d068e961144be9d507"
+        "tag": "v0.1.2",
+        "commit": "f68badb67341b4a4c83d7f449a4e985613ff63d5"
       },
       "bafa": {
         "git": "https://github.com/jackp/BAFA.git",
@@ -41,20 +41,24 @@
         "tag": "v0.3.4",
         "commit": "8f0d5303de5b93771e91f21f818be27358c2fb30"
       },
-      "transitioner": {
-        "git": "https://github.com/mvanasse/meteor-transitioner.git",
-        "tag": "v0.2.2",
-        "commit": "0dc708e955ad675ba52cf1d668f337167557e88f"
-      },
       "jade-handlebars": {
         "git": "https://github.com/SimonDegraeve/meteor-jade-handlebars.git",
-        "tag": "v0.2.4",
-        "commit": "52def281573302a79e1a3d0b368e77f3b14d0d09"
+        "tag": "v0.2.7",
+        "commit": "82f6f9ac43a68ffabe1d9b9620be2a4ca6790b56"
+      },
+      "transitioner": {
+        "git": "https://github.com/mvanasse/meteor-transitioner.git",
+        "commit": "0dc708e955ad675ba52cf1d668f337167557e88f"
       },
       "handlebar-helpers": {
         "git": "https://github.com/raix/Meteor-handlebar-helpers.git",
         "tag": "v0.0.5",
         "commit": "bedecf71d04097773b359ccbf6e5bd97fcb53f8e"
+      },
+      "dhtmlx-message": {
+        "git": "https://github.com/DHTMLX/meteor-message.git",
+        "tag": "v1.0.0",
+        "commit": "cf09fabadcf5e099778e4b52f5ed78e4cc1bc18b"
       },
       "page-js": {
         "git": "https://github.com/tmeasday/meteor-page-js.git",

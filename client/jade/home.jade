@@ -16,11 +16,10 @@ mixin field(i, a, z, b, m, c, ch)
       span.badge #{ch}
 
 mixin topnav(name)
-  .topnav.navbar: .navbar-inner: .container
+  .topnav.navbar(class= name): .navbar-inner: .container
     if (name === "home")
       .shift(data-shift-direction="left", data-shift-area="about").home.left
         i.glyph-arrow-left
-        // i.icon-large.logo.glyph-cassette
       .shift(data-shift-direction="right", data-shift-area="account").home.right
         span {{loginButtons}}
         {{#if currentUser}}
@@ -29,23 +28,26 @@ mixin topnav(name)
       .shift(data-shift-direction="right", data-shift-area="home"): i.glyph-arrow-right
     if (name === "account")
       .shift(data-shift-direction="left", data-shift-area="home"): i.glyph-arrow-left
-      ul.links
-        li(data-page="offer")
-          i.glyph-clipboard
+      ul.links.row
+        a(href="/account"): li
+          i.glyph-list
+          span dashboard
+        a(href="/account/offer"): li
+          i.glyph-bucket
           span offer
-        li(data-page="metrics")
-          i.glyph-presentation
-          span metrics
-        li(data-page="profile")
-          i.glyph-paper-plane
+        // a(href="/account/metrics"): li
+        //   i.glyph-pie
+        //   span metrics
+        a(href="/account/profile"): li
+          i.glyph-cog-2
           span profile
-        // li(data-page="info")
-        //   i.glyph-question-mark
-        //   span info
+        a(href="/account/messages"): li
+          i.glyph-envelope
+          span messages
+        a(href="/account/feedback"): li
+          i.glyph-keyboard
+          span feedback
 
-        // a(href="/account/offer"): i.glyph-cassette
-        // a(href="/account/metrics"): i.glyph-presentation
-        // a(href="/account/profile"): i.icon-cogs
 
 //////////////////////////////////////////////
 //  $$ head
@@ -180,6 +182,9 @@ template(name='editor')
         button.btn.btn-warning.remove(type='button')#remove Remove
 
 
+//////////////////////////////////////////////
+//  $$ admin
+
 template(name='admin_users')
   {{#grab "Users"}}
   {{> editor }}
@@ -207,48 +212,39 @@ template(name="admin_offers")
 template(name="admin_metrics")
   h1 DERP
 
+
+//////////////////////////////////////////////
+//  $$ account
+
 template(name='account')
-
-  {{#if getSession 'status_alert'}}
-  {{#with getSession 'status_alert'}}
-  {{> status_alert }}
-  {{/with}}
-  {{/if}}
-
+  .greeting.centered.span7.offset2
+    h1 Not much here...
+    h5.
+      We haven't fleshed out the dashboard yet. But hey, you don't have to sit around waiting for it --
+      in the meantime, have you made an offer yet? Why not give it a whirl?
   .clearfix
-
-  {{#if sessionEquals 'accountPage' 'offer'}}
-  {{> account_offer }}
-  {{/if}}
-
-  {{#if sessionEquals 'accountPage' 'metrics'}}
-  {{> account_metrics }}
-  {{/if}}
-
-  {{#if sessionEquals 'accountPage' 'profile'}}
-  {{> account_profile }}
-  {{/if}}
 
 template(name='account_profile')
 
   {{#grab "User"}}
   {{#first this.collection}}
-  .greeting 
+  .greeting.row
 
-    h2 Hi, {{this.username}}!
-    form.form-horizontal
-      .span12
-        mixin field("input", "username", "{{this.username}}", "text", "span4 limited", 1 )
-        mixin field("input", "email", "{{getEmail.address}}", "text", "span4 limited", 2 )
-        mixin field("input", "password", "123456", "password", "span4 limited", 2, "disabled" )
+    h5.centered.
+      Make your changes; enter your password; hit save.
+      <br>You know the drill.
 
-        br.clearfix
-        mixin field("input", "type", "{{this.type}}", "text", "span4 limited", 3 , "disabled")
+
+    form.span5.offset4
+      mixin field("input", "username", "{{this.username}}", "text", "span4 limited", 1 )
+      mixin field("input", "email", "{{getEmail.address}}", "text", "span4 limited", 2 )
+      mixin field("input", "password", "123456", "password", "span4 limited", 2, "disabled" )
 
     .clearfix
-    button.btn.save Save
-  {{/first}}
-  {{/grab}}
+
+    button.btn.btn-inverse.save Save
+    {{/first}}
+    {{/grab}}
 
 template(name="change_password")
   mixin field("input", "new password", "", "password", "span4 limited", 1 )
@@ -267,7 +263,15 @@ template(name='account_metrics')
 template(name='account_offer')
 
   {{#with getOffer}}
-  .account.navbar: .navbar-inner: .container
+
+  .account_offer
+    {{#if sessionEquals 'show' 'intro'}} {{else}}
+    {{> offer}} {{/if}}
+
+
+  .clearfix
+
+  .account-offer.navbar: .navbar-inner: .container
     ul.nav
       mixin nav-item(a, b, c)
         li(class= c, data-value= a)
@@ -281,16 +285,8 @@ template(name='account_offer')
       mixin nav-item("save", "disk", "save")
       mixin nav-item("help", "help", "help")
 
-  .clearfix
-
-  .account_offer
-    {{#if sessionEquals 'show' 'intro'}} {{else}}
-    {{> offer}} {{/if}}
-
   {{#if sessionEquals 'help' 'true'}}
-
   .clearfix
-
   .help-unit.row
     {{#if sessionEquals 'show' 'intro'}}
     .span6.offset3.intro
@@ -411,13 +407,6 @@ template(name='account_offer')
 
     {{/with}}
 
-template(name="status_alert")
-  div(class="{{this.type}}").alert
-    button.close ×
-    // button.close(type='button', data-dismiss='alert') ×
-    strong {{this.heading}} 
-    | {{this.message}}
-
 template(name="account_offer_text")
   .area
     form
@@ -465,6 +454,63 @@ template(name="account_offer_location")
         mixin field("input", "state", "{{this.state}}", "text", "span2", 2 )
         mixin field("input", "zip", "{{this.zip}}", "text", "span2", 2 )
 
+template(name="account_messages")
+  .greeting.row
+    h5.centered Messages are deleted after a few days.
+
+
+  {{#each find 'Messages' '{}' '{"sort": {"lastSent": -1}}' }}
+  {{> account_message }}
+  {{/each}}
+
+template(name="account_message")
+
+  .message-container.long.span12
+    {{#each this.content}}
+    article.clearfix
+      .from.span2 {{#first this.from}}{{this.username}}{{/first}}:
+      .message.span7: .inner {{this.message}}
+      .sent.span3 {{styleDate this.sent}}
+    {{/each}}
+    article.clearfix.compose
+      .from.span2 {{currentUser.username}}
+      .message.span7
+        textarea(rows=1, placeholder="...")
+      .sent.span3.send send
+
+template(name="account_feedback")
+  .greeting.row
+    .span6.offset3
+      h5.centered.
+        If you have something you'd like to mention to us, go ahead
+        and fill out this little message box and send it our way.
+      br
+
+    form#feedback.span4.offset4
+      .control-group
+        .controls
+          textarea(rows=4).span4
+      button.btn.btn-inverse.centered.span4 Send
+
+    .span10.offset1
+      h5.centered We'd like to take a moment to say <em>thank you</em>...
+      p.
+        As you might have guessed, the folks behind the scenes here
+        are all in love with Kansas City, and we hope you are
+        too. We've worked hard to make something special for our home
+        -- an elegant tool that lets us to trade with our friends,
+        family, and neighbors in just seconds. And now, with your help,
+        we have a chance to make it great.
+      p.
+        The feedback and interaction we receive from people like you
+        will play a major role in determining how we
+        approach our application, our objectives, and most importantly,
+        our community.
+
+
+//////////////////////////////////////////////
+//  $$ offer
+
 template(name='thisOffer')
   div.thisOffer
     {{#with getThisOffer}}
@@ -478,7 +524,7 @@ template(name='offer')
   div.offer(data-tagset="{{this.tagset}}").long
     section.symbol(style="background: {{this.color}}").span2
       div(class='{{this.symbol}}')
-    section.main(style="background: {{this.color}}").span4
+    section.main(style="background: {{this.color}}").span4.extend
       span.field(data-field='name') {{this.name}}
       p.field(data-field='description') {{this.description}}
       span.field(data-field='business') {{this.business}}
@@ -509,6 +555,8 @@ template(name='offer')
       ul
         li.vote(style="background: {{this.color}}", data-status="inactive", data-selector="vote") upvote
         li.map(style="background: {{this.color}}", data-status="inactive", data-selector="map") directions
+        li.reserve(style="background: {{this.color}}", data-status="inactive", data-selector="reserve") reserve
+        li.message(style="background: {{this.color}}", data-status="inactive", data-selector="message") message
 
     section.extension(data-extension="map")
       header(style="background: {{this.color}}") Directions
@@ -521,15 +569,12 @@ template(name='offer')
           br
           | {{#if this.zip}}{{this.zip}}{{/if}}
     section.extension(data-extension="message")
-      {{> message}}
+      header(style="background: {{this.color}}") Message
+      .inner.span10(style="background: {{this.color}}")
+        textarea(placeholder="Write a little note...")
+        .message-area
+      .inner.span2(style="background: {{this.color}}").margin.left.send send
     section.extension(data-extension="buy")
-
-template(name="message")
-  form.form-horizontal
-    .control-group
-      label.control-label LABEL
-      .controls
-        textarea(rows=3)
 
 
 

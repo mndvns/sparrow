@@ -5,25 +5,13 @@ Meteor.Router.add({
     Session.set("shift_current", "home")
     return 'home'
   },
-  '/home': function () {
-    Session.set("shift_current", "home")
-    return 'home'
-  },
-  '/about': function (area) {
-    Session.set("shift_current", "about")
-    return 'about'
-  },
-  '/account': function (area) {
-    Session.set("shift_current", "account")
-    return 'account'
+  '/:area': function (area) {
+    Session.set("shift_current", area)
+    return area
   },
   '/:area/:id': function (area, id) {
     Session.set("shift_current", area)
     return area + '_' + id
-  },
-  '/account/profile': function () {
-    Session.set("shift_current", "account")
-    return 'account_profile'
   },
   '/offer/:id': function (id) {
     Session.set("showThisOffer", Offers.findOne({ business: id }))

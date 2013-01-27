@@ -8,6 +8,7 @@ var color = {
     var white = Color("#fff")
     self.normal = Col
     self.bright = Col.desaturateByAmount( .3 )
+    self.sat_dark = Col.darkenByAmount( .5 ).saturateByAmount( 0.3 )
     self.hue = Col.getHue()
     self.light = Col.blend( white, .8 ).desaturateByAmount( .3 ).toString()
     self.desat = Col.desaturateByAmount( .8 ).darkenByAmount( 0.2).toString()
@@ -22,7 +23,6 @@ var HeroList = function (opt) {
 
   if (!opt.current[opt.name]) { opt.current[opt.name] = [] }
 
-  console.log(opt.current[opt.name])
   var hero = d3.select(".headline ." + opt.name).selectAll("span")
     .data( opt.current[opt.name] )
 
@@ -50,7 +50,7 @@ var HeroList = function (opt) {
         },
         "opacity": "1",
         "color": function () {
-          return color.dark }
+          return color.light }
       })
 
   if (opt.skipList) return false
@@ -99,8 +99,11 @@ var HeroList = function (opt) {
             d3.select("html")
               .transition()
               .style("background", function () {
-                return color.light
+                return color.sat_dark
               })
+            d3.select(".navbar-inner")
+              .transition()
+              .style("background", "transparent")
           }
           return color.normal
         },

@@ -80,20 +80,43 @@ Template.offer.events({
       })
     })
   },
-  'click section.actions .message i': function (event, tmpl) {
+  'click section.actions li.message': function (event, tmpl) {
     handleActions(event, tmpl, function() {
       console.log("clicked messages")
     })
   },
-  'click section.actions .buy i': function (event, tmpl) {
+  'click section.actions li.reserve': function (event, tmpl) {
     handleActions(event, tmpl, function() {
       console.log("clicked buy")
+    })
+  },
+  'click .send': function (event, tmpl) {
+    var target = $(event.target)
+    if (target.hasClass("busy")) return false
+    target.addClass("busy")
+
+    var textarea = $(tmpl.find("textarea"))
+    var container = textarea.siblings()
+    Meteor.call("message", textarea.val(), "offer", tmpl.data.owner, function (err, res) {
+      if (err) { console.log("Error. You done goofed.", err) }
+      else {
+        console.log("Successfully sent message", res)
+        container.text("Message successfully sent!")
+        textarea.fadeOut( 600 )
+        container.fadeIn( 600 )
+        Meteor.setTimeout( function () {
+          textarea.val("").fadeIn( 600 )
+          container.fadeOut( 600 )
+          target.removeClass("busy")
+        }, 3000)
+      }
     })
   }
 })
 
+
 Template.offer.rendered = function () {
-  if (Meteor.Router.page() === "account") return false
+  if (Meteor.Router.page() === "account_offer") return false
 
   var range = statRange()
   var keys = [
@@ -113,7 +136,7 @@ Template.offer.rendered = function () {
 
   var self = this
 
-  var thingy = function (callback) {
+  var renderRatio = function (callback) {
     var ratio = {}
     _.each(keys, function (k) {
       var d = k.name
@@ -126,7 +149,7 @@ Template.offer.rendered = function () {
     callback(ratio)
   }
 
-  thingy(function (ratio) {
+  renderRatio( function (ratio) {
     for (key in ratio) {
       if (ratio.hasOwnProperty(key) && ratio[key]) {
         var data = d3.select(self.find("section.data ." + key))
@@ -136,34 +159,10 @@ Template.offer.rendered = function () {
           .style({
             height: function () { return ratio[key] + "%" }
           })
+        }
       }
-    }
   })
 
-//   console.log(ratio)
-
-  // if (ratio) {
-
-  //   d3.select(this.find(".map .metric"))
-  //   .data(ratio)
-  //   .transition()
-  //   .style({
-  //     height: function(d) { return Math.abs(ratio.distance - 100) + "%"},
-  //     background: function () { return color }
-  //   })
-  //   d3.select(this.find(".buy .metric"))
-  //   .transition()
-  //   .style({
-  //     height: function() { return Math.abs(ratio.price - 100) + "%"},
-  //     background: function () { return color }
-  //   })
-  //   d3.select(this.find(".votes .metric"))
-  //   .transition()
-  //   .style({
-  //     height: function() { return ratio.votes + "%"},
-  //     background: function () { return color }
-  //   })
-  // }
 }
 
 Template.thisOffer.events({

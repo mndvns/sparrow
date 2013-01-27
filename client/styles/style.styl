@@ -22,9 +22,20 @@ gap = 2px
 
 .alert .close
 a
+  color #777
   &:hover
     cursor default!important
     text-decoration none
+    color #444
+
+.centered
+  text-align center
+
+.tall
+  height 100%
+
+.full
+  width 100%
 
 bg-color = #fcfcfc
 
@@ -47,8 +58,12 @@ trans(a)
   transition 600ms ease-out 0
 
 body
+input
+textarea
   font-family "proxima-nova"
-  color #888
+  color #666
+
+body
   background-color rgba(0, 0, 0, 0)
   // background-image url("/images/bg/maze.png")
   position relative
@@ -59,10 +74,13 @@ body
     trans(background-color)
 
 .greeting
-  h1
-    font-size 6em
-    line-height 1em
-    color #444
+  margin-top 20px
+  margin-bottom 25px
+  h2
+  p
+  .btn
+    margin-bottom 25px
+    display block
 
 .content
   left 0
@@ -102,14 +120,33 @@ body
 
 .account_offer
   .offer
-    margin-bottom 40px
+    margin-top 30px
+    margin-bottom 10px
 
 .area
   min-height 500px
 
 textarea
-input
-  border-radius 0!important
+input[type="text"]
+input[type="password"]
+input[type="datetime"]
+input[type="datetime-local"]
+input[type="date"]
+input[type="month"]
+input[type="time"]
+input[type="week"]
+input[type="number"]
+input[type="email"]
+input[type="url"]
+input[type="search"]
+input[type="tel"]
+input[type="color"]
+.uneditable-input
+  border-radius 0
+  background rgba(white, .6)
+  border-color rgba(black, .2)
+  box-shadow none
+
 
 label
   cursor default
@@ -122,7 +159,7 @@ label
 .navbar
   .navbar-inner
     border-radius 0
-  &.account
+  &.account-offer
     padding-top 20px
     border-bottom 2px solid #ddd
     .navbar-inner
@@ -151,6 +188,11 @@ label
         font-size 15px
         padding-right 5px
   &.topnav
+    background none
+    .navbar-inner
+      background none!important
+      border none
+      box-shadow none
     width 100%
     z-index 100
     opacity 1
@@ -167,7 +209,7 @@ label
       .links
         margin 0 auto
         text-align center
-        li
+        a
           opacity 0.7
           display inline-block
           font-size 30px
@@ -176,6 +218,7 @@ label
           margin 12px 20px 0
           cursor default
           &.active
+            span
             i
               color black
           span
@@ -190,12 +233,15 @@ label
             font-size 28px
             margin-top 5px
       .shift
+        position absolute
         padding 10px
         display inline-block
         &[data-shift-direction=left]
           float left
+          left 0
         &[data-shift-direction=right]
           float right
+          right 0
         &.home
           position relative
           line-height 70px
@@ -324,11 +370,16 @@ Spanner(a)
 
 Spanner( 940px )
 
+.extend
+  padding-right (gap * .5)
+
 @media (min-width: 768px) and (max-width: 979px)
   Spanner( 724px )
 
 @media (min-width: 1200px)
   Spanner( 1170px )
+  .extend
+    padding-right gap
 
 @media (max-width: 767px)
   .container
@@ -336,6 +387,13 @@ Spanner( 940px )
   .long
     [class*="span"]
       width 100%
+  .extend
+    padding-right 0
+
+.long
+  textarea
+  input
+    box-sizing border-box
 
 .hero
   .headline
@@ -390,7 +448,17 @@ Spanner( 940px )
 
 
 .offer
+
   height = 170px
+  action(a, b)
+    text-align center
+    line-height ((height / a) - (gap / 2))
+    margin-bottom (gap * b)
+    opacity .8
+    &.busy
+    &:hover
+      opacity 1
+
   relative top
   width 100%
   float left
@@ -448,19 +516,16 @@ Spanner( 940px )
       margin 0
       padding 0
       li
-        text-align center
-        line-height ((height / 2) - (gap / 2))
-        opacity 1
-        &:hover
-          opacity 0.8
-        &:first-child
-          margin-bottom gap
+        action(4, 1)
 
   section.data
     padding 0 0 0 0
     height height
     span
+      relative left 10%
+      width 80%
       color rgba(white, 0.9)
+      display block
     div
       float left
       height 100%
@@ -500,11 +565,35 @@ Spanner( 940px )
       padding 10px
       font-size 20px
       margin gap 0
-    .address
-      font-weight 100
-      margin-top 20%
-      text-align center
-      text-transform capitalize
+    &[data-extension=map]
+      .address
+        font-weight 100
+        margin-top 20%
+        text-align center
+        text-transform capitalize
+    &[data-extension=message]
+      .inner
+        position relative
+      .message-area
+        action(1, 0)
+        width 100%
+        height 100%
+        absolute top left
+        font-size 26px
+        opacity 1
+      textarea
+        width 100%
+        height 100%
+        absolute top left
+        z-index 1
+        font-size 26px
+        line-height 32px
+        padding 15px
+        border none
+      .send
+        action(1, 0)
+        position absolute
+        right 0
 
   .metrics
     width 50px
@@ -559,7 +648,7 @@ Spanner( 940px )
     padding-bottom 2em
 
 .btn
-  border-radius 0
+  border-radius 0!important
   cursor default
   margin 0 auto
 
@@ -653,10 +742,107 @@ i.icon-trash
 .alert
   border-radius 0
 
-// .modal
-//   position fixed
-//   top 40%
-//   left 50%
-//   height 550px
-//   width 600px
+.dhtmlx_message_area
+  fixed right 5px
+  top 83px!important
+  width 250px
+  z-index 1000
+  *
+    font-family "proxima-nova"
+  .dhtmlx-info
+    transition all .5s ease
+    z-index 10000
+    display block
+    min-width 120px
+    height height
+    line-height height
+    padding 5px 15px
+    box-shadow 0 1px 5px rgba(black, 0.1)
+    border none
+    border-radius 0
+    font-weight 600
+    margin 5px
+    margin-bottom 10px
+    opacity 1
+    overflow hidden
+    i
+      padding 2px 15px 2px 0
+      vertical-align middle
+      font-size 30px
+      line-height height
+      height 100%
+      margin 0
+      float left
+      position relative
+    div
+      border-radius 0
+      border none
+      background none
+      padding 0
+      margin 0
+      height height
+      line-height height
+    &.hidden
+      height 0
+      overflow hidden
+      padding 0
+      opacity 0
+      margin 0
+    status(col)
+      desat = desaturate(darken(col, 30%), 80%)
+      background desaturate(lighten(col, 90%), 40%)
+      color desat
+      border-bottom 1px solid rgba(desat, 0.7)
+      border-left 1px solid rgba(desat, 0.4)
+      border-right 1px solid rgba(desat, 0.4)
+      border-top 1px solid rgba(desaturate(col, 60%), 0.5)
+    &[class*="success"]
+      status(#89dd7c)
+    &[class*="warning"]
+      status(#db7d7d)
+    &[class*="neutral"]
+      status(#9696aa)
+
+.message-container
+  color = rgba(white, .3)
+  background color
+  margin-bottom 20px
+  footer
+  article > *
+    padding 20px
+  article
+    border-bottom 1px solid rgba(black, .15 )
+    background rgba(white, .3)
+    relative top
+    overflow hidden
+    *
+      box-sizing border-box
+    .from
+      font-weight bold
+    .inner
+    textarea
+      border none
+      border-left 2px solid rgba(black, 0.3)
+      padding-left 10px
+    .sent
+      absolute right
+      height 100%
+      text-align center
+    &.compose
+      light = rgba(white, .8)
+      background rgba(black, .7)
+      color light
+      textarea
+        width 100%
+        background none
+        box-shadow none
+        border-color light
+        color light
+      .sent
+        background rgba(white, .01)
+        font-weight bold
+        &:hover
+          background rgba(white, .1)
+
+
 

@@ -6,6 +6,8 @@ Tags    = new Meteor.Collection("tags")
 Tagsets = new Meteor.Collection("tagsets")
 Sorts   = new Meteor.Collection("sorts")
 
+Messages = new Meteor.Collection("messages")
+
 Metrics = new Meteor.Collection("metrics")
 
 Meteor.methods({
@@ -21,8 +23,10 @@ String.prototype.toProperCase = function () {
   return this.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 }
 
-String.prototype.trunc = function(n){
-  return this.substr(0, n) + (this.length > n ? '' : '');
-};
-
 Color = net.brehaut.Color
+
+Time = {
+  now : function () {
+    return (moment().unix() * 1000)
+  }
+}

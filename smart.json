@@ -5,8 +5,8 @@
     "font-awesome": {},
     "bafa": {},
     "router": {},
-    "transitioner": {},
     "jade-handlebars": {},
-    "handlebar-helpers": {}
+    "handlebar-helpers": {},
+    "dhtmlx-message": {}
   }
 }

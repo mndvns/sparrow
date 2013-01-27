@@ -1,6 +1,6 @@
 
 //                                               //
-//        _____                                  //                          
+//        _____                                  //
 //       / ___/___  ______   _____  _____        //
 //       \__ \/ _ \/ ___/ | / / _ \/ ___/        //
 //      ___/ /  __/ /   | |/ /  __/ /            //
@@ -97,7 +97,7 @@ Meteor.users.allow({
 Meteor.publish("offers", function(myLoc) {
   console.log(myLoc)
   if (myLoc) {
-    return Offers.find({ loc: {$near : [myLoc.lat, myLoc.long], $maxDistance: 5 }})
+    return Offers.find({ loc: {$near : [myLoc.lat, myLoc.long]}})
   } else {
     return Offers.find()
   }
@@ -119,6 +119,11 @@ Meteor.publish("userData", function () {
   return Meteor.users.find({}, {type: 1})
 })
 
+Meteor.publish("messages", function () {
+  /* return Messages.find() */
+  return Messages.find({involve: {$in: [this.userId] }})
+})
+
 //                                                         //
 //           __  ___     __  __              __            //
 //          /  |/  /__  / /_/ /_  ____  ____/ /____        //
@@ -128,76 +133,121 @@ Meteor.publish("userData", function () {
 //                                                         //
 //                                                         //
 
+var mapper = function (a) {
+  var map = _.isArray(a) ? a : [a]
+  return _.map( map, function (d) {
+      var out = {}
+      out.username = d.username
+      out.id = d._id
+      return out
+    })
+}
 
 Meteor.methods({
+  message: function (text, selector, opt) {
+
+    var message = {}
+    var involve = [Meteor.userId()]
+    var admin = false
+    var existing
+    var ID
+
+
+    if (selector === "toAdmins") {
+      var admins = Meteor.users.find({type: "admin"}).fetch()
+      involve.push(_.pluck( admins, "_id") )
+      involve = _.flatten(involve)
+      admin = true
+    } 
+    else if (selector == "offer") {
+      var user = Meteor.users.findOne({ _id: opt })
+      involve.push(user._id)
+    }
+
+    var from = mapper(Meteor.user())
+
+    var content = {
+      from: from,
+      message: text,
+      sent: Time.now()
+    }
+
+    if (selector === "reply") {
+      ID = opt
+    }
+    else {
+      existing = Messages.findOne({involve: {$all: involve}, admin: false })
+
+      if (!existing) {
+        message = {
+          involve: involve,
+          admin: admin,
+          content: [content],
+          lastSent: Time.now()
+        }
+      } else {
+        ID = existing._id
+      }
+    }
+
+    console.log("New message", message )
+
+    if (selector !== "reply" && !existing) {
+      return Messages.insert( message, function (err, res) {
+        if (err) { console.log("Error", err) }
+        console.log("Successfully sent message, motherfucker", res)
+      })
+    }
+    else {
+      return Messages.update({ _id: ID }, {$push: {content: content}}, function (err, res) {
+        if (err) { console.log("Error", err) }
+        console.log("Successfully sent message, motherfucker", res)
+      })
+    }
+
+  },
   editOffer: function (type, options) {
     this.unblock()
+
     var opts = options || {}
+
     if (opts.name.length < 5)
       throw new Meteor.Error(400, "Offer name is too short")
 
-    console.log(type)
-    if (type === 'insert') {
-      return Offers.insert({
-        owner: this.userId,
-        name: opts.name,
-        price: opts.price,
-        description: opts.description,
-        business: opts.business,
-        symbol: opts.symbol,
-        color: opts.color,
-        loc: opts.loc,
-        tags: opts.tags,
-        tagset: opts.tagset,
-        createdAt: (moment().unix() * 1000),
-        updatedAt: (moment().unix() * 1000),
-        votes: 1,
-        street: opts.street,
-        city: opts.city,
-        state: opts.state,
-        metrics: {
-          created: 1
-        }
-      })
+    var out = {}
+    for (key in Offer) {
+      out[key] = opts[key]
     }
-    else if (type === 'update') {
-      return Offers.update({
-        owner: this.userId },
-        {$set: {
-          name: opts.name,
-          price: opts.price,
-          description: opts.description,
-          business: opts.business,
-          loc: opts.loc,
-          tags: opts.tags,
-          tagset: opts.tagset,
-          symbol: opts.symbol,
-          color: opts.color,
-          updatedAt: (moment().unix() * 1000),
-          street: opts.street,
-          city: opts.city,
-          state: opts.state,
-          zip: opts.zip
-        }
-      })
+    out.owner     = out.owner || Meteor.userId()
+    out.createdAt = out.createdAt || (moment().unix() * 1000)
+    out.updatedAt = (moment().unix() * 1000)
+
+    if (type === "insert") {
+      return Offers.insert(out)
+    } else {
+      return Offers.update({ owner: this.userId }, {$set: out })
     }
   },
-  updateUser: function (a,z) {
-    console.log("MADE IT", a, z)
-    var b = {$set: a }
 
-    var users = Meteor.users.find(a).fetch()
-    var existingUsers = _.reject( users, function (d) { return d._id === Meteor.userId() })
+  updateUser: function (email, username) {
 
-    if (existingUsers && existingUsers.length > 0) {
-      throw new Meteor.Error(400, "That username is taken")
-    } else {
-      Meteor.users.update({ _id: Meteor.userId()}, b, {}, function (err) {
-        if (err) {
-          return err
-        }
-      })
-    }
+    var users = Meteor.users.find().fetch()
+    var existing = _.reject( users, function (d) { return d._id === Meteor.userId() })
+    var existingEmails = _.pluck(_.flatten(_.compact(_.pluck( existing, "emails"))), "address")
+    var existingUsernames = _.pluck( existing, "username")
+
+    if ( _.contains(existingEmails, email) ) {
+      throw new Meteor.Error(400, "Email unavailable") }
+
+    if ( _.contains(existingUsernames, username) ) {
+      throw new Meteor.Error(400, "Username unavailable") }
+
+    var set = {$set: { "username": username, "emails": [ {"address": email, "verified": false } ] }}
+    Meteor.users.update({ _id: Meteor.userId()}, set, {}, function (err) {
+      if (err) {
+        return err
+      }
+    })
 
   },
   isAdmin: function (id) {
@@ -331,7 +381,7 @@ Meteor.methods({
     var expiration = moment().subtract("minutes", 1).unix()
 
     /* var j = Meteor.users.find({ "lastActivity": { $lt: expiration }}).count() */
-    Meteor.users.update({ "lastActivity": {$lt: expiration}}, {$set: {"online": false }})
+    /* Meteor.users.update({ "lastActivity": {$lt: expiration}}, {$set: {"online": false }}) */
 
     // var now = moment().unix()
     //   , offers = Offers.find({ votes: {$gt: {exp: now }}}).fetch()
