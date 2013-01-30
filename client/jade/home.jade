@@ -2,6 +2,15 @@
 //////////////////////////////////////////////
 //  $$ mixins
 
+mixin Field( opt )
+  .control-group
+    label.control-label #{opt.label}
+    .controls
+      | <#{opt.el} class="#{opt.type} #{opt.class}" id="#{opt.id}" type="#{opt.type}" tabindex="#{opt.tabindex}" value="#{opt.value}" #{opt.disabled} rows="#{opt.rows}" placeholder="#{opt.placeholder}" >#{opt.text}</#{opt.el}>
+
+    if typeof opt.characters !== "undefined"
+      span.badge #{opt.characters}
+
 mixin field(i, a, z, b, m, c, ch)
   .control-group
     label.control-label #{a}
@@ -21,9 +30,12 @@ mixin topnav(name)
       .shift(data-shift-direction="left", data-shift-area="about").home.left
         i.glyph-arrow-left
       .shift(data-shift-direction="right", data-shift-area="account").home.right
-        span {{loginButtons}}
         {{#if currentUser}}
-        i.glyph-arrow-right {{/if}}
+        span(data-modal="") {{currentUser.username}}
+        i.glyph-arrow-right
+        {{else}}
+        span(data-modal="sign-in") LOGIN
+        {{/if}}
     if (name === "about")
       .shift(data-shift-direction="right", data-shift-area="home"): i.glyph-arrow-right
     if (name === "account")
@@ -64,6 +76,43 @@ head
 
 body
   {{> body }}
+  {{> modal }}
+
+mixin modal-header(a)
+  .modal-header
+    button.close(data-dismiss="modal", type="button") ×
+    h3= a
+
+template(name="modal")
+
+  .modal.fade(aria-hidden="{{show_modal.hidden}}", class="{{show_modal.class_fade}}")
+    {{#if sessionEquals 'modal' 'sign-in'}}
+    #sign-in
+      .modal-body
+        .form
+          mixin Field({el: "input", type: "text", placeholder: "username", id: "username", tabindex: 1, })
+          mixin Field({el: "input", type: "password", placeholder: "password", id: "password", tabindex: 2, })
+
+        .alert.fade.clearfix
+        button(type="submit").btn.btn-inverse.sign-in Sign In
+      .modal-footer
+        button.btn(data-navigate="create-account") Create Account
+    {{/if}}
+    {{#if sessionEquals 'modal' 'create-account'}}
+    #create-account
+      .modal-body
+        .form
+          mixin Field({el: "input", type: "text", placeholder: "username", id: "username", tabindex: 1, })
+          mixin Field({el: "input", type: "password", placeholder: "password", id: "password", tabindex: 2, })
+
+        .alert.fade.clearfix
+        button(type="submit").btn.btn-inverse.centered.create-account Create Account
+      .modal-footer
+        button.btn(data-navigate="sign-in") Sign In
+    {{/if}}
+
+  .modal-backdrop(aria-hidden="{{show_modal.hidden}}", class="{{show_modal.class_hide}}")
+
 
 template(name="body")
   .content
@@ -118,10 +167,22 @@ template(name="about")
       convallis aliquet laoreet. Quisque lacus lacus, blandit eu iaculis
 
 template(name='home')
-  {{> hero}}
+  {{#if getAmplify 'user_loc'}}
+  {{> hero }}
   {{#each getOffers}}
-  {{> offer}}
+  {{> offer }}
   {{/each}}
+  {{else}}
+  {{> intro }}
+  {{/if}}
+
+template(name='intro')
+  #intro.greeting.centered
+    {{#constant}}
+    h1.clearfix :D :0 :)
+    h3 sparrow is a place to find stuff near you.
+    {{/constant}}
+    button.btn OK, I'll tell you where I am
 
 template(name="hero")
   .hero
@@ -412,7 +473,7 @@ template(name="account_offer_text")
     form
       .span5.offset1
         mixin field("input", "name", "{{this.name}}", "text", "span4 limited", 1, "{{charLength 'name'}}")
-        mixin field("textarea", "description", "{{this.description}}", "textarea", "span4 limited", 2, "{{charLength 'description'}}")
+        mixin Field({el: "textarea", label: "description", id: "description", text: "{{this.description}}", type: "textarea", class: "span4 limited", tabindex: 2, characters: "{{charLength 'description'}}", rows: 4 })
       .span5
         mixin field("input", "business", "{{this.business}}", "text", "span4 limited", 3, "{{charLength 'business'}}")
         mixin field("input", "price", "{{this.price}}", "text", "span2", 4 )
@@ -521,47 +582,69 @@ template(name='thisOffer')
     {{/with}}
 
 template(name='offer')
-  div.offer(data-tagset="{{this.tagset}}").long
-    section.symbol(style="background: {{this.color}}").span2
+  .offer(data-tagset="{{this.tagset}}", id="{{this._id}}").long
+
+    {{#constant}}
+    style(type="text/css")
+      .offer[id="{{this._id}}"] .light {
+          background: {{hsl 97 90}};
+        }
+      .offer[id="{{this._id}}"] .symbol div {
+          color: {{hsl 45 90}};
+        }
+      .offer[id="{{this._id}}"] .glyph {
+          color: {{hsl 50 50}};
+        }
+      .offer[id="{{this._id}}"] .color-hover:hover {
+          color: {{hsl 50 100}};
+        }
+      .offer[id="{{this._id}}"] .bright {
+          background: {{hsl 50 20}};
+        }
+      .offer[id="{{this._id}}"] .bumper {
+          background: {{hsl 50 100}};
+        }
+    .bumper.left
+    section.symbol.span2.light
       div(class='{{this.symbol}}')
-    section.main(style="background: {{this.color}}").span4.extend
+
+    section.main.span4.extend.light
       span.field(data-field='name') {{this.name}}
       p.field(data-field='description') {{this.description}}
       span.field(data-field='business') {{this.business}}
       br
+    {{/constant}}
     section.data
-      .votes(style="background: {{this.color}}").span1.margin.left
-        i.glyph-plus.full-icon
-        .metric(style="background: {{this.color}}")
-          span {{this.votes}} votes
-        .bg
-      .map.distance(style="background: {{this.color}}").span1.margin.left
-        i.glyph-location.full-icon
-        .metric(style="background: {{this.color}}")
-          span {{this.distance}} mi.
-        .bg
-      .buy.price(style="background: {{this.color}}").span1.margin.left
-        i.glyph-tag-2.full-icon
-        .metric(style="background: {{this.color}}")
-          span ${{this.price}}
-        .bg
-      .updatedAt(style="background: {{this.color}}").span1.margin.left
-        i.glyph-history.full-icon
-        .metric(style="background: {{this.color}}")
-          span {{styleDate this.updatedAt}}
-        .bg
+      mixin data(opt)
+        div(class= opt.selector ).span1.margin.left
+          i(class="glyph-" + opt.glyph).glyph
+          .metric.bright
+            span.actual= opt.metric
+            span.after= opt.after
+
+            .bg.light
+
+      mixin data({ selector: "votes", glyph: "plus", metric: "{{this.votes}}", after:"votes" })
+      mixin data({ selector: "distance", glyph: "location", metric: "{{this.distance}}", after:"miles" })
+      mixin data({ selector: "price", glyph: "tag-2", metric: "${{this.price}}" })
+      mixin data({ selector: "updatedAt", glyph: "history", metric: "{{styleDate this.updatedAt}}" })
+
 
     section.actions.span2.margin.left
       ul
-        li.vote(style="background: {{this.color}}", data-status="inactive", data-selector="vote") upvote
-        li.map(style="background: {{this.color}}", data-status="inactive", data-selector="map") directions
-        li.reserve(style="background: {{this.color}}", data-status="inactive", data-selector="reserve") reserve
-        li.message(style="background: {{this.color}}", data-status="inactive", data-selector="message") message
+        mixin action(opt)
+          li(class= opt.selector, data-status="inactive", data-selector= opt.selector).light.color-hover= opt.label
+            .bumper.right
+
+        mixin action({ selector: "vote", label: "upvote" })
+        mixin action({ selector: "map", label: "directions" })
+        mixin action({ selector: "reserve", label: "reserve" })
+        mixin action({ selector: "message", label: "message" })
 
     section.extension(data-extension="map")
-      header(style="background: {{this.color}}") Directions
-      .inner.map.span8
-      .inner.span4.margin.left(style="background: {{this.color}}")
+      .bumper.right
+      .inner.map.span8.light
+      .inner.span4.margin.left.light
         p.address
           | {{this.street}}
           br
@@ -569,11 +652,11 @@ template(name='offer')
           br
           | {{#if this.zip}}{{this.zip}}{{/if}}
     section.extension(data-extension="message")
-      header(style="background: {{this.color}}") Message
-      .inner.span10(style="background: {{this.color}}")
+      .bumper.right
+      .inner.span10
         textarea(placeholder="Write a little note...")
-        .message-area
-      .inner.span2(style="background: {{this.color}}").margin.left.send send
+        .message-area.light
+      .inner.span2.margin.left.send.light.color-hover send
     section.extension(data-extension="buy")
 
 

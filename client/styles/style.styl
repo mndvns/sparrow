@@ -18,7 +18,8 @@ li
 
 
 gap = 2px
-
+fontSize = 12px
+bg-color = #fcfcfc
 
 .alert .close
 a
@@ -37,7 +38,10 @@ a
 .full
   width 100%
 
-bg-color = #fcfcfc
+
+button
+  text-transform uppercase
+
 
 html
   cursor default
@@ -52,6 +56,7 @@ body
 .current
 .next
   height 100%!important
+  font-size fontSize
 
 trans(a)
   transition-property a
@@ -146,7 +151,13 @@ input[type="color"]
   background rgba(white, .6)
   border-color rgba(black, .2)
   box-shadow none
+  font-size fontSize
+  box-sizing border-box
+  height (fontSize * 2)
+  line-height (fontSize * 2)
 
+textarea
+  height auto
 
 label
   cursor default
@@ -171,7 +182,7 @@ label
       width 100%
     li
       height = 40px
-      font-size 12px
+      font-size 14px
       line-height height
       height height
       text-transform uppercase
@@ -300,6 +311,7 @@ label
             opacity 0.7
             &:hover
               opacity 1
+
 
 spanner(a, b)
   if odd(b)
@@ -450,22 +462,42 @@ Spanner( 940px )
 .offer
 
   height = 170px
+  bumper = 10px
   action(a, b)
-    text-align center
+    text-align right
     line-height ((height / a) - (gap / 2))
     margin-bottom (gap * b)
-    opacity .8
+    padding-right (bumper * 3)
+    box-sizing border-box
+    position relative
+    overflow hidden!important
+    .bumper
+      opacity .3
     &.busy
+    &[data-status=active]
     &:hover
-      opacity 1
+      .bumper
+        opacity 1
 
+  font-weight normal
   relative top
   width 100%
   float left
   min-height height
-  overflow hidden
   margin (gap / 2) 0
-  color white
+  .bumper
+    width 10px
+    height 100%
+    absolute top
+    z-index 2
+    &.left
+      absolute left
+    &.right
+      absolute right
+  section
+    span, p, li, i, div
+      color rgba(0,0,0, 0.9)
+      text-shadow 0 1px 0 white
   .account_offer &
     .symbol
     .main
@@ -477,6 +509,7 @@ Spanner( 940px )
     background #eee
   .symbol
     user-select none
+    height height
     div
       font-size 4em
       line-height 100px
@@ -498,7 +531,6 @@ Spanner( 940px )
     &[data-field=description]
       line-height 12px
       text-transform none
-      font-weight 100
       letter-spacing 0px
       margin-bottom 5px
 
@@ -521,87 +553,108 @@ Spanner( 940px )
   section.data
     padding 0 0 0 0
     height height
-    span
-      relative left 10%
-      width 80%
-      color rgba(white, 0.9)
-      display block
+    overflow hidden
+    after = 10px
+    actual = 20px
+    mix-after()
+      font-size after
+      line-height after
+    mix-actual()
+      font-size actual
+      line-height actual
+      padding-top 10px
     div
       float left
       height 100%
       position relative
-      .bg
+      span
+        relative left 10%
+        width 80%
+        display block
+        &.actual
+          mix-actual()
+        &.after
+          mix-after()
+      &.price
+        span:first-letter
+          font-size after
+          line-height after
+          vertical-align top
+          font-weight bold
+      &.updatedAt
+        span
+          font-size s = ((actual + after) / 2)
+          line-height s
+          font-weight semibold
       .metric
+        absolute bottom
         width 100%
-        position absolute
-        bottom 0
-      .metric
         padding-bottom 85px
         z-index 3
         height 100%
         max-height 85px
       .bg
+        absolute bottom 100%
+        width 100%
         height 100%
-        opacity .4
         z-index 2
-        background white
+        margin-bottom gap
 
 
-    i.full-icon
+    i.glyph
       absolute bottom left
       font-size 25px
       padding 10px 0
       width 100%
       z-index 10
-      opacity 0.3
 
   .extension
+    relative top
+    margin-top gap
     width 100%
     display none
-    .inner
-      height 170px
     header
       text-align center
       padding 10px
       font-size 20px
       margin gap 0
     &[data-extension=map]
+      .inner
+        height height
       .address
-        font-weight 100
+        font-weight 500
         margin-top 20%
         text-align center
         text-transform capitalize
     &[data-extension=message]
       .inner
         position relative
+        height (height / 2)
       .message-area
-        action(1, 0)
+        action(2, 0)
         width 100%
         height 100%
         absolute top left
-        font-size 26px
+        font-size 16px
         opacity 1
+        text-align center
       textarea
         width 100%
         height 100%
         absolute top left
         z-index 1
-        font-size 26px
-        line-height 32px
+        font-size 16px
+        line-height 24px
         padding 15px
+        padding-left 25px
         border none
+        &:focus
+          box-shadow none
       .send
-        action(1, 0)
+        action(2, 0)
         position absolute
         right 0
 
-  .metrics
-    width 50px
-    .votes
-      height 30px
-      width 30px
-      display block
-      background-color gray
 
 
 #Tagsets
@@ -845,4 +898,14 @@ i.icon-trash
           background rgba(white, .1)
 
 
-
+.modal
+  border-radius 0
+  .alert
+    margin-bottom 0
+    &.fade
+      display none
+      &.in
+        display block
+  button
+  input
+    width 100%

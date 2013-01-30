@@ -13,7 +13,8 @@
       "router": {},
       "jade-handlebars": {},
       "handlebar-helpers": {},
-      "dhtmlx-message": {}
+      "dhtmlx-message": {},
+      "bootboxjs": {}
     },
     "packages": {
       "moment": {
@@ -46,10 +47,6 @@
         "tag": "v0.2.7",
         "commit": "82f6f9ac43a68ffabe1d9b9620be2a4ca6790b56"
       },
-      "transitioner": {
-        "git": "https://github.com/mvanasse/meteor-transitioner.git",
-        "commit": "0dc708e955ad675ba52cf1d668f337167557e88f"
-      },
       "handlebar-helpers": {
         "git": "https://github.com/raix/Meteor-handlebar-helpers.git",
         "tag": "v0.0.5",
@@ -59,6 +56,11 @@
         "git": "https://github.com/DHTMLX/meteor-message.git",
         "tag": "v1.0.0",
         "commit": "cf09fabadcf5e099778e4b52f5ed78e4cc1bc18b"
+      },
+      "bootboxjs": {
+        "git": "https://github.com/TimHeckel/meteor-bootboxjs.git",
+        "tag": "v0.1.0",
+        "commit": "155b6c23506baf95c571568d28f2e5c8f526b9d0"
       },
       "page-js": {
         "git": "https://github.com/tmeasday/meteor-page-js.git",
