@@ -72,6 +72,10 @@
         "git": "https://github.com/tmeasday/meteor-page-js.git",
         "tag": "v1.3.3",
         "commit": "c1e9832af3fc2b2f5139a16d93a82ca6fa0655da"
+      },
+      "transitioner": {
+        "git": "https://github.com/mvanasse/meteor-transitioner.git",
+        "commit": "0dc708e955ad675ba52cf1d668f337167557e88f"
       }
     }
   }
