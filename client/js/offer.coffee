@@ -35,6 +35,10 @@ Template.offer.helpers
     true  if _.contains(user.votes, selection)
 
 Template.offer.events
+  'click .vote': (event, tmpl) ->
+    tmpl.find(".votes span.actual").textContent = @.votes + 1
+    Meteor.call "upvoteEvent", tmpl.data
+
   "click section.actions li.map": (event, tmpl) ->
     targetEl = tmpl.find("section.extension[data-extension='map'] .inner.map")
     handleActions event, tmpl, ->

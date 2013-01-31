@@ -10,7 +10,7 @@ color = shiftColor: (a) ->
   self.hue = Col.getHue()
   self.light = Col.blend(white, .8).desaturateByAmount(.3).toString()
   self.desat = Col.desaturateByAmount(.8).darkenByAmount(0.2).toString()
-  self.dark = Col.desaturateByAmount(.2).darkenByAmount(.5).toString()
+  self.dark = Col.darkenByAmount(.2).toString()
 
 HeroList = (opt) ->
   fontSize = undefined
@@ -31,7 +31,7 @@ HeroList = (opt) ->
 
     opacity: "1"
     color: ->
-      color.light
+      color.normal
 
   return false  if opt.skipList
   list = d3.select("ul." + opt.name + "-list")
@@ -59,8 +59,20 @@ HeroList = (opt) ->
     background: (d) ->
       if opt.leader
         color.shiftColor d.color
-        # d3.select("html").transition().style "background", ->
-        #   color.sat_dark
+
+        if not Meteor.userId()
+          themeColors = _.find document.styleSheets, (d) ->
+            d.title is "dynamic-theme"
+
+          for rule in themeColors.rules
+            themeColors.removeRule()
+
+          themeColors.insertRule( colorFill ".clr-text", "color", color.normal )
+          themeColors.insertRule( colorFill ".clr-text:hover", "color", color.dark)
+          themeColors.insertRule( colorFill ".clr-bg", "background", color.normal)
+          themeColors.insertRule( colorFill ".clr-bg:hover", "background", color.dark)
+          # d3.select("html").transition().style "background", ->
+          #   color.sat_dark
 
       color.normal
 
@@ -108,7 +120,7 @@ Template.hero.events
         Session.set "current_sorts_selector", story.selector
         order = story.order
         if story.name is "nearest"
-          loc = Session.get("user_loc")
+          loc = amplify.get("user.loc")
           order = [loc.lat, loc.long]
         Session.set "current_sorts_order", order
     Session.set selector, output

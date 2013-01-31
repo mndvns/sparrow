@@ -27,39 +27,34 @@ mixin field(i, a, z, b, m, c, ch)
 mixin topnav(name)
   .topnav.navbar(class= name): .navbar-inner: .container
     if (name === "home")
-      .shift(data-shift-direction="left", data-shift-area="about").home.left
+      .shift(data-shift-direction="left", data-shift-area="about").clr-text.desat.home.left
         i.glyph-arrow-left
       .shift(data-shift-direction="right", data-shift-area="account").home.right
         {{#if currentUser}}
-        span(data-modal="") {{currentUser.username}}
-        i.glyph-arrow-right
+        .logout.clr-text.desat
+          span.static{{currentUser.username}}
+          span.hover logout
+        i.glyph-arrow-right.clr-text.desat
         {{else}}
-        span(data-modal="sign-in") LOGIN
+        span(data-modal="sign-in").clr-text.desat login
         {{/if}}
     if (name === "about")
-      .shift(data-shift-direction="right", data-shift-area="home"): i.glyph-arrow-right
+      {{#if getAmplify 'user.loc'}}
+      .shift(data-shift-direction="right", data-shift-area="home").clr-text.desat: i.glyph-arrow-right
+      {{/if}}
     if (name === "account")
-      .shift(data-shift-direction="left", data-shift-area="home"): i.glyph-arrow-left
+      .shift(data-shift-direction="left", data-shift-area="home").clr-text.desat: i.glyph-arrow-left
       ul.links.row
-        a(href="/account"): li
-          i.glyph-list
-          span dashboard
-        a(href="/account/offer"): li
-          i.glyph-bucket
-          span offer
-        // a(href="/account/metrics"): li
-        //   i.glyph-pie
-        //   span metrics
-        a(href="/account/profile"): li
-          i.glyph-cog-2
-          span profile
-        a(href="/account/messages"): li
-          i.glyph-envelope
-          span messages
-        a(href="/account/feedback"): li
-          i.glyph-keyboard
-          span feedback
+        mixin link(opt)
+          a(href= opt.href ).clr-text.prime: li
+            i(class= "glyph-" + opt.glyph)
+            span= opt.label
 
+        mixin link({label: "dashboard", href: "/account", glyph: "list" })
+        mixin link({label: "offer", href: "/account/offer", glyph: "bucket" })
+        mixin link({label: "messages", href: "/account/messages", glyph: "list" })
+        mixin link({label: "profile", href: "/account/profile", glyph: "cog-2" })
+        mixin link({label: "feedback", href: "/account/feedback", glyph: "keyboard" })
 
 //////////////////////////////////////////////
 //  $$ head
@@ -69,6 +64,7 @@ head
   title Sparrow
   meta(name='viewport',content='initial-scale=1.0, user-scalable=no')
   meta(charset='utf-8')
+  style(type="text/css", title="dynamic-theme")
 
 //////////////////////////////////////////////
 //  $$ body
@@ -94,7 +90,7 @@ template(name="modal")
           mixin Field({el: "input", type: "password", placeholder: "password", id: "password", tabindex: 2, })
 
         .alert.fade.clearfix
-        button(type="submit").btn.btn-inverse.sign-in Sign In
+        button(type="submit").btn.clr-bg.sign-in Sign In
       .modal-footer
         button.btn(data-navigate="create-account") Create Account
     {{/if}}
@@ -106,18 +102,19 @@ template(name="modal")
           mixin Field({el: "input", type: "password", placeholder: "password", id: "password", tabindex: 2, })
 
         .alert.fade.clearfix
-        button(type="submit").btn.btn-inverse.centered.create-account Create Account
+        button(type="submit").btn.clr-bg.centered.create-account Create Account
       .modal-footer
         button.btn(data-navigate="sign-in") Sign In
     {{/if}}
 
   .modal-backdrop(aria-hidden="{{show_modal.hidden}}", class="{{show_modal.class_hide}}")
 
-
 template(name="body")
+
+
   .content
     .current
-      {{#constant}}{{/constant}}
+      {{#constant}} {{/constant}}
 
       {{#if sessionEquals 'shift_current' 'home'}}
       mixin topnav("home") {{/if}}
@@ -127,10 +124,11 @@ template(name="body")
       mixin topnav("about") {{/if}}
 
       .container
+        {{renderThemeColors currentUser}}
         {{renderPage}}
 
     .next
-      {{#constant}}{{/constant}}
+      {{#constant}} {{/constant}}
 
       {{#if sessionEquals 'shift_area' 'home'}}
       mixin topnav("home") {{/if}}
@@ -147,42 +145,20 @@ template(name="body")
 
 template(name="about")
   .greeting
-    h1 Sparrow
-    h2 Loremy ipsum set loret
-    p.
-      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-      Suspendisse congue convallis eleifend.
-      Sed at nisl ut eros interdum lacinia rutrum ac neque. Aliquam 
-      convallis aliquet laoreet. Quisque lacus lacus, blandit eu iaculis
-    p.
-      Sit amet, aliquet sit amet purus. Vivamus nec nulla eu elit convallis consequat.
-      Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.
-      Nam a consectetur odio. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-      Vivamus vitae eros eget justo dapibus mattis at sit amet enim. Cras enim nisi,
-      consectetur sit amet convallis ut, ultricies ut eros. Maecenas at diam et
-      nisl faucibus rhoncus et in neque.
-    p.
-      Suspendisse congue convallis eleifend.
-      Sed at nisl ut eros interdum lacinia rutrum ac neque. Aliquam 
-      convallis aliquet laoreet. Quisque lacus lacus, blandit eu iaculis
+    {{> intro }}
+
+template(name='intro')
+  #intro.greeting.centered
+    h1.clearfix.fittext Sparrow
+    h1 a simple tool for complex cities
+    button.btn.btn-large Go
+
 
 template(name='home')
-  {{#if getAmplify 'user_loc'}}
   {{> hero }}
   {{#each getOffers}}
   {{> offer }}
   {{/each}}
-  {{else}}
-  {{> intro }}
-  {{/if}}
-
-template(name='intro')
-  #intro.greeting.centered
-    {{#constant}}
-    h1.clearfix :D :0 :)
-    h3 sparrow is a place to find stuff near you.
-    {{/constant}}
-    button.btn OK, I'll tell you where I am
 
 template(name="hero")
   .hero
@@ -303,7 +279,7 @@ template(name='account_profile')
 
     .clearfix
 
-    button.btn.btn-inverse.save Save
+    button.btn.clr-bg.save Save
     {{/first}}
     {{/grab}}
 
@@ -335,7 +311,7 @@ template(name='account_offer')
   .account-offer.navbar: .navbar-inner: .container
     ul.nav
       mixin nav-item(a, b, c)
-        li(class= c, data-value= a)
+        li(class= c, data-value= a).clr-text.prime
           i(class="glyph-" + b)
           | #{a}
       mixin nav-item("text", "feather", "show")
@@ -497,14 +473,15 @@ template(name="account_offer_tags")
 
 template(name="account_offer_symbol")
   .area
-    .glyphs-list.row
-      .span11.inner
+    .glyphs-list.long
+      .span12.inner
         input.text.color(type='text', style='background: {{this.color}}', value="{{this.color}}").span10
-        .clearfix
-        {{#each getIcons}}
-        .glyph
-          .large(class="glyph-{{this}}")
-        {{/each}}
+        .color-bucket(style='background: {{this.colors.hex}}')
+      .clearfix
+      {{#each getIcons}}
+      .glyph.span3.margin.left
+        .large(class="glyph-{{this}}")
+      {{/each}}
 
 template(name="account_offer_location")
   .area
@@ -517,7 +494,6 @@ template(name="account_offer_location")
 
 template(name="account_messages")
   .greeting.row
-    h5.centered Messages are deleted after a few days.
 
 
   {{#each find 'Messages' '{}' '{"sort": {"lastSent": -1}}' }}
@@ -533,7 +509,7 @@ template(name="account_message")
       .message.span7: .inner {{this.message}}
       .sent.span3 {{styleDate this.sent}}
     {{/each}}
-    article.clearfix.compose
+    article.clearfix.compose.clr-bg
       .from.span2 {{currentUser.username}}
       .message.span7
         textarea(rows=1, placeholder="...")
@@ -551,7 +527,7 @@ template(name="account_feedback")
       .control-group
         .controls
           textarea(rows=4).span4
-      button.btn.btn-inverse.centered.span4 Send
+      button.btn.centered.span4.clr-bg Send
 
     .span10.offset1
       h5.centered We'd like to take a moment to say <em>thank you</em>...
@@ -584,7 +560,6 @@ template(name='thisOffer')
 template(name='offer')
   .offer(data-tagset="{{this.tagset}}", id="{{this._id}}").long
 
-    {{#constant}}
     style(type="text/css")
       .offer[id="{{this._id}}"] .light {
           background: {{hsl 97 90}};
@@ -604,6 +579,7 @@ template(name='offer')
       .offer[id="{{this._id}}"] .bumper {
           background: {{hsl 50 100}};
         }
+
     .bumper.left
     section.symbol.span2.light
       div(class='{{this.symbol}}')
@@ -613,7 +589,6 @@ template(name='offer')
       p.field(data-field='description') {{this.description}}
       span.field(data-field='business') {{this.business}}
       br
-    {{/constant}}
     section.data
       mixin data(opt)
         div(class= opt.selector ).span1.margin.left

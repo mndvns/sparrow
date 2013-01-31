@@ -47,8 +47,6 @@ Handlebars.registerHelper "hsl", (l, a) ->
   light = l or 50
   alpha = a / 100 or 1
 
-  console.log(l,a)
-
   "hsla(" + hue + "," + sat + "%," + light + "%," + alpha + ")"
 
 
@@ -225,19 +223,11 @@ Template.account_offer.rendered = ->
   ).stop()
 
 Template.account_offer.created = ->
-  Meteor.call "getLogin", (err, res) ->
-    console.log err  if err
-    if res < 1
-      as "show", "intro"
-      as "help", "true"
-      Session.set "show", as("show")
-      Session.set "help", true
-    else
-      Session.set "show", "text"
-      Session.set "help", false
+  Session.set "show", as("show") or "text"
+  Session.set "help", as("help") or false
 
   id = Meteor.userId()
-  offer = Offers.findOne(owner: Meteor.userId())
+  offer = Offers.findOne owner: Meteor.userId()
   if not id or id isnt as("owner")
     if offer
       for key of Offer
@@ -261,16 +251,6 @@ Template.account_offer_symbol.helpers getIcons: ->
   icons
 
 Template.account_offer_symbol.events
-  "click input.color": (event, tmpl) ->
-    # target = $(".offer").find(".symbol, .main, .metric, .actions li")
-    # j = event.currentTarget
-
-    # colorPicker.exportColor = ->
-    #   color = event.target.value
-    #   as "color", color
-    #   target.css "background", color
-
-    # colorPicker event
 
   "click .glyph div": (event, tmpl) ->
     attr = event.target.getAttribute("class")
@@ -278,6 +258,7 @@ Template.account_offer_symbol.events
     Session.set "currentOffer", as()
 
 Template.account_offer_symbol.rendered = ->
+  self = this
   $("input").spectrum (
     showButtons: true
     flat: true
@@ -289,14 +270,14 @@ Template.account_offer_symbol.rendered = ->
     preferredFormat: "hsl"
     color: @data.color
     change: (color) ->
-      console.log("CHANGE", color.toHsl())
-      amplify.set "colors.hsl", color.toHsl()
       amplify.set "colors.hex", color.toHexString()
+      amplify.set "colors.hsl", color.toHsl()
       amplify.set "color", color.toHexString()
+      Session.set "currentOffer", as()
+      Meteor.call "updateUserColor", color.toHexString()
+    move: (color) ->
+      $(self.find ".color-bucket").css "background", color.toHexString()
   )
-
-  # $(".span11").css "border", "1px solid blue"
-  console.log("DERP")
 
 #////////////////////////////////////////////
 #  $$ account_offer_tags
@@ -354,11 +335,6 @@ Template.account_metrics.offers = ->
 Template.account_metrics.votes = ->
   votes = _.pluck(Offers.find().fetch(), "votes")
   votes
-
-Template.about.created = ->
-  d3.select("html").transition().style "background", ->
-    "#eee"
-
 
 
 #////////////////////////////////////////////

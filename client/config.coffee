@@ -25,6 +25,8 @@ getLocation = ->
 
   navigator.geolocation.getCurrentPosition foundLocation, noLocation
 
+  Session.set "shift_area", "home"
+
 Meteor.startup ->
   window.initialize = initialize = ->
     console.log "GM INITIALIZED"
@@ -66,6 +68,7 @@ Meteor.startup ->
 # }
 
 Accounts.ui.config passwordSignupFields: "USERNAME_AND_OPTIONAL_EMAIL"
+
 Meteor.subscribe "offers", Session.get("user_loc")
 Meteor.subscribe "tagsets"
 Meteor.subscribe "tags"
@@ -73,6 +76,7 @@ Meteor.subscribe "sorts"
 Meteor.subscribe "userData"
 Meteor.subscribe "metrics"
 Meteor.subscribe "messages"
+
 Handlebars.registerHelper "styleDate", (date) ->
   if date
     moment(date).fromNow()
@@ -88,3 +92,4 @@ Handlebars.registerHelper "getAmplify", (a) ->
       true
     else
       false
+

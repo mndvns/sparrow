@@ -34,7 +34,7 @@ Meteor.startup ->
     i += 1
   Offers._ensureIndex loc: "2d"
 
-
+  k = Color("#fff")
 #                                                        //
 #         ___                               __           //
 #        /   | ______________  __  ______  / /______     //
@@ -85,12 +85,11 @@ Meteor.users.allow
 
 Meteor.publish "offers", (myLoc) ->
 
-  console.log myLoc
+  # Offers.find {}
 
   if myLoc
     Offers.find loc:
       $near : [myLoc.lat, myLoc.long]
-      $maxDistance: 10
 
   else
     Offers.find {}
@@ -105,13 +104,17 @@ Meteor.publish "sorts", ->
   Sorts.find {}
 
 Meteor.publish "userData", ->
+  self = this
   Meteor.users.find {},
     type: 1
+  # Meteor.users.find
+  #   _id: self.userId,
+  #     type: 1
+  # Meteor.users.find {},
+  #   colors: 1
 
 
 Meteor.publish "messages", ->
-  
-  # return Messages.find() 
   Messages.find involve:
     $in: [@userId]
 
@@ -208,6 +211,33 @@ Meteor.methods
         $set: out
 
 
+  updateUserColor: (color) ->
+    prime = Color(color).setLightness(.4)
+    comp = prime.setSaturation(.5).tetradicScheme()[1]
+    desat = prime.setSaturation(.2)
+    darken = (a) ->
+      a.setLightness(.2).setSaturation(.9).toString()
+    lighten = (a) ->
+      a.setLightness(.8).setSaturation(.3).toString()
+
+    Meteor.users.update
+      _id: Meteor.userId()
+      ,
+        $set:
+          colors:
+            prime:
+              light: lighten prime
+              medium: prime.toString()
+              dark: darken prime
+            comp:
+              light: lighten comp
+              medium: comp.toString()
+              dark: darken comp
+            desat:
+              light: desat.setLightness( .8 ).toString()
+              medium: desat.setLightness( .5 ).toString()
+              dark: desat.setLightness( .2 ).toString()
+
   updateUser: (email, username) ->
     users = Meteor.users.find().fetch()
     existing = _.reject(users, (d) ->
@@ -236,32 +266,6 @@ Meteor.methods
       false
     else
       true
-
-  upvoteEvent: (type, user, offer) ->
-    id = (if type is "id" then user else Meteor.users.findOne(username: user))
-    vote = Meteor.uuid()
-    now = moment().unix()
-    exp = moment().add("minutes", 15).unix()
-    Meteor.users.update
-      _id: user
-    ,
-      $push:
-        votes:
-          vid: vote
-          exp: exp
-
-    Offers.update offer._id,
-      $inc:
-        votes: 1
-
-    Meteor.users.update
-      _id: offer.owner
-    ,
-      $push:
-        karma:
-          vid: vote
-          exp: exp
-
 
   registerLogin: ->
     @unblock()

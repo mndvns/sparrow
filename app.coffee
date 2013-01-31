@@ -16,7 +16,25 @@ String::toProperCase = ->
 
 
 
-# 
-# Color = net.brehaut.Color;
+Color = net.brehaut.Color
+
 Time = now: ->
   moment().unix() * 1000
+
+Meteor.methods
+  upvoteEvent: (offer) ->
+    @.unblock()
+    if Meteor.isClient
+      Offers.update offer._id,
+        $inc:
+          votes: 1
+    if Meteor.isServer
+      Offers.update offer._id,
+        $inc:
+          votes: 1
+
+  getColors: () ->
+    @.unblock()
+    this.user().colors
+
+

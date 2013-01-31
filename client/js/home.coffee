@@ -87,6 +87,49 @@ Template.body.events
     Session.set "show_modal", true
     Session.set "modal", event.currentTarget.getAttribute("data-modal")
 
+  # "mouseover .logout": (event, tmpl) ->
+  #   $(event.currentTarget).fadeOut()
+  #   $(event.currentTarget).find(".hover").fadeIn()
+
+  # "mouseleave .logout": (event, tmpl) ->
+  #   $(event.currentTarget).fadeIn()
+  #   $(event.currentTarget).find(".hover").fadeOut()
+
+  "click .logout": (event, tmpl) ->
+    Meteor.logout()
+
+
+
+colorFill = (el, selector, value) ->
+  "#{el} { #{selector} : #{value} }"
+
+Handlebars.registerHelper "renderThemeColors", (user, selector) ->
+
+  if user and user.colors
+    color = user.colors
+
+    themeColors = _.find document.styleSheets, (d) ->
+      d.title is "dynamic-theme"
+
+    for rule in themeColors.rules
+      themeColors.removeRule()
+
+
+    themeColors.insertRule( colorFill ".clr-text.prime", "color", color.prime.light )
+    themeColors.insertRule( colorFill ".clr-text.prime:hover", "color", color.prime.medium )
+    themeColors.insertRule( colorFill ".clr-text.prime:active", "color", color.prime.dark )
+    themeColors.insertRule( colorFill ".clr-text.prime.active", "color", color.prime.medium )
+
+    themeColors.insertRule( colorFill ".clr-text.desat", "color", color.prime.light )
+    themeColors.insertRule( colorFill ".clr-text.desat:hover", "color", color.prime.medium )
+    themeColors.insertRule( colorFill ".clr-text.desat:active", "color", color.prime.dark )
+
+    themeColors.insertRule( colorFill ".clr-bg", "background", color.prime.light )
+    themeColors.insertRule( colorFill ".clr-bg:hover", "background", color.prime.medium)
+    themeColors.insertRule( colorFill ".clr-bg:active", "background", color.prime.dark )
+
+    return
+
 
 #////////////////////////////////////////////
 #  $$ modal
@@ -142,8 +185,6 @@ Template.modal.helpers show_modal: (opt) ->
 
 #////////////////////////////////////////////
 #  $$ home
-Template.home.events "click section.actions .vote": (event, tmpl) ->
-  Meteor.call "upvoteEvent", "id", Meteor.userId(), this
 
 Template.home.helpers
   getOffers: ->
@@ -209,9 +250,9 @@ Template.home.helpers
 
 #////////////////////////////////////////////
 #  $$ intro
+
 Template.intro.events "click button": (event, tmpl) ->
-  console.log "CLICKED BUTTON"
   getLocation()
 
 Template.intro.rendered = ->
-  $(@find("h1")).fitText 0.9
+  $(@find("h1.fittext")).fitText .6
