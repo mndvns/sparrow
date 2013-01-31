@@ -13,7 +13,6 @@
       "router": {},
       "jade-handlebars": {},
       "handlebar-helpers": {},
-      "handlebar-bind": {},
       "dhtmlx-message": {},
       "bootboxjs": {}
     },
@@ -52,11 +51,6 @@
         "git": "https://github.com/raix/Meteor-handlebar-helpers.git",
         "tag": "v0.0.5",
         "commit": "bedecf71d04097773b359ccbf6e5bd97fcb53f8e"
-      },
-      "handlebar-bind": {
-        "git": "https://github.com/raix/Meteor-handlebar-bind.git",
-        "tag": "v0.0.1",
-        "commit": "5dad52f10c53c3c322406432ab18531904a17213"
       },
       "dhtmlx-message": {
         "git": "https://github.com/DHTMLX/meteor-message.git",
