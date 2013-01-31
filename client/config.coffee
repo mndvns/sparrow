@@ -26,6 +26,7 @@ getLocation = ->
   navigator.geolocation.getCurrentPosition foundLocation, noLocation
 
   Session.set "shift_area", "home"
+  Session.set "user_loc", amplify.get "user.loc"
 
 Meteor.startup ->
   window.initialize = initialize = ->

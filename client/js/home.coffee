@@ -200,7 +200,7 @@ Template.home.helpers
     result = Offers.find(query,
       sort: sort
     ).fetch()
-    myLoc = amplify.get("user.loc")
+    myLoc = Session.get "user_loc" or amplify.get("user.loc")
     if result and myLoc
       survey = _.each(result, (d) ->
         d.distance = Math.round(distance(myLoc.lat, myLoc.long, d.loc.lat, d.loc.long, "M") * 10) / 10
@@ -247,6 +247,8 @@ Template.home.helpers
   styleDate: (date) ->
     moment(date).fromNow()
 
+Template.home.created = ->
+   getLocation()
 
 #////////////////////////////////////////////
 #  $$ intro
