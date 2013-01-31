@@ -29,6 +29,9 @@ getLocation = ->
   Session.set "user_loc", amplify.get "user.loc"
 
 Meteor.startup ->
+  if Meteor.Router.page() is "home"
+    getLocation()
+
   window.initialize = initialize = ->
     console.log "GM INITIALIZED"
 
@@ -70,7 +73,7 @@ Meteor.startup ->
 
 Accounts.ui.config passwordSignupFields: "USERNAME_AND_OPTIONAL_EMAIL"
 
-Meteor.subscribe "offers", Session.get("user_loc")
+Meteor.subscribe "offers", Session.get("user_loc"), amplify.get("user.loc")
 Meteor.subscribe "tagsets"
 Meteor.subscribe "tags"
 Meteor.subscribe "sorts"

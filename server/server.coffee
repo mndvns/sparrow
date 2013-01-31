@@ -83,13 +83,17 @@ Meteor.users.allow
 #                                                    //
 #                                                    //
 
-Meteor.publish "offers", (myLoc) ->
+Meteor.publish "offers", (sessLoc, ampLoc) ->
 
   # Offers.find {}
 
-  if myLoc
+  if sessLoc
     Offers.find loc:
-      $near : [myLoc.lat, myLoc.long]
+      $near : [sessLoc.lat, sessLoc.long]
+
+  else if ampLoc
+    Offers.find loc:
+      $near : [ampLoc.lat, ampLoc.long]
 
   else
     Offers.find {}
