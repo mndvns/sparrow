@@ -18,24 +18,24 @@ Meteor.Router.add
     "thisOffer"
 
   "/access/*": ->
-    # urlParams = {}
-    # (->
-    #   match = undefined
-    #   pl = /\+/g
-    #   search = /([^&=]+)=?([^&]*)/g
-    #   decode = (s) ->
-    #     decodeURIComponent s.replace(pl, " ")
+    urlParams = {}
+    (->
+      match = undefined
+      pl = /\+/g
+      search = /([^&=]+)=?([^&]*)/g
+      decode = (s) ->
+        decodeURIComponent s.replace(pl, " ")
 
-    #   query = window.location.search.substring(1)
-    #   urlParams[decode(match[1])] = decode(match[2])  while match = search.exec(query)
-    # )()
-    # if urlParams.code and Session.get("callingServer") isnt true
-    #   Session.set "callingServer", true
-    #   Meteor.call "oauth", urlParams.code, ->
-    #     console.log "Got to Router"
-    #     Meteor.Router.to "/user/account/profile"
+      query = window.location.search.substring(1)
+      urlParams[decode(match[1])] = decode(match[2])  while match = search.exec(query)
+    )()
+    if urlParams.code and Session.get("callingServer") isnt true
+      Session.set "callingServer", true
+      Meteor.call "oauth", urlParams.code, ->
+        console.log "Got to Router"
+        Meteor.Router.to "/user/account/profile"
 
-    # else console.log urlParams  if urlParams.error
+    else console.log urlParams  if urlParams.error
 
   "/*": ->
     Session.set "shift_current", "home"

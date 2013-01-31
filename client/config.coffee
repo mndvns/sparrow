@@ -92,4 +92,3 @@ Handlebars.registerHelper "getAmplify", (a) ->
       true
     else
       false
-
