@@ -12,25 +12,22 @@
 # Stripe.setPublishableKey("pk_test_xB8tcSbkx4mwjHjxZtSMuZDf") 
 
 Color = net.brehaut.Color
+Store = Meteor.BrowserStore
 
 getLocation = ->
   foundLocation = (location) ->
-    amplify.set "user.loc",
+    Store.set "user_loc",
       lat: location.coords.latitude
       long: location.coords.longitude
 
+    Session.set "user_loc", Store.get "user_loc"
 
   noLocation = ->
     alert "no location"
 
   navigator.geolocation.getCurrentPosition foundLocation, noLocation
 
-  Session.set "shift_area", "home"
-  Session.set "user_loc", amplify.get "user.loc"
-
 Meteor.startup ->
-  if Meteor.Router.page() is "home"
-    getLocation()
 
   window.initialize = initialize = ->
     console.log "GM INITIALIZED"
@@ -96,3 +93,8 @@ Handlebars.registerHelper "getAmplify", (a) ->
       true
     else
       false
+
+Handlebars.registerHelper "getStore", (a) ->
+  if Meteor.BrowserStore.get a
+    return true
+

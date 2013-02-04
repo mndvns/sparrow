@@ -12,6 +12,9 @@ Meteor.Router.add
     Session.set "shift_current", area
     area + "_" + id
 
+  # "/about": ->
+  #   Meteor.Router.to "about/stuff")
+
   "/offer/:id": (id) ->
     Session.set "showThisOffer", Offers.findOne(business: id)
     Session.set "header", null
@@ -55,17 +58,17 @@ Meteor.Router.filters
     else
       "home"
 
-  checkLoc: (page) ->
-    if not amplify.get("user.loc")
-      Meteor.Router.to "about"
-    else
-      page
-
-Meteor.Router.filter "checkLoc"
-  except: ["about"]
+#   checkLoc: (page) ->
+#     if not amplify.get("user.loc")
+#       Meteor.Router.to "about"
+#     else
+#       page
+# 
+# Meteor.Router.filter "checkLoc"
+#   except: ["about"]
 
 Meteor.Router.filter "checkLoggedIn",
-  except: ["about"]
+  only: ["account"]
 
 Meteor.Router.filter "checkAdmin",
   only: ["/admin/users"]

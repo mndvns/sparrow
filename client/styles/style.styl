@@ -1,3 +1,4 @@
+// @import 'index'
 @import 'nib'
 @import 'icons.css'
 
@@ -18,17 +19,17 @@ li
 
 
 gap = 2px
-fontSize = 12px
+fontSize = 16px
 bg-color = #fcfcfc
+Duration = 600ms
+
+ceiling-height = 50px
+topnav-height = 55px
+topnav-padding = 15px
 
 
-.clr-text
-  transition color 100ms ease 0
-
-.clr-bg
-  transition background 200ms ease 0
-  &:hover
-    transition background 200ms ease 0
+.gap-top
+  margin-top gap!important
 
 .alert .close
 a
@@ -47,16 +48,47 @@ a
 .full
   width 100%
 
+.accord
+  h4
+  p
+    margin-top 0
+    margin-bottom 0
+    padding 10px 0
+  a.active:hover
+    opacity 0.6
+  .body
+    display none
 
-button
-  text-transform uppercase
+trans(a)
+  transition-property a
+  transition-duration Duration
+  transition-timing-function ease-out
+  transition-delay 0
 
+anim(a)
+  animation-name a
+  animation-duration Duration
+  animation-timing-function ease
+
+
+h(a)
+  font-size (fontSize * a)
+
+h1
+  h( 2.2 )
+h2
+  h( 1.8 )
+h3
+  h( 1.5 )
+
+h1, h2, h3
+  line-height fontSize * 2.5
+  &.smashed
+    line-height 1.15
 
 html
-  cursor default
   overflow-x hidden
   // transform scale(0.7)
-  background-color bg-color
 
 html
 body
@@ -65,21 +97,20 @@ body
 .current
 .next
   height 100%!important
-  font-size fontSize
-
-trans(a)
-  transition-property a
-  transition 600ms ease-out 0
 
 body
 input
 textarea
+button
   font-family "proxima-nova"
   color #666
 
 body
+  cursor default
+  background-color bg-color
+  font-size fontSize
+  line-height 1.5
   background-color rgba(0, 0, 0, 0)
-  // background-image url("/images/bg/maze.png")
   position relative
   overflow-x hidden
   overflow-y scroll
@@ -110,12 +141,24 @@ body
   .transitioning.from_about &
     trans(left)
     left -100%
+  .transitioning.to_home &
+    ul.links
+      anim(hideTopnav)
+  .transitioning.from_home &
+    ul.links
+      anim(showTopnav)
 
-.content > div > .container
-  height 100%
-  padding-top 80px
-  position relative
-  // background-color bg-color
+@keyframes hideTopnav
+  0%
+    height topnav-height + topnav-padding
+  100%
+    height 0
+
+@keyframes showTopnav
+  0%
+    height 0
+  100%
+    height topnav-height + topnav-padding
 
 .current
 .next
@@ -133,6 +176,11 @@ body
   .transitioning.to_about &
     left -50%
     display block
+
+.current
+  .topnav.home
+    ul.links
+      height 0
 
 .account_offer
   .offer
@@ -158,13 +206,28 @@ input[type="search"]
 input[type="tel"]
 input[type="color"]
 .uneditable-input
-  border-radius 0
+.btn
+  border-radius 0!important
+  padding round(fontSize / 2)!important
+  text-shadow none
+
   background rgba(white, .6)
   border-color rgba(black, .2)
   box-shadow none
   font-size fontSize
-  height (fontSize * 2)
-  line-height (fontSize * 2)
+  line-height 1.25
+
+  &.btn
+    text-transform uppercase
+    border-color transparent
+    cursor default
+    margin 0 auto
+    &.centered
+      display block
+    .input-append &
+      margin-left -1px
+
+
 
 textarea
   height auto
@@ -177,153 +240,218 @@ label
     &:hover
       opacity 0.9
 
+nav.ceiling
+  $padding = 30px
+  fixed top right
+  trans(height background)
+  min-height ceiling-height
+  width 100%
+  z-index 200
+  padding 0 $padding
+  box-sizing border-box
+  i
+    padding-right 10px
+
+  .logout
+  .login
+    relative right
+    span
+      absolute right
+      trans(opacity)
+      transition-duration 100ms
+    .hover
+      opacity 0
+    .static
+      opacity 1
+    &:hover
+      .hover
+        opacity 1
+      .static
+        opacity 0
+
+  .toggler-group
+    absolute top
+    z-index 100
+    vertical-align middle
+    line-height ceiling-height
+    div
+      color rgba(white, .7)
+      &.active
+      &:hover
+        color white
+    &.left
+      left $padding
+    &.right
+      right $padding
+
+  a
+    &:hover
+      color rgba(white, .7)
+  .clr-bg
+    &:hover
+      background rgba(white, .4)
+  .terrace
+    relative top
+    z-index 50
+    width 100%
+    display none
+    opacity 0
+    overflow hidden
+    margin fontSize 0 (fontSize / 2)
+    .inputs
+    .controls
+      float none
+      display inline-block
+      text-align center
+      margin 0 auto
+      width 100%
+
+    input
+    button
+    .alert.in
+    .navigation
+      margin-bottom (fontSize / 2)
+      text-align center
+      float none
+
+    .navigation
+      text-align center
+
+    [data-account=create]
+      display none
+      opacity 0
+
+    buttons
+    a
+      &.active
+        color rgba(white, 0.5)!important
+
+
+@keyframes ceiling-expand
+  from
+    height 0%
+  to
+    height 100%
+
+// @keyframes ceiling-expand
+//   from
+//     height ceiling-height
+//   to
+//     height ceiling-height + topnav-height + topnav-padding
+
 .navbar
   .navbar-inner
     border-radius 0
-  &.account-offer
-    padding-top 20px
-    border-bottom 2px solid #ddd
-    .navbar-inner
-      padding 0 0
-      background none
-      border none
-      box-shadow none
-    ul
-      width 100%
-    li
-      height = 40px
-      font-size 14px
-      line-height height
-      height height
-      text-transform uppercase
-      width 13.7%
-      text-align center
-      border 2px solid transparent
+
+.navbar.topnav
+  height = topnav-height
+  absolute top
+  margin-top ceiling-height
+  background none
+  width 100%
+  z-index 100
+  opacity 1
+  .container
+    relative top
+    padding-top 0
+  .navbar-inner
+    background none!important
+    border none
+    box-shadow none
+
+  a.shift
+  .links a
+    margin-top topnav-padding
+    opacity 0.7
+    &.active
+    &:hover
+      opacity 1
+
+  ul.links
+    overflow hidden
+    margin 0 auto
+    text-align center
+    a
+      height topnav-height
+      box-sizing border-box
+      border-bottom 2px solid
+      display inline-block
+      line-height 35px
+      padding 0 20px 0
+      cursor default
       &.active
-        opacity 1
       &:hover
-        opacity 0.9
+        color white
+      span
+        display block
+        font-size 12px
+        text-transform uppercase
+        line-height 20px
+        letter-spacing 1px
       i
-        font-size 15px
-        padding-right 5px
-  &.topnav
-    height = 75px
-    size = (height / 3)
-    background none
-    .navbar-inner
-      background none!important
-      border none
-      box-shadow none
-    width 100%
+        height = height * 0.4
+        height height
+        line-height height
+        font-size height
+        margin-top 5px
+
+  a.shift
+    position absolute
+    display inline-block
+    height height
+    line-height height - 5
+    font-size (height / 2)
     z-index 100
-    opacity 1
-    fixed top
-    .transitioning &
-      absolute top
-    .container
-      relative top
-      padding-top 0
-    .navbar-inner
-      border-right none
-      border-left none
-      background linear-gradient(top, white, rgba(white, 0.9))
-      height height
-      .links
-        margin 0 auto
-        text-align center
-        a
-          opacity 0.7
-          display inline-block
-          font-size 30px
-          height height
-          line-height 35px
-          padding 12px 20px 0
-          cursor default
-          span
-            display block
-            font-size 12px
-            text-transform uppercase
-            line-height 20px
-            letter-spacing 1px
-          i
-            height 30px
-            line-height 30px
-            font-size 28px
-            margin-top 5px
-      .shift
-        position absolute
-        display inline-block
-        &[data-shift-direction=left]
-          float left
-          left 0
-        &[data-shift-direction=right]
-          float right
-          right 0
-        &.home
-          height height
-          line-height (height - 10)
-          font-size (size - 5)
-          .logout
-            relative top right round(size * 1.8)
-            .static
-            .hover
-              absolute top right
-              trans(opacity)
-              transition-duration 100ms
-            .hover
-              opacity 0
-            .static
-              opacity 1
-            &:hover
-              .hover
-                opacity 1
-              .static
-                opacity 0
+    &.left
+      left fontSize
+    &.right
+      right fontSize
+    &[disabled]
+      opacity 0.3
+      color rgba(black, .3)
+      text-shadow 0 0 20px gray
+    &:hover
+      color rgba(black, 0.5)
 
-        i
-          display inline-block
-          line-height height
-          height height
-          font-size size
-          color gray
-          cursor default
-          &:hover
-            color black
-        #login-dropdown-list
-          left -132px
-          top 40px
-        .accounts-dialog
-          border 1px solid #ccc
-          border-radius 0
-          box-shadow none
-        .accounts-dialog
-        #login-buttons
-          .login-close-text
-            float right
-          a.login-link-text
-            relative top -5px
-            text-decoration none
-            color #bbb
-            text-transform uppercase
-            font-size 14px
-            letter-spacing 1px
-            display block
-          .login-button
-            border-radius 0
-            box-shadow none
-            background #ccc
-            border 1px solid #aaa
-            color #777
-            text-shadow none
-            cursor default
-            font-size 11px
-            text-transform uppercase
-            line-height 20px
-            letter-spacing 1px
-            opacity 0.7
-            &:hover
-              opacity 1
 
+
+
+
+
+.navbar.account-offer
+  padding-top 20px
+  .navbar-inner
+    padding 0 0
+    background none
+    border none
+    box-shadow none
+  ul
+    width 100%
+  li
+    height = 40px
+    font-size round(fontSize * .75)
+    line-height height
+    height height
+    text-transform uppercase
+    text-align center
+    color rgba(white, 0.7)
+    letter-spacing 1px
+    text-shadow none
+    font-weight 300
+    *
+      vertical-align middle
+    &.active
+      opacity 1
+    &:hover
+      opacity 0.9
+    i
+      font-size 15px
+      padding-right 5px
+      line-height height
+
+.content > div > .container
+  position relative
+  margin-top 150px
 
 spanner(a, b)
   if odd(b)
@@ -397,20 +525,24 @@ Spanner( 940px )
 .extend
   padding-right (gap * .5)
 
-@media (min-width: 768px) and (max-width: 979px)
-  Spanner( 724px )
-
 @media (min-width: 1200px)
   Spanner( 1170px )
   .extend
     padding-right gap
 
-@media (max-width: 767px)
+@media (min-width: 768px) and (max-width: 979px)
+  Spanner( 724px )
+
+@media (min-width: 481px) and (max-width: 767px)
+  Spanner( 480px )
+
+@media (max-width: 480px)
   .container
     width auto
   .long
     [class*="span"]
-      width 100%
+      width 100%!important
+      margin-left 0!important
   .extend
     padding-right 0
 
@@ -418,16 +550,27 @@ Spanner( 940px )
   textarea
   input
     box-sizing border-box
+  input
+    height round(fontSize * 2.5)
+  [class*="span"]
+    float left
 
 .hero
+  margin-top -23px
+  relative top
   .headline
-    absolute top 25px left 15%
+    absolute top -45px left 15%
     z-index 100
     width 70%
     text-align center
     background none
-    font-weight 900
-    font-family "ff-tisa-web-pro"
+    font-weight 500
+    line-height 40px
+    // font-family "ff-tisa-web-pro"
+    text-shadow none
+    // span
+    //   color rgba( white, .8 )!important
+
     div
       // &.tagset span
       //   &:after
@@ -443,8 +586,7 @@ Spanner( 940px )
       opacity 0
       font-size 0px
   ul
-    text-transform uppercase
-    font-weight bold
+    font-weight 500
     letter-spacing 1px
     padding 10px 0
     text-align center
@@ -474,12 +616,12 @@ Spanner( 940px )
 .offer
 
   height = 170px
-  bumper = 10px
+  bumper = 2px
   action(a, b)
     text-align right
     line-height ((height / a) - (gap / 2))
     margin-bottom (gap * b)
-    padding-right (bumper * 3)
+    padding-right (bumper + 10)
     box-sizing border-box
     position relative
     overflow hidden!important
@@ -498,7 +640,7 @@ Spanner( 940px )
   min-height height
   margin (gap / 2) 0
   .bumper
-    width 10px
+    width bumper
     height 100%
     absolute top
     z-index 2
@@ -532,7 +674,7 @@ Spanner( 940px )
     &[data-field=name]
       font-weight 300
       font-size 32px
-      margin 45px 0 15px -2px
+      margin 20px 0 15px
       display block
       text-transform lowercase
     &[data-field=business]
@@ -541,7 +683,9 @@ Spanner( 940px )
       font-size 11px
       letter-spacing 1px
     &[data-field=description]
-      line-height 12px
+      size = round(fontSize * .9)
+      font-size size
+      line-height fontSize
       text-transform none
       letter-spacing 0px
       margin-bottom 5px
@@ -713,29 +857,6 @@ Spanner( 940px )
   div
     padding-bottom 2em
 
-.btn
-  border-radius 0!important
-  cursor default
-  margin 0 auto
-
-
-// table
-//   th
-//     cursor pointer
-//     &.active
-//       background #ccc
-//   td
-//     input
-//     select
-//     button
-//     span
-//     i
-//       margin-top 10px
-//       display block
-//     i
-//       cursor pointer
-//       margin-top 15px!important
-
 
 .glyphs-list
   .inner
@@ -780,11 +901,6 @@ input.color
     display inline
     opacity .5
 
-i.icon-trash
-  font-size 2em
-  margin-left 10px
-  line-height 45px
-
 .accounts-dialog
   .additional-link
     text-transform none
@@ -793,23 +909,24 @@ i.icon-trash
     text-decoration none!important
     padding 3px 3px 0
 
-.wrapper
-  relative top
-  overflow hidden
-  // opacity 0
-  height 100px
-  trans(height)
-  &.out
-    height 32px
-    opacity 0
-    trans(height)
-  &.in
-    height 100px
-    opacity 1
-    trans(height)
-
 .alert
   border-radius 0
+  text-shadow none
+  .clr-bg &
+    color white
+  &.alert-blend-in
+    background none
+    border none
+    line-height 0
+    padding 0 (fontSize * 2) 0 fontSize
+    margin 0
+    opacity 0
+    &.in
+      trans(opacity padding line-height)
+      opacity 1
+      line-height 1.5
+      margin-bottom (fontSize / 2) 0
+
 
 .dhtmlx_message_area
   fixed right 5px
@@ -913,6 +1030,8 @@ i.icon-trash
 
 
 .modal
+  &.fade
+    top -35%
   border-radius 0
   .alert
     &.fade
@@ -932,8 +1051,79 @@ i.icon-trash
     height 32px
 
 #intro
-  background linear-gradient(top right, #00588c, 30% #004f91, #00268e)
-  box-shadow inset 0 100px 500px -51px rgba(255,255,255, 0.3)
+  text-align center
+  shadow = inset 0 100px 500px -51px rgba(255,255,255, 0.3)
+  .clr-gradient
+    box-shadow shadow
   button
-    margin-top 45px
+    height 100%
+    box-shadow shadow
+  .body
+    .span4
+      background blue
+      height 100px
+
+// #prologue
+//   h1,h2,h3,h4,h5,h6
+//     text-align center
+
+////////////////////////////////////////////////
+//$$ dynamic stylesheet
+
+.clr-text
+  transition color 100ms ease 0
+
+.clr-bg
+  transition background 200ms ease 0
+  &:hover
+    transition background 200ms ease 0
+
+s = 90%
+l = 40%
+variation = 130
+
+prime = hsla(200, s, l, 1)
+comp = hsla((hue(prime) + variation), s, l, 1)
+triad  = hsla((hue(prime) - variation), s, l, 1)
+
+.clr-gradient
+  background linear-gradient(top right, lighten(saturate(prime, 100%), 10%), prime)
   color white
+  padding-bottom 20px
+
+a
+  color prime
+  &:hover
+    color darken(prime, 20%)
+
+.clr-text
+  color prime
+  &.hvr
+    &:hover
+      color darken(prime, 20%)
+  &.clr-bg
+    &.hvr
+      :hover
+        white
+
+clr-bg(a)
+  background a
+  &.dark
+    background darken(a, 50%)
+  &.light
+    background lighten(a, 50%)
+  &.btn
+    color white
+    &.active
+    &:hover
+      background darken(a, 20%)
+
+.clr-bg
+  clr-bg(prime)
+  &.prime
+    clr-bg(prime)
+  &.comp
+    clr-bg(comp)
+  &.triad
+    clr-bg(triad)
+

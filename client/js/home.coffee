@@ -70,35 +70,114 @@ Handlebars.registerHelper "page_next", (area) ->
 
   area
 
+#//////////////////////////////////////////////
+#// $$ ceiling
+
+slipElements = (opt) ->
+  $select = opt.selectEl
+  $target = opt.targetEl
+
+  $select.toggleClass("active")
+  $speed = "normal"
+
+  if $select.hasClass("active")
+    $target.slipShow( $speed )
+
+  else
+    $target.slipHide( $speed )
+
+
+Template.ceiling.events
+  "click #login": (event, tmpl) ->
+    slipElements
+      selectEl: $(event.currentTarget.parentElement)
+      targetEl: $(tmpl.find(".terrace"))
+
+  "click a": (event, tmpl) ->
+    selectEl = $(event.currentTarget)
+    if selectEl.hasClass("active") then return
+
+    selectEl.addClass("active")
+    selectEl.siblings().removeClass("active")
+
+    show = event.currentTarget.getAttribute("data-account-show")
+    hide = event.currentTarget.getAttribute("data-account-hide")
+
+    speed = "fast"
+
+    if show then $(tmpl.find("[data-account=#{show}]")).slipShow(speed)
+    if hide then $(tmpl.find("[data-account=#{hide}]")).slipHide(speed)
+
+
+  "click button[type='submit']": (event, tmpl) ->
+    event.preventDefault()
+    username = tmpl.find("input#username").value
+    password = tmpl.find("input#password").value
+    console.log username, password
+    handleResponse = (err, res) ->
+      if err
+        $(tmpl.find(".alert")).text(err.reason).addClass "in"
+
+    if $(event.currentTarget).hasClass("create-account")
+      Accounts.createUser
+        username: username
+        password: password
+      , (err) ->
+        handleResponse err, "Account made."
+
+    else
+      Meteor.loginWithPassword username, password, (err) ->
+        handleResponse err, "You've logged in."
+
+  "click [data-modal]": (event, tmpl) ->
+    Session.set "show_modal", true
+    Session.set "modal", event.currentTarget.getAttribute("data-modal")
+
+  "click .logout": (event, tmpl) ->
+    Meteor.logout()
+
+  'click [data-toggle-mode]': (event, tmpl) ->
+    Session.set("user_mode", event.currentTarget.getAttribute("data-toggle-mode"))
+
+
+Template.ceiling.rendered = ->
+  self = @
+  if not self.handle
+    self.handle = Meteor.autorun(->
+      out = Session.get("user_mode")
+      console.log(out)
+      d3.select(".ceiling")
+        .transition()
+        .style( "height", out + "px")
+    )
+
+Template.ceiling.preserve(".ceiling")
 
 #////////////////////////////////////////////
-#  $$ body
-Template.body.events
-  "click .shift i": (event, tmpl) ->
-    dir = event.target.parentElement.getAttribute("data-shift-direction")
-    area = event.target.parentElement.getAttribute("data-shift-area")
+#  $$ content
+Template.content.events
+  "click .shift": (event, tmpl) ->
+    event.preventDefault()
+    if event.target.hasAttribute("disabled") then return
+    dir = event.target.getAttribute("data-shift-direction")
+    area = event.target.getAttribute("data-shift-area")
     page = Meteor.Router.page()
     current = _.first(page.split("_"))
     Session.set "shift_direction", dir
     Session.set "shift_area", area
     Session.set "shift_current", current
 
-  "click [data-modal]": (event, tmpl) ->
-    Session.set "show_modal", true
-    Session.set "modal", event.currentTarget.getAttribute("data-modal")
+  'click .links a': (event, tmpl) ->
+    href = event.currentTarget.getAttribute "href"
+    area = href.slice(1).split("/")
+    amplify.set "page_#{area[0]}", area.join("_")
 
-  # "mouseover .logout": (event, tmpl) ->
-  #   $(event.currentTarget).fadeOut()
-  #   $(event.currentTarget).find(".hover").fadeIn()
-
-  # "mouseleave .logout": (event, tmpl) ->
-  #   $(event.currentTarget).fadeIn()
-  #   $(event.currentTarget).find(".hover").fadeOut()
-
-  "click .logout": (event, tmpl) ->
-    Meteor.logout()
-
-
+  'click .accord header': (event, tmpl) ->
+    if not $(event.target).hasClass "active"
+      $(event.currentTarget).siblings().slideDown()
+    else
+      $(event.currentTarget).siblings().slideUp()
+    $(event.target).toggleClass "active"
 
 colorFill = (el, selector, value) ->
   "#{el} { #{selector} : #{value} }"
@@ -115,19 +194,19 @@ Handlebars.registerHelper "renderThemeColors", (user, selector) ->
       themeColors.removeRule()
 
 
-    themeColors.insertRule( colorFill ".clr-text.prime", "color", color.prime.light )
-    themeColors.insertRule( colorFill ".clr-text.prime:hover", "color", color.prime.medium )
-    themeColors.insertRule( colorFill ".clr-text.prime:active", "color", color.prime.dark )
-    themeColors.insertRule( colorFill ".clr-text.prime.active", "color", color.prime.medium )
+    themeColors.insertRule( colorFill ".clr-text.prime", "color", color.prime.medium)
+    themeColors.insertRule( colorFill "a", "color", color.prime.medium)
+    themeColors.insertRule( colorFill "a:hover, a.active", "color", color.prime.medium )
 
     themeColors.insertRule( colorFill ".clr-text.desat", "color", color.prime.light )
     themeColors.insertRule( colorFill ".clr-text.desat:hover", "color", color.prime.medium )
     themeColors.insertRule( colorFill ".clr-text.desat:active", "color", color.prime.dark )
 
-    themeColors.insertRule( colorFill ".clr-bg", "background", color.prime.light )
-    themeColors.insertRule( colorFill ".clr-bg:hover", "background", color.prime.medium)
-    themeColors.insertRule( colorFill ".clr-bg:active", "background", color.prime.dark )
+    themeColors.insertRule( colorFill ".clr-bg", "background", color.prime.medium)
+    themeColors.insertRule( colorFill ".clr-bg.btn:hover", "background", color.prime.medium)
 
+    themeColors.insertRule( colorFill ".clr-bg.light", "background", color.prime.light )
+    themeColors.insertRule( colorFill ".clr-bg.dark", "background", color.prime.dark )
     return
 
 
@@ -200,7 +279,7 @@ Template.home.helpers
     result = Offers.find(query,
       sort: sort
     ).fetch()
-    myLoc = Session.get "user_loc" or amplify.get("user.loc")
+    myLoc = Store.get "user_loc"
     if result and myLoc
       survey = _.each(result, (d) ->
         d.distance = Math.round(distance(myLoc.lat, myLoc.long, d.loc.lat, d.loc.long, "M") * 10) / 10
@@ -247,14 +326,46 @@ Template.home.helpers
   styleDate: (date) ->
     moment(date).fromNow()
 
-Template.home.created = ->
-   getLocation()
-
 #////////////////////////////////////////////
 #  $$ intro
 
-Template.intro.events "click button": (event, tmpl) ->
-  getLocation()
+Template.intro.events
+  "click #getLocation": (event, tmpl) ->
+    getLocation()
+
+  'click .geolocate': (event, tmpl)->
+
+    location = tmpl.find("input").value
+    if not location then return
+
+    geo = new google.maps.Geocoder()
+    geo.geocode
+      address: location
+    , (results, status) ->
+      if status isnt "OK"
+        dhtmlx.message
+          type: "warning"
+          text: icon.warning + "We couldn't seem to find your location. Did you enter your address correctly?"
+
+      else
+        # console.log
+        #   lat: results[0].geometry.location.Ya
+        #   long: results[0].geometry.location.Za
+
+        Store.set "user_loc",
+          lat: results[0].geometry.location.Ya
+          long: results[0].geometry.location.Za
+
+
+resizeButton = ->
+  button = $("button")
+  text = button.siblings()
+  height = text.outerHeight()
+  $("#intro").height(height)
 
 Template.intro.rendered = ->
-  $(@find("h1.fittext")).fitText .6
+  $(@find("h1")).fitText .6
+  $(@find("h2")).fitText 2
+  # resizeButton()
+  # $(window).on "resize", ->
+  #   resizeButton()

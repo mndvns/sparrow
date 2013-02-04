@@ -3,9 +3,9 @@
 	font-family: 'icomoon';
 	src:url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.eot');
 	src:url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.eot?#iefix') format('embedded-opentype'),
-		url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.svg#icomoon') format('svg'),
 		url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.woff') format('woff'),
-		url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.ttf') format('truetype');
+		url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.ttf') format('truetype'),
+		url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.svg#icomoon') format('svg');
 	font-weight: normal;
 	font-style: normal;
 }
@@ -26,7 +26,7 @@ Instead of a list of all class selectors,
 you can use the generic selector below, but it's slower:
 [class*="glyph-"]:before {
 */
-.glyph-drink:before, .glyph-microphone:before, .glyph-drink-2:before, .glyph-drink-3:before, .glyph-coffee:before, .glyph-ice-cream:before, .glyph-cake:before, .glyph-pacman:before, .glyph-cassette:before, .glyph-wallet:before, .glyph-gamepad:before, .glyph-bowling:before, .glyph-space-invaders:before, .glyph-batman:before, .glyph-lamp:before, .glyph-lamp-2:before, .glyph-paper-plane:before, .glyph-tag:before, .glyph-cog:before, .glyph-checkmark:before, .glyph-checkmark-2:before, .glyph-cancel:before, .glyph-cancel-2:before, .glyph-plus:before, .glyph-plus-2:before, .glyph-minus:before, .glyph-minus-2:before, .glyph-notice:before, .glyph-notice-2:before, .glyph-chart:before, .glyph-transformers:before, .glyph-pig:before, .glyph-envelope:before, .glyph-presentation:before, .glyph-open:before, .glyph-sale:before, .glyph-ampersand:before, .glyph-atom:before, .glyph-credit-card:before, .glyph-ticket:before, .glyph-rocket:before, .glyph-box:before, .glyph-diamond:before, .glyph-3d-glasses:before, .glyph-refrigerator:before, .glyph-microwave:before, .glyph-oven:before, .glyph-washing-machine:before, .glyph-eight-ball:before, .glyph-picture:before, .glyph-ipod:before, .glyph-drink-4:before, .glyph-usb:before, .glyph-switch:before, .glyph-palette:before, .glyph-moon:before, .glyph-cone:before, .glyph-hourglass:before, .glyph-gauge:before, .glyph-key:before, .glyph-book:before, .glyph-list:before, .glyph-history:before, .glyph-info:before, .glyph-question:before, .glyph-help:before, .glyph-arrow-left:before, .glyph-arrow-right:before, .glyph-arrow-up:before, .glyph-arrow-down:before, .glyph-disk:before, .glyph-pie:before, .glyph-keyboard:before, .glyph-bell:before, .glyph-cog-2:before, .glyph-bucket:before, .glyph-map:before, .glyph-book-2:before, .glyph-vote:before, .glyph-cord:before, .glyph-list-2:before, .glyph-clipboard:before, .glyph-tag-2:before, .glyph-qrcode:before, .glyph-feather:before, .glyph-pencil:before, .glyph-location:before, .glyph-map-2:before {
+.glyph-drink:before, .glyph-microphone:before, .glyph-drink-2:before, .glyph-drink-3:before, .glyph-coffee:before, .glyph-ice-cream:before, .glyph-cake:before, .glyph-pacman:before, .glyph-cassette:before, .glyph-wallet:before, .glyph-gamepad:before, .glyph-bowling:before, .glyph-space-invaders:before, .glyph-batman:before, .glyph-lamp:before, .glyph-lamp-2:before, .glyph-paper-plane:before, .glyph-tag:before, .glyph-cog:before, .glyph-checkmark:before, .glyph-checkmark-2:before, .glyph-cancel:before, .glyph-cancel-2:before, .glyph-plus:before, .glyph-plus-2:before, .glyph-minus:before, .glyph-minus-2:before, .glyph-notice:before, .glyph-notice-2:before, .glyph-chart:before, .glyph-transformers:before, .glyph-pig:before, .glyph-envelope:before, .glyph-presentation:before, .glyph-open:before, .glyph-sale:before, .glyph-ampersand:before, .glyph-atom:before, .glyph-credit-card:before, .glyph-ticket:before, .glyph-rocket:before, .glyph-box:before, .glyph-diamond:before, .glyph-3d-glasses:before, .glyph-refrigerator:before, .glyph-microwave:before, .glyph-oven:before, .glyph-washing-machine:before, .glyph-eight-ball:before, .glyph-picture:before, .glyph-ipod:before, .glyph-drink-4:before, .glyph-usb:before, .glyph-switch:before, .glyph-palette:before, .glyph-moon:before, .glyph-cone:before, .glyph-hourglass:before, .glyph-gauge:before, .glyph-key:before, .glyph-book:before, .glyph-list:before, .glyph-history:before, .glyph-info:before, .glyph-question:before, .glyph-help:before, .glyph-arrow-left:before, .glyph-arrow-right:before, .glyph-arrow-up:before, .glyph-arrow-down:before, .glyph-disk:before, .glyph-pie:before, .glyph-keyboard:before, .glyph-bell:before, .glyph-cog-2:before, .glyph-bucket:before, .glyph-map:before, .glyph-book-2:before, .glyph-vote:before, .glyph-cord:before, .glyph-list-2:before, .glyph-clipboard:before, .glyph-tag-2:before, .glyph-qrcode:before, .glyph-feather:before, .glyph-pencil:before, .glyph-location:before, .glyph-map-2:before, .glyph-info-2:before {
 	font-family: 'icomoon';
 	speak: none;
 	font-style: normal;
@@ -297,4 +297,7 @@ you can use the generic selector below, but it's slower:
 }
 .glyph-map-2:before {
 	content: "\e055";
+}
+.glyph-info-2:before {
+	content: "\e056";
 }

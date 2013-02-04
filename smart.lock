@@ -14,7 +14,7 @@
       "jade-handlebars": {},
       "handlebar-helpers": {},
       "dhtmlx-message": {},
-      "bootboxjs": {}
+      "browser-store": {}
     },
     "packages": {
       "moment": {
@@ -40,7 +40,7 @@
       "router": {
         "git": "https://github.com/tmeasday/meteor-router.git",
         "tag": "v0.3.4",
-        "commit": "8f0d5303de5b93771e91f21f818be27358c2fb30"
+        "commit": "e8e63db2411204f0a6589b74dd591babbfb2da1a"
       },
       "jade-handlebars": {
         "git": "https://github.com/SimonDegraeve/meteor-jade-handlebars.git",
@@ -57,10 +57,10 @@
         "tag": "v1.0.0",
         "commit": "cf09fabadcf5e099778e4b52f5ed78e4cc1bc18b"
       },
-      "bootboxjs": {
-        "git": "https://github.com/TimHeckel/meteor-bootboxjs.git",
+      "browser-store": {
+        "git": "https://github.com/awwx/meteor-browser-store.git",
         "tag": "v0.1.0",
-        "commit": "155b6c23506baf95c571568d28f2e5c8f526b9d0"
+        "commit": "ab31f1ced57a686f04547f0c7bfc04cae4c96ac9"
       },
       "page-js": {
         "git": "https://github.com/tmeasday/meteor-page-js.git",

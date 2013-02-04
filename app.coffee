@@ -37,4 +37,3 @@ Meteor.methods
     @.unblock()
     this.user().colors
 
-

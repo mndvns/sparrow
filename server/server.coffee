@@ -220,9 +220,9 @@ Meteor.methods
     comp = prime.setSaturation(.5).tetradicScheme()[1]
     desat = prime.setSaturation(.2)
     darken = (a) ->
-      a.setLightness(.2).setSaturation(.9).toString()
+      a.setLightness(.2).setSaturation(.6).toString()
     lighten = (a) ->
-      a.setLightness(.8).setSaturation(.3).toString()
+      a.setLightness(.8).setSaturation(.4).toString()
 
     Meteor.users.update
       _id: Meteor.userId()

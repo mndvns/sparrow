@@ -24,33 +24,37 @@ mixin field(i, a, z, b, m, c, ch)
     if ch !== "disabled"
       span.badge #{ch}
 
-mixin topnav(name)
-  .topnav.navbar(class= name): .navbar-inner: .container
-    if (name === "home")
-      .shift(data-shift-direction="left", data-shift-area="about").clr-text.desat.home.left
-        i.glyph-arrow-left
-      .shift(data-shift-direction="right", data-shift-area="account").home.right
-        {{#if currentUser}}
-        .logout.clr-text.desat
-          span.static{{currentUser.username}}
-          span.hover logout
-        i.glyph-arrow-right.clr-text.desat
-        {{else}}
-        span(data-modal="sign-in").clr-text.desat login
-        {{/if}}
-    if (name === "about")
-      {{#if getAmplify 'user.loc'}}
-      .shift(data-shift-direction="right", data-shift-area="home").clr-text.desat: i.glyph-arrow-right
-      {{/if}}
-    if (name === "account")
-      .shift(data-shift-direction="left", data-shift-area="home").clr-text.desat: i.glyph-arrow-left
-      ul.links.row
-        mixin link(opt)
-          a(href= opt.href ).clr-text.prime: li
-            i(class= "glyph-" + opt.glyph)
-            span= opt.label
+mixin link(opt)
+  a(href= opt.href, class= opt.class ): li
+    i(class= "glyph-" + opt.glyph)
+    span= opt.label
 
-        mixin link({label: "dashboard", href: "/account", glyph: "list" })
+mixin shift-block(opt)
+  a.shift(href= opt.area, data-shift-direction= opt.direction, data-shift-area= opt.area, class= opt.area +" "+ opt.direction )
+    i(class="glyph-arrow-" + opt.direction)
+
+mixin topnav(name)
+  .topnav.navbar(class= name)
+    if (name === "home")
+      mixin shift-block({direction: "left", area: "about"})
+      {{#if currentUser}}
+      mixin shift-block({direction: "right", area: "account"})
+      {{else}}
+      a.shift(disabled, data-modal="sign-in").right: i.glyph-arrow-right
+      {{/if}}
+      ul.links.row.clr-bg.light
+    if (name === "about")
+      mixin shift-block({direction: "right", area: "home"})
+      ul.links.row.clr-bg.light
+        mixin link({label: "about", href: "/about", glyph: "paper-plane", class: "active" })
+        mixin link({label: "faq", href: "/about/faq", glyph: "question" })
+        mixin link({label: "roadmap", href: "/about/roadmap", glyph: "map" })
+        mixin link({label: "feedback", href: "/about/feedback", glyph: "keyboard" })
+        mixin link({label: "blog", href: "/about/blog", glyph: "ampersand" })
+    if (name === "account")
+      mixin shift-block({direction: "left", area: "home"})
+      ul.links.row.clr-bg.light
+        mixin link({label: "dashboard", href: "/account", glyph: "list", class: "active" })
         mixin link({label: "offer", href: "/account/offer", glyph: "bucket" })
         mixin link({label: "messages", href: "/account/messages", glyph: "list" })
         mixin link({label: "profile", href: "/account/profile", glyph: "cog-2" })
@@ -71,16 +75,65 @@ head
 
 
 body
-  {{> body }}
+  {{> ceiling }}
   {{> modal }}
+  {{> content }}
 
-mixin modal-header(a)
-  .modal-header
-    button.close(data-dismiss="modal", type="button") ×
-    h3= a
+template(name="ceiling")
+  nav.ceiling.clr-bg.dark(data-terrace= "true")
+    .toggler-group.left
+      {{#constant}}
+      div(data-toggle-mode="help")
+        i.glyph-help
+        {{#if getSession "mode_help" }}
+        | on
+        {{else}}
+        | off
+        {{/if}}
+        {{/constant}}
+
+    .terrace.long
+      #sign-in
+        .inputs
+          div(data-account="sign")
+            input(type="text", placeholder="username", id="username", tabindex=1).span4
+            input(type="password", placeholder="password", id="password", tabindex=3).span4
+          .clearfix
+          div(data-account="create")
+            input(type="text", placeholder="email (optional)", id="email", tabindex=2).span4
+            input(type="password", placeholder="password (again)", id="password2", tabindex=4).span4
+        .controls
+          button(type="submit", data-account="create").btn.clr-bg.span8 Create
+          button(type="submit").btn.clr-bg.span8 Sign In
+        .clearfix
+        .alert.alert-blend-in Message
+        .clearfix
+        .navigation
+          a(href="#", data-account-hide="create").active Sign In 
+          |  | 
+          a(href="#", data-account-show="create") Create Account 
+          |  | 
+          a(href="#") Forgot Password 
+
+
+
+
+    .toggler-group.right
+      {{#if currentUser}}
+      .logout
+        span.static{{currentUser.username}}
+        span.hover logout
+      {{else}}
+      .login
+        span#login login
+      // span(data-modal="sign-in") login
+    {{/if}}
 
 template(name="modal")
-
+  mixin modal-header(a)
+    .modal-header
+      button.close(data-dismiss="modal", type="button") ×
+      h3= a
   .modal.fade(aria-hidden="{{show_modal.hidden}}", class="{{show_modal.class_fade}}")
     {{#if sessionEquals 'modal' 'sign-in'}}
     #sign-in
@@ -92,7 +145,7 @@ template(name="modal")
         .alert.fade.clearfix
         button(type="submit").btn.clr-bg.sign-in Sign In
       .modal-footer
-        button.btn(data-navigate="create-account") Create Account
+        button.btn.clr-bg.comp(data-navigate="create-account") Create Account
     {{/if}}
     {{#if sessionEquals 'modal' 'create-account'}}
     #create-account
@@ -109,9 +162,7 @@ template(name="modal")
 
   .modal-backdrop(aria-hidden="{{show_modal.hidden}}", class="{{show_modal.class_hide}}")
 
-template(name="body")
-
-
+template(name="content")
   .content
     .current
       {{#constant}} {{/constant}}
@@ -144,21 +195,150 @@ template(name="body")
 
 
 template(name="about")
-  .greeting
-    {{> intro }}
+  .row.centered
+    .span8.offset2
+      h2.smashed.clr-text.prime.
+        Sparrow is a real-time web application that finds physical things near you and presents
+        them in an interchangeable format.
+    .clearfix
+    .span10.offset1
+      h4.clr-text.prime What's the beef
+      p.
+        It works with simple words -- verbs, adjectives, and nouns -- and combines them in the same
+        ways you do. The result is a complete sentence that describes what you want, so that you're seeing
+        what you want in seconds and holding it in minutes.
+      h4.clr-text.prime "What do I want?"
+      p.
+        We've rethought how people help each other, from gas stations to search engines, and created
+        a system with a different (but not new) perspective: the perspective of your mom-and-pop shop;
+        of your pharmacist; of your barista; of your mother. It's the perspective of someone who believes that
+        what you want is important and wants to help you get it.
+      p: strong.
+        Our goal is to physically unite people with what they're after, even when they aren't sure what it is.
+      h4.clr-text.prime Here and now only
+      p.
+        It's a little ridiculous how much shipping is done these days. We won't list every single thing that
+        shouldn't have to travel, but the list is long.
+        Why shouldn't things be close to you? Why shouldn't you get something next door instead of Siberia?
+      p.
+        We believe closer is better, so we made system that feels the same way. It shuts out anything that isn't
+        available right now and right next to you.
+      p.
+        Good for you, good for your neighbors, good for your
+        city, bad for Siberians. :..(
 
-template(name='intro')
-  #intro.greeting.centered
-    h1.clearfix.fittext Sparrow
-    h1 a simple tool for complex cities
-    button.btn.btn-large Go
+template(name="about_faq")
+  .row.centered
+    .span8.offset2
+      .accord
+        header: h4: a(href="#") So... what is Sparrow?
+        .body
+          p.
+            Sparrow is a beta application where people sell things to other people, whether that's
+            spaghetti or a space shuttle.
+            Sellers give a brief description, price, and location of their offer, then they pick adjectives
+            they think sum it up best.
+            The adjectives are how we categorize the offers and ensure that buyers
+            only see things they are interested in.
+            Once an offer is published, it's immediately visible on homepage.
+          p.
+            The homepage appears differently to everyone. It calculates where you are and what you're looking for
+            all the time, as it hides, shows, rearranges, and adjusts offers to match you. It will change even
+            without interaction to reflect the offers in real time.
+      .accord
+        header: h4: a(href="#") What does 'real time' mean?
+        .body
+          p.
+            Sparrow has been built from the ground up to work in the present. When things change on Sparrow, they
+            change for immediately and universally -- no page refreshes are ever necessary.
+            This creates an amazing environment
+            for buyers and sellers.
+          p.
+            For just one example, when someone clicks 'upvote' on an offer, that upvote is immediately
+            visible to any and everyone who sees it, and it may even change the order of everything a buyer is
+            viewing.
+      .accord
+        header: h4: a(href="#") Why can't I sell anything?
+        .body
+          p.
+            Sparrow is still in its beta, so lots of features and improvement are forthcoming. We'll unlock
+            the reserving and selling features when we think their ready. If you want to learn more, check
+            out our <a href="/about/roadmap">roadmap</a>.
+      .accord
+        header: h4: a(href="#") How do I create an offer?
+        .body
+          p.
+            You must be logged in to vote or create an offer. To get started, just return to 
+            the <a class="shift" href="/" data-shift-direction="right" data-shift-area="home" >homepage</a>
+            and click 'login' in the upper-right corner.
+      .accord
+        header: h4: a(href="#") What the #!*@?
+        .body
+          p.
+            Whatever you're what-the-#!*@ing about, <a href="/about/feedback">let us know</a>.
 
+template(name="about_roadmap")
+  h1 some docs
+
+template(name="about_blog")
+  h4.clr-text.prime.centered Ha! Just kidding. Aint nobody got time for that.
+
+template(name="about_feedback")
+  {{> feedback }}
+
+template(name="feedback")
+  .greeting.row
+    .span6.offset3
+      h5.centered.
+        If you have something you'd like to mention to us, go ahead
+        and fill out this little message box and send it our way.
+      br
+
+    form#feedback.span4.offset4
+      .control-group
+        .controls
+          textarea(rows=4).span4
+      button.btn.centered.span4.clr-bg Send
+
+    .span10.offset1
+      h5.centered We'd like to take a moment to say <em>thank you</em>...
+      p.
+        We're in love with Kansas City, and we hope you are
+        too. We've worked hard to make something special for our home
+        -- an elegant tool that lets us to trade with our friends,
+        family, and neighbors in just seconds. With your help,
+        we have a chance to make it great.
+      p.
+        The feedback and interaction we receive from people like you
+        will play a major role in determining how we
+        approach our application, our objectives, and most importantly,
+        our users.
 
 template(name='home')
+  {{#if getStore "user_loc"}}
   {{> hero }}
   {{#each getOffers}}
   {{> offer }}
   {{/each}}
+  {{else}}
+  {{> intro }}
+  {{/if}}
+
+template(name='intro')
+  #intro
+    .row
+      .span12
+        h1.clr-text.clearfix Sparrow
+        h3.span8.offset2.smashed.
+          A real-time web application that finds 
+          things near you and presents them interchangeably.
+          <a href="/about" class="shift" data-shift-direction="left" data-shift-area="about"> Learn more </a>
+      .clearfix
+      button.btn.clr-bg.comp#getLocation Locate me automatically
+      h4 or
+      .input-append
+        input(type="text", placeholder="address, city, or zip")
+        button.btn.clr-bg.comp(type="button").geolocate Go
 
 template(name="hero")
   .hero
@@ -309,18 +489,17 @@ template(name='account_offer')
   .clearfix
 
   .account-offer.navbar: .navbar-inner: .container
-    ul.nav
+    ul.nav.long
       mixin nav-item(a, b, c)
-        li(class= c, data-value= a).clr-text.prime
+        li(class= c, data-value= a).clr-bg.span3
           i(class="glyph-" + b)
           | #{a}
-      mixin nav-item("text", "feather", "show")
-      mixin nav-item("tags", "tag-2", "show")
-      mixin nav-item("symbol", "palette", "show")
+      mixin nav-item("write", "feather", "show margin right")
+      mixin nav-item("tags", "tag-2", "show margin right")
+      mixin nav-item("symbol", "palette", "show margin right")
       mixin nav-item("location", "map", "show")
-      mixin nav-item("qr", "qrcode", "show")
-      mixin nav-item("save", "disk", "save")
-      mixin nav-item("help", "help", "help")
+      // mixin nav-item("save", "disk", "save margin right")
+      // mixin nav-item("help", "help", "help")
 
   {{#if sessionEquals 'help' 'true'}}
   .clearfix
@@ -334,9 +513,9 @@ template(name='account_offer')
         help text by hitting the toggle in the upper left.
       br
       p: strong Ready to make an offer?
-      button.btn.btn-large.show(data-value="text", color="{{this.color}}"): em Let's go!
+      button.btn.btn-large.show(data-value="write", color="{{this.color}}"): em Let's go!
     {{/if}}
-    {{#if sessionEquals 'show' 'text'}}
+    {{#if sessionEquals 'show' 'write'}}
     .span12
       h3 What are we selling?
     .span5.offset1
@@ -402,32 +581,15 @@ template(name='account_offer')
         For now, you can only list one location, but don't cry. We'll be rolling out multiple location features
         just as soon as enough people bug us about it.
     {{/if}}
-    {{#if sessionEquals 'show' 'qr'}}
-    .span4.offset4
-      p.
-        Here's a QR code for you. If takes the user to a page where they can vote for your offer. More to
-        come on this.
-    {{/if}}
+
   {{/if}}
 
 
 
   .clearfix.pad
 
-    {{#if show "text"}}
-    {{> account_offer_text }}
-    {{/if}}
-
-
-    {{#if show "qr"}}
-    .area
-      .actions
-        div.icon
-          i.glyph-qrcode#qr-button
-          br
-          span qr code
-      #qr-code
-      .clearfix
+    {{#if show "write"}}
+    {{> account_offer_write }}
     {{/if}}
 
     {{#if show "symbol"}}
@@ -444,7 +606,7 @@ template(name='account_offer')
 
     {{/with}}
 
-template(name="account_offer_text")
+template(name="account_offer_write")
   .area
     form
       .span5.offset1
@@ -457,7 +619,7 @@ template(name="account_offer_text")
 
 template(name="account_offer_tags")
   .area
-    .tag-list.long.offset1
+    .tag-list.long
       {{#each find 'Tagsets' '{}'}}
       {{#with checkTagsetActive}}
       ul.span2.tagset(data-tagset="{{this.name}}", data-status="{{this.attr}}")
@@ -516,33 +678,7 @@ template(name="account_message")
       .sent.span3.send send
 
 template(name="account_feedback")
-  .greeting.row
-    .span6.offset3
-      h5.centered.
-        If you have something you'd like to mention to us, go ahead
-        and fill out this little message box and send it our way.
-      br
-
-    form#feedback.span4.offset4
-      .control-group
-        .controls
-          textarea(rows=4).span4
-      button.btn.centered.span4.clr-bg Send
-
-    .span10.offset1
-      h5.centered We'd like to take a moment to say <em>thank you</em>...
-      p.
-        As you might have guessed, the folks behind the scenes here
-        are all in love with Kansas City, and we hope you are
-        too. We've worked hard to make something special for our home
-        -- an elegant tool that lets us to trade with our friends,
-        family, and neighbors in just seconds. And now, with your help,
-        we have a chance to make it great.
-      p.
-        The feedback and interaction we receive from people like you
-        will play a major role in determining how we
-        approach our application, our objectives, and most importantly,
-        our community.
+  {{> feedback }}
 
 
 //////////////////////////////////////////////

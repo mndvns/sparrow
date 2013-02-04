@@ -5,79 +5,100 @@ color = shiftColor: (a) ->
   Col = Color(a)
   white = Color("#fff")
   self.normal = Col
-  self.bright = Col.desaturateByAmount(.3)
+  self.bright = Col.desaturateByAmount(.1)
   self.sat_dark = Col.darkenByAmount(.5).saturateByAmount(0.3)
   self.hue = Col.getHue()
-  self.light = Col.blend(white, .8).desaturateByAmount(.3).toString()
+  self.light = Col.setSaturation(.8).setLightness(.7).toString()
   self.desat = Col.desaturateByAmount(.8).darkenByAmount(0.2).toString()
-  self.dark = Col.darkenByAmount(.2).toString()
+  self.dark = Col.setSaturation(1).setLightness(.2).toString()
 
 HeroList = (opt) ->
   fontSize = undefined
   chars = _.flatten(opt.current).toString().length
   opt.current[opt.name] = []  unless opt.current[opt.name]
-  hero = d3.select(".headline ." + opt.name).selectAll("span").data(opt.current[opt.name])
-  hero.enter().append "span"
+  hero = d3.select(".headline ." + opt.name)
+    .selectAll("span")
+    .data(opt.current[opt.name])
+
+  hero.enter()
+    .append "span"
+
   hero.exit().transition().style(
-    opacity: 0
-    "font-size": "0px"
-  ).remove()
+      opacity: 0
+      "font-size": "0px"
+
+    ).remove()
+
   hero.text((d) ->
     d
   ).transition().style
+    "opacity": "1"
+    "color": (d) ->
+      color.normal
     "font-size": (d) ->
       fontSize = (Math.round(20 + (100 / chars))) + "px"  unless fontSize
       fontSize
 
-    opacity: "1"
-    color: ->
-      color.normal
-
   return false  if opt.skipList
+
   list = d3.select("ul." + opt.name + "-list")
-  item = list.selectAll("li").data(opt.collection)
-  item.enter().insert "li"
+
+  item = list.selectAll("li")
+    .data(opt.collection)
+
+  item.enter()
+    .insert "li"
   item.datum((d, i) ->
-    limbo = (if opt.current.tagset.toString() is "find" or opt.current.noun.toString() is "offer" then true else false)
-    active = (if _.contains(opt.current[opt.name], d[opt.selector]) then "active" else "inactive")
-    d.status = (if limbo and opt.leader then "limbo" else active)
-    d
-  ).attr("class", (d) ->
-    d.status
-  ).text (d) ->
-    d[opt.selector]
+      limbo = (if opt.current.tagset.toString() is "find" or opt.current.noun.toString() is "offer" then true else false)
+      active = (if _.contains(opt.current[opt.name], d[opt.selector]) then "active" else "inactive")
+      d.status = (if limbo and opt.leader then "limbo" else active)
+      d
+    ).attr("class", (d) ->
+      d.status
+    ).text (d) ->
+      d[opt.selector]
 
   item.exit().remove()
-  limbo = list.selectAll("li.limbo").style(
-    background: (d) ->
-      color.shiftColor "teal"  if opt.leader
-      color.normal
+  # limbo = list.selectAll("li.limbo").style(
+  #   background: (d) ->
+  #     user = Meteor.user()
+  #     color.shiftColor "teal" if opt.leader
+  #     color.normal
 
-    color: "white"
-  )
+  #   color: "white"
+  # )
   active = list.selectAll("li.active").style(
     background: (d) ->
       if opt.leader
-        color.shiftColor d.color
-
-        if not Meteor.userId()
+        user = Meteor.user()
+        if user and user.colors
+          color.shiftColor user.colors.prime.medium
+          Session.set "user_colors_set", true
+        else if not $(document.body).hasClass("transitioning")
           themeColors = _.find document.styleSheets, (d) ->
             d.title is "dynamic-theme"
 
           for rule in themeColors.rules
             themeColors.removeRule()
 
-          themeColors.insertRule( colorFill ".clr-text", "color", color.normal )
-          themeColors.insertRule( colorFill ".clr-text:hover", "color", color.dark)
+          themeColors.insertRule( colorFill ".clr-text.prime", "color", color.normal )
+          themeColors.insertRule( colorFill "a", "color", color.normal)
+          themeColors.insertRule( colorFill "a:hover, a.active", "color", color.dark)
+
           themeColors.insertRule( colorFill ".clr-bg", "background", color.normal)
-          themeColors.insertRule( colorFill ".clr-bg:hover", "background", color.dark)
-          # d3.select("html").transition().style "background", ->
-          #   color.sat_dark
+          themeColors.insertRule( colorFill ".clr-bg.btn:hover", "background", color.dark)
+
+          themeColors.insertRule( colorFill ".clr-bg.light", "background", color.light )
+          themeColors.insertRule( colorFill ".clr-bg.dark", "background", color.dark)
+
+          color.shiftColor d.color
+
 
       color.normal
 
     color: "rgba(255, 255, 255, 0.9)"
   )
+
   inactive = list.selectAll("li.inactive").style(
     background: (d) ->
       if opt.leader
@@ -92,7 +113,6 @@ HeroList = (opt) ->
         "rgba(255,255,255, 0.9)"
   )
   [list, hero]
-
 
 #////////////////////////////////////////////
 #  $$  hero
@@ -132,6 +152,7 @@ Template.hero.events
     Session.set "current_tags", out
 
 Template.hero.created = ->
+  # getLocation()
   Session.set "heroRendered", false
   self = this
   unless self.handle

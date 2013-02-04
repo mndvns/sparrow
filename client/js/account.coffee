@@ -49,16 +49,7 @@ Handlebars.registerHelper "hsl", (l, a) ->
 
   "hsla(" + hue + "," + sat + "%," + light + "%," + alpha + ")"
 
-
-# ////////////////////////////////////////////
-#  $$ body
-Template.body.events "click .links li": (event, tmpl) ->
-
-
-# var selector = event.currentTarget.getAttribute("data-page")
-# as("accountPage", selector)
-# Session.set("accountPage", selector)
-Template.body.rendered = ->
+Template.content.rendered = ->
   self = this
   return  if Meteor.Router.page() is "home"
   self.activateLinks = Meteor.autorun(->
@@ -163,8 +154,13 @@ Template.account_offer.events
               type: "success"
               text: icon.success + "You're good to go!"
 
+            renderColors(Meteor.user())
 
 
+
+
+  "click .offer": (event, tmpl) ->
+    return false
 
   "click .show": (event, tmpl) ->
     area = event.currentTarget.getAttribute("data-value")
@@ -211,16 +207,16 @@ Template.account_offer.events
     url = "http://deffenbaugh.herokuapp.com/offer/"
     update_qrcode()
 
-Template.account_offer.rendered = ->
-  self = this
-  self.showHandle = Meteor.autorun(->
-    out = as("show")
-    $(".account.navbar li[data-value='" + out + "']").addClass "active"
-  ).stop()
-  self.helpHandle = Meteor.autorun(->
-    out = Session.get("help")
-    $(".account.navbar li.help").addClass "active"  if out
-  ).stop()
+# Template.account_offer.rendered = ->
+#   self = this
+#   self.showHandle = Meteor.autorun(->
+#     out = as("show")
+#     $(".account.navbar li[data-value='" + out + "']").addClass "active"
+#   ).stop()
+#   self.helpHandle = Meteor.autorun(->
+#     out = Session.get("help")
+#     $(".account.navbar li.help").addClass "active"  if out
+#   ).stop()
 
 Template.account_offer.created = ->
   Session.set "show", as("show") or "text"
@@ -281,6 +277,7 @@ Template.account_offer_symbol.rendered = ->
 
 #////////////////////////////////////////////
 #  $$ account_offer_tags
+
 Template.account_offer_tags.helpers
   getTags: (data) ->
     self = this
