@@ -118,6 +118,9 @@ HeroList = (opt) ->
 #  $$  hero
 Template.hero.events
   "click .list li": (event, tmpl) ->
+
+    if checkHelpMode() then return
+
     tmpl.handle.stop()
     story = d3.select(event.target).data()[0]
     selector = "current_" + story.collection

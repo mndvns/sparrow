@@ -14,12 +14,21 @@ String::toProperCase = ->
   @replace /\w\S*/g, (txt) ->
     txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
 
-
+numberWithCommas = (x)->
+  x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
 
 Color = net.brehaut.Color
 
-Time = now: ->
-  moment().unix() * 1000
+
+
+Time =
+  now: ->
+    moment()
+  setStart: ->
+    console.log("START TIME")
+    @start = @now()
+  endStart: ->
+    console.log("END TIME",  numberWithCommas(@now() - @start) + " milliseconds" )
 
 Meteor.methods
   upvoteEvent: (offer) ->

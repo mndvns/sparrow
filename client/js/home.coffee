@@ -2,6 +2,13 @@
 #////////////////////////////////////////////
 #  $$  globals and locals
 
+checkHelpMode = ->
+  $(".wrapper").hasClass("help-mode")
+
+# checkHelp = (a)->
+#   if a.getAttribute("data-help-block") is "true"
+#     return true
+
 distance = (lat1, lon1, lat2, lon2, unit) ->
   radlat1 = Math.PI * lat1 / 180
   radlat2 = Math.PI * lat2 / 180
@@ -70,102 +77,252 @@ Handlebars.registerHelper "page_next", (area) ->
 
   area
 
+
+
+Template.wrapper.events
+
+  "click a[data-toggle-mode]": (event, tmpl) ->
+    selectEl = event.currentTarget
+    rivalEl = $(selectEl.parentElement).siblings(".toggler-group")
+
+    mode     = selectEl.getAttribute "data-toggle-mode"
+    targetEl = tmpl.find(".terrace")
+    modeEl   = targetEl.querySelector("##{mode}")
+
+    slipElements
+      selectEl: $(selectEl)
+      targetEl: $(targetEl)
+      modeEl  : $(modeEl)
+      rivalEl : rivalEl
+
+  "click a[data-toggle-mode='help']": (event, tmpl) ->
+    dhb = "data-help-block"
+    blocks = $("[#{dhb}]")
+    status = blocks.first().attr(dhb)
+    wrapper = $(tmpl.find(".wrapper"))
+    wrapperClasses = "help-mode clr-bg dark"
+    span = $(event.currentTarget).children("span")
+
+    if status is "true"
+      blocks.attr(dhb, "false")
+      blocks.removeAttr "help-active"
+      wrapper.removeClass wrapperClasses
+      span.text("help")
+
+    else
+      blocks.attr(dhb, "true")
+      wrapper.addClass wrapperClasses
+      span.text("exit")
+
+  "click .help-mode [data-help-block='true']": (event, tmpl) ->
+
+    event.stopPropagation()
+
+    $target = $(event.currentTarget)
+    selector = $target.attr "data-help-selector"
+
+    oldB = tmpl.findAll("[help-active='true']")
+    newB = tmpl.findAll("[data-help-selector='#{selector}']")
+
+    console.log(oldB, newB)
+
+    $(oldB).attr("help-active", "false")
+    $(newB).attr("help-active", "true")
+
+    tmpl.find("#help p").textContent = helpBlocks[selector].summary
+
+    return false
+
+  "mouseenter .help-mode [data-help-block='true']": (event, tmpl) ->
+
+    selector = event.currentTarget.getAttribute "data-help-selector"
+
+    help = tmpl.find("#help")
+
+    text = (cb)->
+      help.querySelector("h4").innerHTML = helpBlocks[selector] and helpBlocks[selector].title
+      help.querySelector("p").innerHTML = helpBlocks[selector] and helpBlocks[selector].summary
+      if cb and typeof cb is "function" then cb()
+
+    if help.style.display isnt "block"
+      text()
+      $(help).fadeIn 'fast'
+    else
+      $(help).fadeOut 'fast', ->
+        text(->
+          $(help).fadeIn 'fast'
+        )
+
+  "mouseleave .help-mode [data-help-block='true']": (event, tmpl) ->
+    help = tmpl.find("#help")
+    $(help).fadeOut('fast')
+
+  "click .shift": (event, tmpl) ->
+
+    if checkHelpMode() then return
+    if event.currentTarget.hasAttribute("disabled") then return
+
+    dir = event.currentTarget.getAttribute("data-shift-direction")
+    area = event.currentTarget.getAttribute("data-shift-area")
+    page = Meteor.Router.page()
+    current = _.first(page.split("_"))
+
+    console.log("DIR", dir)
+    console.log("AREA", area)
+    console.log("PAGE", page)
+    console.log("CURRENT", current)
+
+    Session.set "shift_direction", dir
+    Session.set "shift_area", area
+    Session.set "shift_current", current
+
+
+
+
 #//////////////////////////////////////////////
 #// $$ ceiling
 
 slipElements = (opt) ->
   $select = opt.selectEl
   $target = opt.targetEl
+  $mode   = opt.modeEl
+  $rival  = opt.rivalEl
 
   $select.toggleClass("active")
-  $speed = "normal"
+
+  $speed = 300
 
   if $select.hasClass("active")
-    $target.slipShow( $speed )
+    $mode.show()
+    $rival.fadeToggle()
+    $target.slipShow
+      speed: $speed
+      haste: 1
 
   else
-    $target.slipHide( $speed )
+    $target.slipHide
+      speed: $speed
+      haste: 1
+      , ->
+        $mode.hide()
+        $rival.fadeToggle()
 
 
 Template.ceiling.events
-  "click #login": (event, tmpl) ->
-    slipElements
-      selectEl: $(event.currentTarget.parentElement)
-      targetEl: $(tmpl.find(".terrace"))
 
-  "click a": (event, tmpl) ->
-    selectEl = $(event.currentTarget)
-    if selectEl.hasClass("active") then return
+  "click .navigation a": (event, tmpl) ->
+    target = event.currentTarget
+    active = target.getAttribute("class")
 
+    if active is "active" then return
+
+    selectEl = $(target)
     selectEl.addClass("active")
     selectEl.siblings().removeClass("active")
 
-    show = event.currentTarget.getAttribute("data-account-show")
-    hide = event.currentTarget.getAttribute("data-account-hide")
+    data = selectEl.data()["accountData"]
 
-    speed = "fast"
+    hide = for h in data.hide
+      tmpl.find("[data-account='#{h}']")
+    show = for s in data.show
+      tmpl.find("[data-account='#{s}']")
 
-    if show then $(tmpl.find("[data-account=#{show}]")).slipShow(speed)
-    if hide then $(tmpl.find("[data-account=#{hide}]")).slipHide(speed)
+    speed = 150
+
+    $(hide).slipHide
+      speed: speed
+      haste: 1
+      , ->
+        $(show).slipShow
+          speed: speed
+          haste: 1
+
+    type = data.type
+    text = target.textContent
+
+    button = tmpl.find("button[type='submit']")
+
+    button.setAttribute "data-account-submit-type", data.type
+    button.textContent = data.text
 
 
   "click button[type='submit']": (event, tmpl) ->
     event.preventDefault()
-    username = tmpl.find("input#username").value
-    password = tmpl.find("input#password").value
-    console.log username, password
+
+    username    = tmpl.find("input#username").value
+    password    = tmpl.find("input#password").value
+    email       = tmpl.find("input#email").value
+    password2   = tmpl.find("input#password2").value
+    forgotEmail = tmpl.find("input#forgot-email").value
+
+    type = event.currentTarget.getAttribute("data-account-submit-type")
+
     handleResponse = (err, res) ->
       if err
         $(tmpl.find(".alert")).text(err.reason).addClass "in"
 
-    if $(event.currentTarget).hasClass("create-account")
-      Accounts.createUser
-        username: username
-        password: password
-      , (err) ->
-        handleResponse err, "Account made."
+    if type is "sign" or type is "create"
 
-    else
-      Meteor.loginWithPassword username, password, (err) ->
-        handleResponse err, "You've logged in."
+      errors = []
 
-  "click [data-modal]": (event, tmpl) ->
-    Session.set "show_modal", true
-    Session.set "modal", event.currentTarget.getAttribute("data-modal")
+      if not username then errors.push "username"
+      if not password then errors.push "password"
+
+      if errors.length
+        handleResponse reason: "Must enter a #{errors.join(" and ")}"
+        return
+
+      switch type
+        when "create"
+          errors = []
+
+          if username.length < 5 then errors.push "username"
+          if password.length < 5 then errors.push "password"
+
+          if errors.length
+            handleResponse reason: "#{errors.join(" and ")} must be at least five characters"
+            return
+
+          if password isnt password2
+            handleResponse reason: "Passwords do not match"
+            return
+
+          if email and not validateEmail(email)
+            handleResponse reason: "Invalid email"
+            return
+
+          Accounts.createUser
+            username: username
+            email: email
+            password: password,
+            (err) ->
+              handleResponse err, "Account made"
+
+        when "sign"
+          Meteor.loginWithPassword username, password, (err) ->
+            handleResponse err, "You've logged in"
+
+    else if type is "forgot"
+
+      if not forgotEmail
+        handleResponse reason: "Must enter an email address"
+        return
+
+      if forgotEmail and not validateEmail forgotEmail
+        handleResponse reason: "Invalid email"
+        return
+
+      handleResponse reason: "A message has been sent"
+
+      console.log(forgotEmail)
+      return
 
   "click .logout": (event, tmpl) ->
     Meteor.logout()
 
-  'click [data-toggle-mode]': (event, tmpl) ->
-    Session.set("user_mode", event.currentTarget.getAttribute("data-toggle-mode"))
-
-
-Template.ceiling.rendered = ->
-  self = @
-  if not self.handle
-    self.handle = Meteor.autorun(->
-      out = Session.get("user_mode")
-      console.log(out)
-      d3.select(".ceiling")
-        .transition()
-        .style( "height", out + "px")
-    )
-
-Template.ceiling.preserve(".ceiling")
-
 #////////////////////////////////////////////
 #  $$ content
 Template.content.events
-  "click .shift": (event, tmpl) ->
-    event.preventDefault()
-    if event.target.hasAttribute("disabled") then return
-    dir = event.target.getAttribute("data-shift-direction")
-    area = event.target.getAttribute("data-shift-area")
-    page = Meteor.Router.page()
-    current = _.first(page.split("_"))
-    Session.set "shift_direction", dir
-    Session.set "shift_area", area
-    Session.set "shift_current", current
 
   'click .links a': (event, tmpl) ->
     href = event.currentTarget.getAttribute "href"
@@ -178,6 +335,11 @@ Template.content.events
     else
       $(event.currentTarget).siblings().slideUp()
     $(event.target).toggleClass "active"
+
+
+
+
+
 
 colorFill = (el, selector, value) ->
   "#{el} { #{selector} : #{value} }"

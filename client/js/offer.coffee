@@ -35,6 +35,9 @@ Template.offer.helpers
     true  if _.contains(user.votes, selection)
 
 Template.offer.events
+  'click .help-mode .offer': ->
+    return false
+
   'click .vote': (event, tmpl) ->
     # tmpl.find(".votes span.actual").textContent = @.votes + 1
     Meteor.call "upvoteEvent", tmpl.data

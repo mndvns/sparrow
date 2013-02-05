@@ -274,8 +274,12 @@ nav.ceiling
     z-index 100
     vertical-align middle
     line-height ceiling-height
-    div
+    a
       color rgba(white, .7)
+      relative top
+      span
+        line-height ceiling-height
+        vertical-align middle
       &.active
       &:hover
         color white
@@ -287,9 +291,11 @@ nav.ceiling
   a
     &:hover
       color rgba(white, .7)
-  .clr-bg
+  .btn.clr-bg
     &:hover
       background rgba(white, .4)
+  .terrace > div
+    display none
   .terrace
     relative top
     z-index 50
@@ -313,18 +319,20 @@ nav.ceiling
       margin-bottom (fontSize / 2)
       text-align center
       float none
+      border none
 
     .navigation
       text-align center
 
-    [data-account=create]
+    [data-slip-show='false']
       display none
       opacity 0
 
-    buttons
-    a
-      &.active
-        color rgba(white, 0.5)!important
+    p
+    .alert
+    buttons.active
+    a.active
+      color rgba(white, 0.5)!important
 
 
 @keyframes ceiling-expand
@@ -395,6 +403,13 @@ nav.ceiling
         font-size height
         margin-top 5px
 
+  .shift-block
+    &.left
+      left fontSize
+    &.right
+      right fontSize
+
+  .shift-block
   a.shift
     position absolute
     display inline-block
@@ -402,10 +417,10 @@ nav.ceiling
     line-height height - 5
     font-size (height / 2)
     z-index 100
-    &.left
-      left fontSize
-    &.right
-      right fontSize
+    width (fontSize * 3)
+
+  a.shift
+    text-align center
     &[disabled]
       opacity 0.3
       color rgba(black, .3)
@@ -558,6 +573,11 @@ Spanner( 940px )
 .hero
   margin-top -23px
   relative top
+  minHeight = 230px
+  min-height minHeight
+  .list
+    display block
+    min-height minHeight
   .headline
     absolute top -45px left 15%
     z-index 100
@@ -603,15 +623,9 @@ Spanner( 940px )
           opacity .9
 
 
-@media (min-width: 1200px)
-  nav
-    padding-left 10px
-
-@media (max-width: 700px)
-  nav
-    display none!important
-    visibility hidden
-
+.offers
+  min-height 50%
+  display block
 
 .offer
 
@@ -914,6 +928,8 @@ input.color
   text-shadow none
   .clr-bg &
     color white
+  &:first-letter
+    text-transform capitalize
   &.alert-blend-in
     background none
     border none
@@ -1074,9 +1090,141 @@ input.color
   transition color 100ms ease 0
 
 .clr-bg
+  &.help-mode
+    transition background 500ms ease 0
   transition background 200ms ease 0
   &:hover
     transition background 200ms ease 0
+
+Duration = 2000ms
+
+easing(args...)
+  transition-easing-function linear
+  if args
+    transition-duration args!important
+  else
+    transition-duration 500ms!important
+
+[data-help-block]
+  outline = 3px
+  box-shadow none
+  trans(all)
+  &[data-help-block=true]
+    outline outline solid transparent
+    outline outline solid rgba(black, 0.2)
+    overflow visible
+    opacity .9!important
+    &.offer
+      opacity 0
+      display none
+      &:first-child
+        display block
+    &:hover
+      opacity 1!important
+      easing( 200ms )
+    transform scale( .75)
+    background rgba(white, 0.4)
+    box-shadow 0 1px 2px rgba(black, .3)
+    *
+      trans(all)
+      easing()
+      opacity 0
+    [data-help-block]
+      background rgba(white, 0.4)
+      opacity 1
+      li
+        opacity 0!important
+    &[help-active=true]
+    &[help-active=false]
+      transition-duration 200ms
+    &[help-active=true]
+    &:hover
+      transform scale( .8 )
+      box-shadow 0 0 60px rgba(white, .25 )
+      background rgba(white, .6)
+      outline 3px solid rgba(black, .1 )
+      [data-help-block]
+        background rgba(black, 0)
+        outline 3px solid rgba(black, .3 )
+        box-shadow 0 1px 2px rgba(black, .2)
+
+//////////////////////////////////////////////
+//  $$ help-mode
+
+
+.clr-bg.dark
+  &.help-mode
+  .help-mode &
+    trans(background-color)
+    easing()
+
+body
+  trans(all)
+  background-color white
+
+.current
+  top 0
+  trans(transform top)
+  .help-mode &
+    transform scale( .9 )
+    top 50px
+
+.ceiling
+  trans(background)
+  easing()
+  .help-mode &
+    overflow visible!important
+    background transparent!important
+
+.terrace
+  #help
+    width 100%
+  #help
+  #help > p
+    display none
+    max-height 0
+    opacity 0
+    margin 0
+    padding-bottom 0
+    trans(opacity max-height)
+  .help-mode &
+    absolute top
+    overflow visible!important
+    height 0
+    opacity 1
+    #help
+    #help > p
+      absolute top
+      max-height 1000px
+      display block
+      color white
+      opacity 1
+      margin 0 auto
+    #help
+      width 100%
+    p
+      width 70%
+      left 15%
+      padding-top (fontSize * 2)
+      line-height 1.25
+      font-weight normal
+      opacity .8
+    *
+      text-align center
+      margin 0 auto
+
+.wrapper
+  absolute top left
+  display block
+  width 100%
+  height 100%
+  trans(all)
+  background white
+
+.wrapper
+.wrapper.clr-bg.dark
+  transition-duration 2000ms!important
+
 
 s = 90%
 l = 40%

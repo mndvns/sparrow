@@ -1,4 +1,5 @@
 
+
 //////////////////////////////////////////////
 //  $$ mixins
 
@@ -30,8 +31,9 @@ mixin link(opt)
     span= opt.label
 
 mixin shift-block(opt)
-  a.shift(href= opt.area, data-shift-direction= opt.direction, data-shift-area= opt.area, class= opt.area +" "+ opt.direction )
-    i(class="glyph-arrow-" + opt.direction)
+  .shift-block(data-help-block="false", data-help-selector="shift", class= opt.area +" "+ opt.direction )
+    a.shift(href= "#", data-shift-direction= opt.direction, data-shift-area= opt.area )
+      i(class="glyph-arrow-" + opt.direction)
 
 mixin topnav(name)
   .topnav.navbar(class= name)
@@ -40,7 +42,8 @@ mixin topnav(name)
       {{#if currentUser}}
       mixin shift-block({direction: "right", area: "account"})
       {{else}}
-      a.shift(disabled, data-modal="sign-in").right: i.glyph-arrow-right
+      .shift-block(data-help-block="false", data-help-selector="shift").account.right
+        a(href="#").shift(disabled): i.glyph-arrow-right
       {{/if}}
       ul.links.row.clr-bg.light
     if (name === "about")
@@ -75,48 +78,51 @@ head
 
 
 body
-  {{> ceiling }}
-  {{> modal }}
-  {{> content }}
+  {{> wrapper }}
+
+template(name="wrapper")
+  .wrapper
+    {{> ceiling }}
+    {{> modal }}
+    {{> content }}
 
 template(name="ceiling")
   nav.ceiling.clr-bg.dark(data-terrace= "true")
     .toggler-group.left
-      {{#constant}}
-      div(data-toggle-mode="help")
+      a(data-toggle-mode="help")
         i.glyph-help
-        {{#if getSession "mode_help" }}
-        | on
-        {{else}}
-        | off
-        {{/if}}
-        {{/constant}}
+        span help
 
-    .terrace.long
-      #sign-in
+    .terrace
+
+      #help.centered
+        h4 You have turned on help.
+        p To learn more about an area, hover over it.
+
+      #sign-in.long
         .inputs
-          div(data-account="sign")
+          div(data-account="sign", data-slip-show='true')
             input(type="text", placeholder="username", id="username", tabindex=1).span4
             input(type="password", placeholder="password", id="password", tabindex=3).span4
           .clearfix
-          div(data-account="create")
+          div(data-account="create", data-slip-show="false")
             input(type="text", placeholder="email (optional)", id="email", tabindex=2).span4
             input(type="password", placeholder="password (again)", id="password2", tabindex=4).span4
+          .clearfix
+          div(data-account="forgot", data-slip-show="false")
+            p A message with instructions will be sent to your email address
+            input(type="text", placeholder="email", id="forgot-email", tabindex=1).span8
         .controls
-          button(type="submit", data-account="create").btn.clr-bg.span8 Create
-          button(type="submit").btn.clr-bg.span8 Sign In
+          button(type="submit", data-account-submit-type="sign").btn.clr-bg.span8 Sign In
         .clearfix
         .alert.alert-blend-in Message
         .clearfix
         .navigation
-          a(href="#", data-account-hide="create").active Sign In 
+          a(href="#", data-account-data='{"hide": ["forgot", "create"], "show":["sign"], "type":"sign", "text": "Sign In"}').active Sign In 
           |  | 
-          a(href="#", data-account-show="create") Create Account 
+          a(href="#", data-account-data='{"hide": ["forgot"], "show":["sign", "create"], "type":"create", "text": "Create Account"}') Create Account 
           |  | 
-          a(href="#") Forgot Password 
-
-
-
+          a(href="#", data-account-data='{"hide": ["sign", "create"], "show":["forgot"], "type":"forgot", "text": "Reset password"}') Forgot Password 
 
     .toggler-group.right
       {{#if currentUser}}
@@ -124,7 +130,7 @@ template(name="ceiling")
         span.static{{currentUser.username}}
         span.hover logout
       {{else}}
-      .login
+      a.login(data-toggle-mode="sign-in")
         span#login login
       // span(data-modal="sign-in") login
     {{/if}}
@@ -317,9 +323,10 @@ template(name="feedback")
 template(name='home')
   {{#if getStore "user_loc"}}
   {{> hero }}
-  {{#each getOffers}}
-  {{> offer }}
-  {{/each}}
+  .offers(data-help-block="false", data-help-selector="offers")
+    {{#each getOffers}}
+    {{> offer }}
+    {{/each}}
   {{else}}
   {{> intro }}
   {{/if}}
@@ -344,7 +351,7 @@ template(name="hero")
   .hero
     {{#constant}}
 
-    .headline
+    .headline(data-help-block="false", data-help-selector="heroHeadline")
       .inner
         .tagset
           span
@@ -357,11 +364,11 @@ template(name="hero")
         .noun
           span
 
-    .list.long
-      ul.tagset-list.span3(data-constant=true)
-      ul.sort-list.span3(data-constant=true).margin.left
-      ul.tag-list.span3.margin.left
-      ul.noun-list.span3(data-constant=true).margin.left
+    .list.long(data-help-block="false", data-help-selector="heroList")
+      ul.tagset-list.span3(data-constant=true, data-help-block="false", data-help-selector="heroListTagset")
+      ul.sort-list.span3(data-constant=true, data-help-block="false", data-help-selector="heroListSort").margin.left
+      ul.tag-list.span3.margin.left(data-help-block="false", data-help-selector="heroListTag")
+      ul.noun-list.span3(data-constant=true, data-help-block="false", data-help-selector="heroListNoun").margin.left
 
     {{/constant}}
 
@@ -694,7 +701,7 @@ template(name='thisOffer')
     {{/with}}
 
 template(name='offer')
-  .offer(data-tagset="{{this.tagset}}", id="{{this._id}}").long
+  .offer(data-tagset="{{this.tagset}}", id="{{this._id}}", data-help-block="false", data-help-selector="offer").long
 
     style(type="text/css")
       .offer[id="{{this._id}}"] .light {
