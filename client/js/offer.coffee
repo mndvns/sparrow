@@ -21,7 +21,7 @@ handleActions = (event, tmpl, cb) ->
 
 Template.offer.helpers
   getDistance: (loc) ->
-    myLoc = amplify.get("user.loc")
+    myLoc = Store.get("user_loc")
     if myLoc and loc
       dist = distance(myLoc.lat, myLoc.long, loc.lat, loc.long, "M")
       Math.round(dist * 10) / 10
@@ -39,7 +39,7 @@ Template.offer.events
     return false
 
   'click .vote': (event, tmpl) ->
-    # tmpl.find(".votes span.actual").textContent = @.votes + 1
+    # if event.currentTarget.hasAttribute "disabled" then return
     Meteor.call "upvoteEvent", tmpl.data
 
   "click section.actions li.map": (event, tmpl) ->
@@ -48,7 +48,7 @@ Template.offer.events
       map = {}
       directionsDisplay = {}
       directionsService = new google.maps.DirectionsService()
-      origin = amplify.get("user.loc")
+      origin = Store.get("user_loc")
       gorigin = new google.maps.LatLng(origin.lat, origin.long)
       dest = tmpl.data.loc
       gdest = new google.maps.LatLng(dest.lat, dest.long)
@@ -120,25 +120,34 @@ Template.offer.rendered = ->
     name: "price"
     invert: true
   ]
-  self = this
-  renderRatio = (callback) ->
-    ratio = {}
-    _.each keys, (k) ->
-      d = k.name
-      upperRange = self.data[d] - range.min[d][d] + 0.01
-      lowerRange = range.max[d][d] - range.min[d][d]
-      out = Math.ceil((100 * (upperRange) / (lowerRange)) * 5) / 10
-      ratio[d] = (if k.invert is false then out else Math.abs(out - 50))
+  self = @
 
-    callback ratio
+  # renderRatio = (callback) ->
+  #   ratio = {}
+  #   _.each keys, (k) ->
+  #     d = k.name
+  #     upperRange = self.data[d] - range.min[d][d] + 0.01
+  #     lowerRange = range.max[d][d] - range.min[d][d]
+  #     out = Math.ceil((100 * (upperRange) / (lowerRange)) * 5) / 10
+  #     ratio[d] = (if k.invert is false then out else Math.abs(out - 50))
 
-  renderRatio (ratio) ->
-    for key of ratio
-      if ratio.hasOwnProperty(key) and ratio[key]
-        data = d3.select(self.find("section.data ." + key))
-        metric = data.select(".metric")
-        metric.style height: ->
-          ratio[key] + "%"
+  #   callback ratio
+
+  # renderRatio (ratio) ->
+  #   for key of ratio
+  #     if ratio.hasOwnProperty(key) and ratio[key]
+  #       data = d3.select(self.find("section.data ." + key))
+  #       metric = data.select(".metric")
+  #       metric.style height: ->
+  #         ratio[key] + "%"
+
+  userId = Meteor.userId()
+
+  voted = _.find self.data.votes, (d) ->
+    d.user is userId
+
+  if voted
+    self.find( "li.vote" ).setAttribute "disabled"
 
 
 

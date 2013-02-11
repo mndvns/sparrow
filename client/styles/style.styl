@@ -187,8 +187,6 @@ body
     margin-top 30px
     margin-bottom 10px
 
-.area
-  min-height 500px
 
 textarea
 input[type="text"]
@@ -256,26 +254,17 @@ nav.ceiling
   .login
     relative right
     span
-      absolute right
-      trans(opacity)
-      transition-duration 100ms
-    .hover
-      opacity 0
-    .static
-      opacity 1
-    &:hover
-      .hover
-        opacity 1
-      .static
-        opacity 0
+      relative right
 
   .toggler-group
     absolute top
     z-index 100
     vertical-align middle
     line-height ceiling-height
+    span
     a
       color rgba(white, .7)
+    a
       relative top
       span
         line-height ceiling-height
@@ -570,11 +559,36 @@ Spanner( 940px )
   [class*="span"]
     float left
 
+.offer-tag-list
+  i
+    relative top
+    display inline-block
+    z-index 100
+    font-size 22px
+    height fontSize - 1
+    top -1px
+    pad = 7px
+    padding-left pad
+    padding-right pad
+  li
+  span
+    user-select none
+  li
+    relative top
+    &[data-group=tags]
+      float right
+      width 100%
+      box-sizing border-box
+      .actions
+        absolute right
+
+.offer-tag-list
 .hero
   margin-top -23px
   relative top
   minHeight = 230px
   min-height minHeight
+  color white
   .list
     display block
     min-height minHeight
@@ -610,17 +624,24 @@ Spanner( 940px )
     letter-spacing 1px
     padding 10px 0
     text-align center
+    &[data-active]
+      display none
+      &[data-active=true]
+        display block
     li
+      trans(opacity)
+      transition-duration 100ms
       padding 10px
       overflow hidden
+      &[data-active]
       &.inactive
         background "transparent"
         opacity .5
         &:hover
           opacity .8
-      &.active
-        &:hover
-          opacity .9
+      &[data-active=true]
+      &.active:hover
+        opacity .9
 
 
 .offers
@@ -644,8 +665,11 @@ Spanner( 940px )
     &.busy
     &[data-status=active]
     &:hover
+    &[disabled]
       .bumper
         opacity 1
+    &[disabled]
+      color lightGray
 
   font-weight normal
   relative top
@@ -666,11 +690,6 @@ Spanner( 940px )
     span, p, li, i, div
       color rgba(0,0,0, 0.9)
       text-shadow 0 1px 0 white
-  .account_offer &
-    .symbol
-    .main
-    .metric
-      background #ccc
   section
     float left
   &.voted
@@ -711,6 +730,7 @@ Spanner( 940px )
 
   section.actions
     height height
+    user-select none
     ul
       display block
       height 100%
@@ -837,27 +857,6 @@ Spanner( 940px )
 #tags
   ul
     float left
-
-
-.tag-list
-  ul
-    float left
-    user-select none
-    strong
-      font-weight 900
-      color #555
-      text-transform uppercase
-      font-size 11px
-      letter-spacing 1px
-      line-height 3em
-    li
-      border-left 1px solid #ddd
-      span
-        padding 5px 10px
-        line-height 2.5em
-        font-weight normal
-    [data-active]
-      background #ddd
 
 .editor
   h1
@@ -1172,6 +1171,7 @@ body
 .ceiling
   trans(background)
   easing()
+  user-select none
   .help-mode &
     overflow visible!important
     background transparent!important
@@ -1213,13 +1213,28 @@ body
       text-align center
       margin 0 auto
 
+#terrace-alert
+  display none
+  opacity 0
+  font-weight 300
+  font-family "proxima-nova"
+  color rgba(white, .8)
+
+#dimmer
+  fixed top
+  width 100%
+  height 100%
+  z-index 200
+  background white
+  display none
+  opacity 0
+
 .wrapper
   absolute top left
   display block
   width 100%
   height 100%
   trans(all)
-  background white
 
 .wrapper
 .wrapper.clr-bg.dark

@@ -9,20 +9,6 @@ checkHelpMode = ->
 #   if a.getAttribute("data-help-block") is "true"
 #     return true
 
-distance = (lat1, lon1, lat2, lon2, unit) ->
-  radlat1 = Math.PI * lat1 / 180
-  radlat2 = Math.PI * lat2 / 180
-  radlon1 = Math.PI * lon1 / 180
-  radlon2 = Math.PI * lon2 / 180
-  theta = lon1 - lon2
-  radtheta = Math.PI * theta / 180
-  dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta)
-  dist = Math.acos(dist)
-  dist = dist * 180 / Math.PI
-  dist = dist * 60 * 1.1515
-  dist = dist * 1.609344  if unit is "K"
-  dist = dist * 0.8684  if unit is "N"
-  dist
 Sparrow = {}
 Sparrow.shift = ->
   Session.get "shift_area"
@@ -167,10 +153,10 @@ Template.wrapper.events
     page = Meteor.Router.page()
     current = _.first(page.split("_"))
 
-    console.log("DIR", dir)
-    console.log("AREA", area)
-    console.log("PAGE", page)
-    console.log("CURRENT", current)
+    # console.log("DIR", dir)
+    # console.log("AREA", area)
+    # console.log("PAGE", page)
+    # console.log("CURRENT", current)
 
     Session.set "shift_direction", dir
     Session.set "shift_area", area
@@ -372,76 +358,29 @@ Handlebars.registerHelper "renderThemeColors", (user, selector) ->
     return
 
 
-#////////////////////////////////////////////
-#  $$ modal
-Template.modal.events
-  "click button[type=\"submit\"]": (event, tmpl) ->
-    event.preventDefault()
-    username = tmpl.find("input#username").value
-    password = tmpl.find("input#password").value
-    console.log username, password
-    handleResponse = (err, res) ->
-      if err
-        $(tmpl.find(".alert")).text(err.reason).addClass "alert-error in"
-      else
-        Session.set "show_modal", false
-        Meteor.setTimeout (->
-          Session.set "modal", null
-        ), 1000
-
-    if $(event.currentTarget).hasClass("create-account")
-      Accounts.createUser
-        username: username
-        password: password
-      , (err) ->
-        handleResponse err, "Account made."
-
-    else
-      Meteor.loginWithPassword username, password, (err) ->
-        handleResponse err, "You've logged in."
-
-
-  "click button[data-navigate]": (event, tmpl) ->
-    Session.set "modal", event.currentTarget.getAttribute("data-navigate")
-
-  "click button.close": (event, tmpl) ->
-    Session.set "show_modal", false
-
-  "click .modal-backdrop": (event, tmpl) ->
-    Session.set "show_modal", false
-
-  "keydown input": (event, tmpl) ->
-    $(tmpl.find("button[type='submit']")).trigger "click"  if event.keyCode is 13
-
-Template.modal.helpers show_modal: (opt) ->
-  if Session.get("show_modal")
-    class_fade: "in"
-    class_hide: ""
-    hidden: false
-  else
-    class_fade: ""
-    class_hide: "hide"
-    hidden: true
-
 
 #////////////////////////////////////////////
 #  $$ home
 
 Template.home.helpers
   getOffers: ->
-    query = {}
-    sort = {}
-    current = statCurrent().query
-    for key of current
-      if current.hasOwnProperty(key)
-        sort[current[key].selector] = current[key].order  if key is "sort"
-        if current[key] and current[key].length
-          query.tags = $in: current[key]  if key is "tag"
-          query[key] = $in: current[key]  if key is "tagset"
-    result = Offers.find(query,
-      sort: sort
-    ).fetch()
+
+    current = statCurrent()?.query
+    offers = Offers.find().fetch()
     myLoc = Store.get "user_loc"
+
+    result = _.filter offers, (o)->
+      if current.tagset?.length is 0
+        return o
+
+      else if current.tag?.length is 0
+        contains = _.contains(_.pluck(o.tagset, "name"), current.tagset.toString())
+        return o if contains
+
+      else
+        intersection = _.intersection(current.tag, _.pluck(o.tags, "name"))
+        return o if intersection?.length > 0
+
     if result and myLoc
       survey = _.each(result, (d) ->
         d.distance = Math.round(distance(myLoc.lat, myLoc.long, d.loc.lat, d.loc.long, "M") * 10) / 10

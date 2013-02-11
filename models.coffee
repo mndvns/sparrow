@@ -42,7 +42,15 @@ Offer =
     default: "#ccc"
 
   colors:
-    default: {}
+    default:
+      hex: "#0a85c2"
+      hsl:
+        a: 1
+        h: 0.555
+        s: 0.399
+        l: 0.901
+
+
 
   description:
     type: String
@@ -89,10 +97,14 @@ Offer =
     default: ""
 
   votes:
-    type: Number
-    default: 1
+    type: Array
+    default: []
 
   zip:
     type: String
     default: "64105"
     maxLength: 6
+
+  published:
+    default: false
+

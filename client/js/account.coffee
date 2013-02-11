@@ -2,6 +2,7 @@
 
 #////////////////////////////////////////////
 #  $$ globals locals
+
 as = amplify.store
 draw_qrcode = (text, typeNumber, errorCorrectLevel) ->
   document.write create_qrcode(text, typeNumber, errorCorrectLevel)
@@ -19,12 +20,6 @@ update_qrcode = ->
     width: "10px"
     height: "10px"
 
-
-icon =
-  warning: "<i class='glyph-notice'></i>  "
-  neutral: "<i class='glyph-info'></i>  "
-  success: "<i class='glyph-checkmark'></i>  "
-
 permittedKeys = [8, 37, 38, 39, 40, 46, 9, 91, 93]
 icons = ["drink", "drink-2", "drink-3", "microphone", "coffee", "ice-cream", "cake", "pacman", "wallet", "gamepad", "bowling", "space-invaders", "batman", "lamp", "lamp-2", "appbarmoon"]
 
@@ -37,10 +32,6 @@ Handlebars.registerHelper "getEmail", (a) ->
   user = Meteor.user()
   user.emails and user.emails[0]
 
-Handlebars.registerHelper "multiply", (a, b) ->
-  return a * b
-
-
 Handlebars.registerHelper "hsl", (l, a) ->
   hue = @.colors and @.colors.hsl.h * 360
   sat = @.colors and @.colors.hsl.s * 100
@@ -49,54 +40,37 @@ Handlebars.registerHelper "hsl", (l, a) ->
 
   "hsla(" + hue + "," + sat + "%," + light + "%," + alpha + ")"
 
-Template.content.rendered = ->
-  self = this
+Template.content.rendered = =>
   return  if Meteor.Router.page() is "home"
-  self.activateLinks = Meteor.autorun(->
+  @activateLinks = Meteor.autorun(->
     out = Meteor.Router.page()
     parse = "/" + out.split("_").join("/")
     target = $("ul.links a[href='" + parse + "']")
     target.addClass "active"
     target.siblings().removeClass "active"
   )
-  self.activateLinks.stop()
-
-
-#////////////////////////////////////////////
-#  $$ account
-# Template.account.created = ->
-#   d3.select("html").transition().style "background", ->
-#     "#eee"
-
-
+  @activateLinks.stop()
 
 #////////////////////////////////////////////
 #  $$ account_profile
 Template.account_profile.events "click .save": (event, tmpl) ->
-  validateEmail = (email) ->
-    re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    re.test email
 
   newEmail = tmpl.find("#email").value
   newUsername = tmpl.find("#username").value
-  unless validateEmail(newEmail)
-    dhtmlx.message
-      type: "warning"
-      text: icon.warning + "Invalid email"
 
+  unless validateEmail(newEmail)
+    new TerraceAlert
+      text: "Invalid email"
     return
+
   Meteor.call "updateUser", newEmail, newUsername, (err) ->
     if err
-      dhtmlx.message
-        type: "warning"
-        text: icon.warning + err.reason
+      new TerraceAlert
+        text: err.reason
 
     else
-      dhtmlx.message
-        type: "success"
-        text: icon.success + "Saved successfully"
-
-
+      new TerraceAlert
+        text: "Saved successfully"
 
 
 #////////////////////////////////////////////
@@ -113,30 +87,23 @@ Template.account_offer.events
     offer = as()
     Session.set "currentOffer", offer
     errors = []
-    for key of Offer
-      errors.push key  if Offer[key].hasOwnProperty("maxLength") unless offer[key]
-    if errors.length
-      dhtmlx.message
-        type: "warning"
-        text: icon.warning + "You didn't enter anything for your " + errors.join(", ") + "."
 
-      return false
-    
-    # else {
-    #   dhtmlx.message({
-    #     "type": "neutral",
-    #     "text": icon.neutral + "Loading...",
-    #   })
-    # }
+    for key of Offer
+      errors.push key if Offer[key].hasOwnProperty("maxLength") unless offer[key]
+
+    if errors.length
+      new TerraceAlert
+        text: "You didn't enter anything for your #{errors.join(", ")}."
+      return
+
     type = (if Offers.findOne(owner: Meteor.userId()) then "update" else "insert")
     geo = new google.maps.Geocoder()
     geo.geocode
       address: offer.street + " " + offer.city + " " + offer.state + " " + offer.zip
     , (results, status) ->
       if status isnt "OK"
-        dhtmlx.message
-          type: "warning"
-          text: icon.warning + "We couldn't seem to find your location. Did you enter your address correctly?"
+        new TerraceAlert
+          text: "We couldn't seem to find your location. Did you enter your address correctly?"
 
       else
         offer.loc =
@@ -145,18 +112,14 @@ Template.account_offer.events
 
         Meteor.call "editOffer", type, offer, (error) ->
           if error
-            dhtmlx.message
-              type: "warning"
-              text: icon.warning + error.reason
+            new TerraceAlert
+              text: error.reason
 
           else
-            dhtmlx.message
-              type: "success"
-              text: icon.success + "You're good to go!"
+            new TerraceAlert
+              text: "You're good to go!"
 
-            renderColors(Meteor.user())
-
-
+          return
 
 
   "click .offer": (event, tmpl) ->
@@ -195,7 +158,7 @@ Template.account_offer.events
     else
       elem.data "prevent", false
 
-  "keyup input.text, keyup textarea": (event, tmpl) ->
+  "keyup .offer-bind-fields input.text, keyup .offer-bind-fields textarea": (event, tmpl) ->
     target = event.currentTarget
     val = target.value.toString()
     val = parseInt(target.value)  if target.id is "price"
@@ -207,23 +170,12 @@ Template.account_offer.events
     url = "http://deffenbaugh.herokuapp.com/offer/"
     update_qrcode()
 
-# Template.account_offer.rendered = ->
-#   self = this
-#   self.showHandle = Meteor.autorun(->
-#     out = as("show")
-#     $(".account.navbar li[data-value='" + out + "']").addClass "active"
-#   ).stop()
-#   self.helpHandle = Meteor.autorun(->
-#     out = Session.get("help")
-#     $(".account.navbar li.help").addClass "active"  if out
-#   ).stop()
-
 Template.account_offer.created = ->
   Session.set "show", as("show") or "text"
-  Session.set "help", as("help") or false
 
   id = Meteor.userId()
   offer = Offers.findOne owner: Meteor.userId()
+  as "_id", id
   if not id or id isnt as("owner")
     if offer
       for key of Offer
@@ -247,7 +199,6 @@ Template.account_offer_symbol.helpers getIcons: ->
   icons
 
 Template.account_offer_symbol.events
-
   "click .glyph div": (event, tmpl) ->
     attr = event.target.getAttribute("class")
     as "symbol", attr
@@ -275,63 +226,161 @@ Template.account_offer_symbol.rendered = ->
       $(self.find ".color-bucket").css "background", color.toHexString()
   )
 
+
+class Dimmer
+  constructor: (args) ->
+    @el = $("#dimmer")
+    @el.css("background", args?.color or "white")
+    @opacity = args?.opacity or 0.5
+    @speed = args?.speed or 300
+
+  dimIn: =>
+    @el.css("display", "block")
+    @el
+      .stop(true, true)
+      .animate
+        opacity: @opacity
+        , @speed
+
+  dimOut: =>
+    @el
+      .stop(true,true)
+      .animate
+        opacity: 0
+        , @speed
+        , =>
+          @el.css("display", "none")
+
+class TerraceAlert
+  constructor: (args) ->
+
+    @body = $("body")
+    @terrace = $(".terrace")
+    @togglerGroups = $(".toggler-group")
+    @terraceAlert = $("#terrace-alert")
+    @terraceAlert.append("<p>#{args.text}</p>")
+
+    @speed = args.speed or 200
+    @autoFade = args.autoFade or true
+    @dimmer = args.dimmer or new Dimmer(@)
+    @setTimeout() if @autoFade
+
+    @show()
+
+  setTimeout: =>
+    @timeoutId = Meteor.setTimeout =>
+      @hide()
+    , unless typeof @autoFade is "number" then 5000
+    @terraceAlert.on "mouseenter", =>
+      Meteor.clearTimeout @timeoutId
+    @terraceAlert.on "mouseleave", =>
+      @setTimeout()
+
+  show: =>
+    @dimmer.dimIn() if @dimmer
+    @togglerGroups
+      .stop(true, true)
+      .fadeOut(@speed)
+    @terrace
+      .stop(true, true)
+      .slipShow
+        speed: 1
+        haste: 1
+        , =>
+          @terraceAlert.slipShow
+            speed: @speed
+            haste: 1
+          @body.on "click", "#dimmer", =>
+              @hide()
+
+  hide: =>
+    Meteor.clearTimeout @timoutId
+    @body.off "click", "#dimmer"
+    @dimmer.dimOut() if @dimmer
+    @terraceAlert
+      .empty()
+      .stop(true,true)
+      .slipHide
+        speed: @speed
+        haste: 1
+      , =>
+        @togglerGroups
+          .stop(true, true)
+          .fadeIn(@speed)
+        @terrace
+          .stop(true, true)
+          .slipHide
+            speed: @speed
+            haste: 1
+
+
 #////////////////////////////////////////////
 #  $$ account_offer_tags
 
-Template.account_offer_tags.helpers
-  getTags: (data) ->
-    self = this
-    out = Tags.find(tagset: self.name).fetch()
-    out
-
-  checkTagsetActive: (data) ->
-    tagset = {}
-    tagset.name = @name
-    tagset.attr = (if as("tagset") is @name then "active" else "inactive")
-    tagset
-
-  checkTagActive: (data) ->
-    tag = {}
-    tag.name = @name
-    tag.attr = (if _.contains(as()["tags"], @name) then "data-active" else "")
-    tag
-
 Template.account_offer_tags.events
-  "click .tagset": (event, tmpl) ->
-    tar = $(event.currentTarget)
-    return false  if tar.attr("data-status") is "active"
-    tar.attr "data-status", "active"
-    tar.siblings().attr("data-status", "inactive").find("span").removeAttr "data-active"
-    as "tagset", tar.attr("data-tagset")
-    as "tags", []
-    Session.set "currentOffer", as()
 
-  "click .tag-list span": (event, tmpl) ->
-    tar = event.target
-    unless tar.hasAttribute("data-active")
-      event.target.setAttribute "data-active"
-      tags = as("tags") or []
-      tags.push @name
-      as "tags", tags
-      Session.set "currentOffer", as()
+  'dblclick li[data-group="tags"]': (event, tmpl) ->
+    Tags.remove name: $(event.currentTarget).attr("data-name")
+
+  'click .create-tag button': (event, tmpl) ->
+    target = $(event.currentTarget)
+    text = target.siblings("input").val()
+
+    if not text
+      new TerraceAlert
+        text: "You must enter a name in order to add a tag"
+
     else
-      event.target.removeAttribute "data-active"
-      tags = _.without(as("tags"), @name)
-      as "tags", tags
-      Session.set "currentOffer", as()
+      tagset = target.parent("li").attr("data-tagset")
+
+      Meteor.call "insertTag",
+        name: text
+        tagset: tagset
+        involves: []
+        collection: "tags"
+        , (err, res) ->
+          if err
+            new TerraceAlert
+              text: err.reason
+          else
+            userLoc = Store.get("user_loc")
+            store = Store.get("tag_selection")
+
+            store.tags ?= []
+            store.tags.push
+              name: text
+              tagset: tagset
+              active: true
+            console.log(res)
+            amplify.store "tagset", store.tagset
+            Store.set "tag_selection", store
 
 
-#////////////////////////////////////////////
-#  $$ account_offer_text
+  "click span[data-group='tags'], click li[data-group='tagset']": (event, tmpl) ->
+    group = $(event.currentTarget).attr "data-group"
+    store = Store.get("tag_selection") or {}
+    self = @
+    console.log(self)
 
-#////////////////////////////////////////////
-#  $$ account_metrics
-Template.account_metrics.offers = ->
-  Offers.find().count()
+    store[group] ?= []
 
-Template.account_metrics.votes = ->
-  votes = _.pluck(Offers.find().fetch(), "votes")
-  votes
+    if group is "tagset"
+      store.tags = []
+      store.tagset = []
+
+    existing = _.find( store[group], (g)-> g.name == self.name)
+
+    if existing
+      store[group].splice(store[group].indexOf(existing), 1)
+    else
+      store[group].push
+        name: self.name
+        disabled: false
+        active: true
+
+    amplify.store "tags", store.tags
+    amplify.store "tagset", store.tagset
+    Store.set "tag_selection", store
 
 
 #////////////////////////////////////////////

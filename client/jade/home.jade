@@ -81,9 +81,9 @@ body
   {{> wrapper }}
 
 template(name="wrapper")
+  #dimmer
   .wrapper
     {{> ceiling }}
-    {{> modal }}
     {{> content }}
 
 template(name="ceiling")
@@ -94,6 +94,7 @@ template(name="ceiling")
         span help
 
     .terrace
+      #terrace-alert.centered
 
       #help.centered
         h4 You have turned on help.
@@ -127,46 +128,13 @@ template(name="ceiling")
     .toggler-group.right
       {{#if currentUser}}
       .logout
-        span.static{{currentUser.username}}
-        span.hover logout
+        span {{currentUser.karma}}  
+        span {{currentUser.username}}
       {{else}}
       a.login(data-toggle-mode="sign-in")
         span#login login
-      // span(data-modal="sign-in") login
     {{/if}}
 
-template(name="modal")
-  mixin modal-header(a)
-    .modal-header
-      button.close(data-dismiss="modal", type="button") ×
-      h3= a
-  .modal.fade(aria-hidden="{{show_modal.hidden}}", class="{{show_modal.class_fade}}")
-    {{#if sessionEquals 'modal' 'sign-in'}}
-    #sign-in
-      .modal-body
-        .form
-          mixin Field({el: "input", type: "text", placeholder: "username", id: "username", tabindex: 1, })
-          mixin Field({el: "input", type: "password", placeholder: "password", id: "password", tabindex: 2, })
-
-        .alert.fade.clearfix
-        button(type="submit").btn.clr-bg.sign-in Sign In
-      .modal-footer
-        button.btn.clr-bg.comp(data-navigate="create-account") Create Account
-    {{/if}}
-    {{#if sessionEquals 'modal' 'create-account'}}
-    #create-account
-      .modal-body
-        .form
-          mixin Field({el: "input", type: "text", placeholder: "username", id: "username", tabindex: 1, })
-          mixin Field({el: "input", type: "password", placeholder: "password", id: "password", tabindex: 2, })
-
-        .alert.fade.clearfix
-        button(type="submit").btn.clr-bg.centered.create-account Create Account
-      .modal-footer
-        button.btn(data-navigate="sign-in") Sign In
-    {{/if}}
-
-  .modal-backdrop(aria-hidden="{{show_modal.hidden}}", class="{{show_modal.class_hide}}")
 
 template(name="content")
   .content
@@ -489,8 +457,7 @@ template(name='account_offer')
   {{#with getOffer}}
 
   .account_offer
-    {{#if sessionEquals 'show' 'intro'}} {{else}}
-    {{> offer}} {{/if}}
+    {{> offer}}
 
 
   .clearfix
@@ -498,14 +465,15 @@ template(name='account_offer')
   .account-offer.navbar: .navbar-inner: .container
     ul.nav.long
       mixin nav-item(a, b, c)
-        li(class= c, data-value= a).clr-bg.span3
+        li(class= c, data-value= a).clr-bg.span2
           i(class="glyph-" + b)
           | #{a}
       mixin nav-item("write", "feather", "show margin right")
       mixin nav-item("tags", "tag-2", "show margin right")
       mixin nav-item("symbol", "palette", "show margin right")
-      mixin nav-item("location", "map", "show")
-      // mixin nav-item("save", "disk", "save margin right")
+      mixin nav-item("location", "map", "show margin right")
+      mixin nav-item("limits", "hourglass", "show margin right")
+      mixin nav-item("save", "disk", "save")
       // mixin nav-item("help", "help", "help")
 
   {{#if sessionEquals 'help' 'true'}}
@@ -596,7 +564,8 @@ template(name='account_offer')
   .clearfix.pad
 
     {{#if show "write"}}
-    {{> account_offer_write }}
+    .offer-bind-fields
+      {{> account_offer_write }}
     {{/if}}
 
     {{#if show "symbol"}}
@@ -608,7 +577,8 @@ template(name='account_offer')
     {{/if}}
 
     {{#if show "location"}}
-    {{> account_offer_location }}
+    .offer-bind-fields
+      {{> account_offer_location }}
     {{/if}}
 
     {{/with}}
@@ -625,20 +595,62 @@ template(name="account_offer_write")
     .clearfix
 
 template(name="account_offer_tags")
-  .area
-    .tag-list.long
-      {{#each find 'Tagsets' '{}'}}
-      {{#with checkTagsetActive}}
-      ul.span2.tagset(data-tagset="{{this.name}}", data-status="{{this.attr}}")
-        strong {{this.name}}
-        {{#each getTags}}
-        li
-          {{#with checkTagActive}}
-          | <span {{attr}}>{{name}}</span>
-          {{/with}}
-        {{/each}}
-      {{/with}}
+
+  {{aggregateTags}}
+
+  {{#with getStore "stint_tags"}}
+  .offer-tag-list.long
+    ul.span2.margin.right
+      {{#each_with_key this}}
+      li(data-active="{{active}}", data-group="tagset").clr-bg {{this.name}}
+      {{/each_with_key}}
+    {{#each_with_key this}}
+    ul(data-active="{{active}}").span10
+      {{#each this.tags}}
+      li(data-active="{{active}}", data-group="tags", data-name="{{name}}").clr-bg
+        .info-sheet.span7
+          span(data-toggle-mode="shrink")
+          span.span3 {{name}}
+          span.span1 {{ratio}}
+          span.span1 {{rate}}
+
+        .actions.span2
+          {{#if active}}
+          span(data-group="tags"): i.glyph-minus-2 {{else}}
+          span(data-group="tags"): i.glyph-plus {{/if}}
+
+        {{#constant}}
+        .target.hide
+          .expand.hide
+            h1 {{name}}
+        {{/constant}}
       {{/each}}
+      .clearfix
+      li.create-tag(data-tagset="{{this.name}}")
+        input(type="text", tabindex=1, autofocus).text.span4
+        span.clr-bg.btn.span2.margin.left {{this.ratio}}
+        button.btn.clr-bg.span2.margin.left(tabindex=2) add
+    {{/each_with_key}}
+  {{/with}}
+
+
+// .area
+//   .tag-list.long
+//     {{#each find 'Tagsets' '{}'}}
+//     {{#with checkTagsetActive}}
+//     ul.span2.tagset(data-tagset="{{this.name}}", data-status="{{this.attr}}")
+//       strong {{this.name}}
+//       {{#each getTags}}
+//       li
+//         {{#with checkTagStatus}}
+//         | <span {{attr}}>{{name}}</span>
+//         span: strong {{../name}}
+//         br
+//         br
+//         {{/with}}
+//       {{/each}}
+//     {{/with}}
+//     {{/each}}
 
 template(name="account_offer_symbol")
   .area
@@ -713,6 +725,9 @@ template(name='offer')
       .offer[id="{{this._id}}"] .glyph {
           color: {{hsl 50 50}};
         }
+      .offer[id="{{this._id}}"] .color-hover[disabled] {
+          color: {{hsl 50 50}}!important;
+        }
       .offer[id="{{this._id}}"] .color-hover:hover {
           color: {{hsl 50 100}};
         }
@@ -742,7 +757,7 @@ template(name='offer')
 
             .bg.light
 
-      mixin data({ selector: "votes", glyph: "plus", metric: "{{this.votes}}", after:"votes" })
+      mixin data({ selector: "votes", glyph: "plus", metric: "{{this.votes.length}}", after:"votes" })
       mixin data({ selector: "distance", glyph: "location", metric: "{{this.distance}}", after:"miles" })
       mixin data({ selector: "price", glyph: "tag-2", metric: "${{this.price}}" })
       mixin data({ selector: "updatedAt", glyph: "history", metric: "{{styleDate this.updatedAt}}" })

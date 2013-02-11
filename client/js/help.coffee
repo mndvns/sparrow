@@ -1,5 +1,21 @@
-helpBlocks =
-  shift :
+
+# class HelpLink
+# 
+#   constructor: (obj, el) ->
+#     @title = obj.title
+#     @summary = obj.summary
+#     @el = $(el)
+#     @siblings = @el.siblings()
+# 
+# 
+
+
+window.helpBlocks =
+  input_tag:
+    title: "ASDASDASDAS"
+    summary: "ASDASDASDLKJASDASKJDSALKJDLAKSJ"
+
+  shift:
     title: "Shift buttons"
     summary: "The <strong>shift buttons</strong> are used to navigate around the site."
 

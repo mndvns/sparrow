@@ -1,24 +1,6 @@
 #////////////////////////////////////////////
 #  $$ helpers
 
-Handlebars.registerHelper "key_value", (a, fn) ->
-  out = ""
-  key = undefined
-  for key of a
-    if a.hasOwnProperty(key)
-      _.isObject(a[key]) and not a[key].length
-      if _.isArray(a[key])
-        out += fn(
-          key: key
-          value: a[key].length
-        )
-      else
-        out += fn(
-          key: key
-          value: a[key]
-        )
-  out
-
 Handlebars.registerHelper "grab", (a, z) ->
   m = undefined
   if a is "Users"
@@ -32,7 +14,7 @@ Handlebars.registerHelper "grab", (a, z) ->
     collection: m
     keys: ->
       self = this
-      Object.keys self.collection[0]
+      if self.collection and self.collection[0] then Object.keys(self.collection[0])
 
   z.fn out
 

@@ -12,7 +12,6 @@
       if $this.attr(attr) is val2 then $this.attr(attr, val1)
       else $this.attr(attr, val2)
 
-
       # if not val1 and not valthis.setAttribute(attr)
 
       # if $this.attr(attr) is val1
@@ -29,7 +28,7 @@
       if self.attr("data-slip-show") is "true" then return
       self
         .css
-          top: top
+          top: unless opt.top then top
           position: "relative"
         .slideDown( opt.speed * 2 )
 
@@ -45,7 +44,7 @@
 
     self.animate
       opacity: 0
-      top: top,
+      top: unless opt.top then top
       ( opt.speed )
 
     self

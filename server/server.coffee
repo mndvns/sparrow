@@ -1,4 +1,8 @@
 
+require = __meteor_bootstrap__.require
+MongoDB = require "mongodb"
+Future = require "fibers/future"
+
 #                                               //
 #        _____                                  //
 #       / ___/___  ______   _____  _____        //
@@ -23,6 +27,7 @@ stripeUrl = "https://connect.stripe.com/oauth/token"
 #      /____/\__/\__,_/_/   \__/\__,_/ .___/         //
 #                                   /_/              //
 #                                                    //
+
 Meteor.startup ->
   i = 0
   j = [
@@ -32,9 +37,28 @@ Meteor.startup ->
   while i < j.length
     console.log "         ", j[i]
     i += 1
+
   Offers._ensureIndex loc: "2d"
 
-  k = Color("#fff")
+  Tags.aggregate = (pipline) ->
+    self = this
+    future = new Future()
+    self.find()._mongo.db.createCollection self._name, (err, collection) ->
+
+      if err
+        future.throw err
+        return
+
+      collection.aggregate pipline, (err, result) ->
+        if err
+          future.throw err
+          return
+        future.ret [true, result]
+
+    result = future.wait()
+    throw result[1]  unless result[0]
+    result[1]
+
 #                                                        //
 #         ___                               __           //
 #        /   | ______________  __  ______  / /______     //
@@ -46,9 +70,7 @@ Meteor.startup ->
 
 Accounts.onCreateUser (options, user) ->
   user.type = "admin"
-  user.votes = []
-  user.votes.push user._id
-  user.points = 10
+  user.karma = 50
   user.logins = 0
   user.profile = options.profile  if options.profile
   user
@@ -66,7 +88,6 @@ Meteor.users.allow
       else
         doc._id is userId
 
-
   remove: (userId, docs) ->
     if Meteor.users.findOne(_id: userId).type is "admin"
       _.all docs
@@ -83,45 +104,27 @@ Meteor.users.allow
 #                                                    //
 #                                                    //
 
-Meteor.publish "offers", (sessLoc, ampLoc) ->
-
-  # Offers.find {}
-
-  if sessLoc
+Meteor.publish "offers", (storeLoc) ->
+  if storeLoc
     Offers.find loc:
-      $near : [sessLoc.lat, sessLoc.long]
-
-  else if ampLoc
-    Offers.find loc:
-      $near : [ampLoc.lat, ampLoc.long]
-
-  else
-    Offers.find {}
+      $near: [ storeLoc.long, storeLoc.lat ]
 
 Meteor.publish "tagsets", ->
   Tagsets.find {}
 
-Meteor.publish "tags", ->
+Meteor.publish "tags", (storeLoc) ->
   Tags.find {}
 
 Meteor.publish "sorts", ->
   Sorts.find {}
 
 Meteor.publish "userData", ->
-  self = this
   Meteor.users.find {},
     type: 1
-  # Meteor.users.find
-  #   _id: self.userId,
-  #     type: 1
-  # Meteor.users.find {},
-  #   colors: 1
-
 
 Meteor.publish "messages", ->
   Messages.find involve:
     $in: [@userId]
-
 
 
 #                                                         //
@@ -132,6 +135,7 @@ Meteor.publish "messages", ->
 #       /_/  /_/\___/\__/_/ /_/\____/\__,_/____/          //
 #                                                         //
 #                                                         //
+
 mapper = (a) ->
   map = (if _.isArray(a) then a else [a])
   _.map map, (d) ->
@@ -140,8 +144,12 @@ mapper = (a) ->
     out.id = d._id
     out
 
-
 Meteor.methods
+  aggregateOffers: ->
+    tags = Offers.aggregate
+      $project:
+        tags: 1
+
   message: (text, selector, opt) ->
     message = {}
     involve = [Meteor.userId()]
@@ -198,15 +206,23 @@ Meteor.methods
 
   editOffer: (type, options) ->
     @unblock()
+    self = @
     opts = options or {}
+
     throw new Meteor.Error(400, "Offer name is too short")  if opts.name.length < 5
+
     out = {}
     for key of Offer
       out[key] = opts[key]
+
     out.owner = out.owner or Meteor.userId()
     out.createdAt = out.createdAt or (moment().unix() * 1000)
     out.updatedAt = (moment().unix() * 1000)
+
     if type is "insert"
+      out.votes.push
+        user: @userId
+        exp: Date.now() * 10
       Offers.insert out
     else
       Offers.update
@@ -214,6 +230,40 @@ Meteor.methods
       ,
         $set: out
 
+    tagName = _.pluck(out.tags, "name")
+    existObj = []
+    existTags = Tags.find().forEach (m) ->
+      _.filter m.involves, (f)->
+        unless _.find(existObj, (ex)->
+          ex._id is m._id)
+          existObj.push m
+
+    # console.log("EXISTING OBJ", existObj)
+
+    for exist in existObj
+      # console.log("EXIST", exist)
+
+      Tags.update
+          _id: exist._id
+          "involves.user": Meteor.userId()
+        ,
+          $unset: "involves.$": 1
+      Tags.update
+          _id: exist._id
+        ,
+          $pull: "involves": null
+
+    Tags.update
+        name: $in: tagName
+      ,
+        $push:
+          involves:
+            user: out.owner
+            loc:
+              lat: out.loc.lat
+              long: out.loc.long
+      ,
+        multi: true
 
   updateUserColor: (color) ->
     prime = Color(color).setLightness(.4)
@@ -271,116 +321,6 @@ Meteor.methods
     else
       true
 
-  registerLogin: ->
-    @unblock()
-    Meteor.users.update
-      _id: Meteor.userId()
-    ,
-      $inc:
-        logins: 1
-
-    console.log Meteor.user()
-
-  
-  # return 
-  getLogin: (res) ->
-    @unblock()
-    Meteor.users.update
-      _id: Meteor.userId()
-    ,
-      $inc:
-        logins: 1
-
-    j = Meteor.user()
-    console.log j.logins
-    j.logins
-
-  thingy: ->
-    Meteor.users.update
-      _id: Meteor.userId()
-    ,
-      $set:
-        lastActivity: moment().unix()
-
-
-  eventCreateOffer: (offerId) ->
-
-
-# console.log("UPDATED STUFF")
-# 
-# return Offers.update({_id: offerId}, {$inc: {metrics[created]: 1}})
-
-# getStripeApi: function (input) {
-#   this.unblock()
-
-#   var user = Meteor.user()
-#   var stripe = StripeAPI(user.stripe.accessToken)
-
-#   return stripe
-#   console.log("Got stripeAPI: ", stripe)
-#   if (stripe) {
-#     return stripe
-#   }
-# },
-# submitPaymentForm: function (input) {
-#   this.unblock()
-#   console.log("Got inside server method with: ", input)
-#   /* return {err: "ASDAS", res: "ASDASDASDDD"} */
-
-#   var user = Meteor.user()
-#   var stripe = StripeAPI(user.stripe.accessToken)
-
-#   /* Meteor.http.call("POST", "https://api.stripe.com/v1/charges", { */
-
-#   var k = {}
-#   stripe.charges.create({
-#     "amount"          : 9900,
-#     "currency"        : "usd",
-#     "card"            : input.id,
-#     "description"     : "Just a test",
-#     "application_fee" : 700
-#   }, function(err, res) {
-#      console.log(err, res)
-#      k = {err:err, res: res}
-#   })
-
-#   if (k.err)
-#     return k
-#   return k
-
-# },
-# oauth: function (code) {
-#   this.unblock()
-#   Meteor.http.call("POST", stripeUrl, {
-#     params: {
-#       client_id: stripeClientId,
-#       code: code,
-#       grant_type: "authorization_code"
-#       },
-#      headers: {
-#       Authorization: "Bearer " + stripeClientSecret
-#     }
-#   }, function(err, res) {
-#     Session.set("callingServer", false)
-#     if(res.statusCode === 200) {
-#       console.log("SUCCESS".blue, "Got user's Stripe data", res)
-
-#       var userData = {
-#         id             : res.data.stripe_user_id,
-#         publishableKey : res.data.stripe_publishable_key,
-#         refreshToken   : res.data.refresh_token,
-#         accessToken    : res.data.access_token
-#       }
-
-#       Meteor.users.update({ _id: Meteor.userId() }, {$set: {stripe: userData}})
-#       return "ASD"
-#     } else if (res.statusCode > 200) {
-#       console.log(res)
-#       return "ASD"
-#     }
-#   })
-# }
-
 #                                            //
 #         ______                             //
 #        / ____/________  ____               //
@@ -389,27 +329,62 @@ Meteor.methods
 #      \____/_/   \____/_/ /_/               //
 #                                            //
 #                                            //
+
+cronSeconds = 360
 Meteor.setInterval (->
-  expiration = moment().subtract("minutes", 1).unix()
+  Meteor.users.find( "stint.tags": $exists: true ).forEach (user)->
+    decreaseKarma = 0
+    adjustedKarma = 0
+    adjustedTags = []
+    offerQuery = {}
+    offerSet = {$set: {}}
+    tagQuery = {"involves": user._id}
+    tagSet = {}
+    userOffer = Offers.findOne owner: user._id
+    userTags = Tags.find("involves.user": user._id).fetch()
 
-# var j = Meteor.users.find({ "lastActivity": { $lt: expiration }}).count() 
+    if user.karma < 0
+      adjustedKarma = 0
 
-# Meteor.users.update({ "lastActivity": {$lt: expiration}}, {$set: {"online": false }}) 
+    else
+      for tag in user.stint.tags
+        if tag.active
+          decreaseKarma += tag.ratio
+          console.log(user.username.toUpperCase(), "-" + decreaseKarma, "KARMA", user.karma)
 
-# var now = moment().unix()
-#   , offers = Offers.find({ votes: {$gt: {exp: now }}}).fetch()
-#   , voters = Meteor.users.find({ votes: {$gt: {exp: now }}}).fetch()
+          if decreaseKarma > user.karma
+            tag.disabled = true
 
-# for (var i=0; i < offers.length; i++) {
-#   var filter =_.filter(offers[i].votes, function(data) {
-#     return data.exp > now
-#   })
-#   Offers.update({ _id: offers[i]._id}, {$set: {votes: filter}})
-# }
-# for (var i=0; i < voters.length; i++) {
-#   var filter =_.filter( voters[i].votes, function(data) {
-#     return data.exp > now
-#   })
-#   Meteor.users.update({ _id: voters[i]._id}, {$set: {votes: filter}})
-# }
-), 3000
+          else
+            tag.disabled = false
+
+          delete tag.involves
+          delete tag.collection
+          delete tag._id
+          adjustedTags.push(tag)
+
+          offerQuery["owner"] = user._id
+          offerSet["$set"]["tags"] = adjustedTags
+
+      adjustedKarma = (Math.ceil((user.karma - (decreaseKarma / (60 / cronSeconds)))*100)/100)
+      # adjustedKarma = 2
+
+    Meteor.users.update user._id,
+      $set:
+        karma: adjustedKarma
+
+    unless _.isEmpty(offerQuery)
+      Offers.update offerQuery,
+        offerSet
+      Tags.update tagQuery,
+        tagSet
+
+    # trueTags = []
+    # _.each Tags.find("involves.user": user._id).fetch(), (t)->
+    #   trueTags.push t.name
+    # console.log(trueTags)
+    # console.log "TRUE DATA", Offers.findOne(owner: user._id)?.tags
+    # console.log(" ")
+
+
+), cronSeconds * 1000

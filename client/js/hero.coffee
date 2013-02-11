@@ -133,7 +133,9 @@ Template.hero.events
         nouns = Session.get("current_nouns")
         Session.set "current_nouns", _.without(nouns, story.noun)
     else
-      output = current.concat(story.name)  if story.collection is "tags"
+      if story.collection is "tags"
+        output = current.concat(story.name) 
+        console.log(output)
       if story.collection is "tagsets"
         output = [story.name]
         Session.set "current_nouns", [story.noun]
@@ -184,17 +186,20 @@ Template.hero.created = ->
           out
 
         gotNoun = getNoun()
-        if gotNoun
-          Session.set "current_tagsets", [gotOffer.tagset]
-          Session.set "current_tags", []
-          Session.set "current_sorts", ["latest"]
-          Session.set "current_sorts_selector", "updatedAt"
-          Session.set "current_sorts_order", "-1"
-          Session.set "current_nouns", [gotNoun.noun]
-          out = {}
-          for key of gotCollection
-            out[key] = gotCollection[key]
-          as "collection", out
+
+        console.log("GOT OFFER", gotOffer)
+
+        Session.set "current_tagsets", [gotOffer.tagset?[0]?.name]
+        Session.set "current_tags", []
+        Session.set "current_sorts", ["latest"]
+        Session.set "current_sorts_selector", "updatedAt"
+        Session.set "current_sorts_order", "-1"
+        Session.set "current_nouns", [gotNoun?.noun]
+        out = {}
+        for key of gotCollection
+          out[key] = gotCollection[key]
+        as "collection", out
+
         Session.set "heroDataReady", true
     )
   (renderHero = ->

@@ -67,20 +67,27 @@ Meteor.startup ->
   )()
 
 
-# if (! amplify.get("user.loc")) {
-#   console.log("Attempting to get location...")
-#   getLocation()
-# }
-
 Accounts.ui.config passwordSignupFields: "USERNAME_AND_OPTIONAL_EMAIL"
 
-Meteor.subscribe "offers", Session.get("user_loc"), amplify.get("user.loc")
+Meteor.subscribe "offers", Store.get("user_loc")
 Meteor.subscribe "tagsets"
-Meteor.subscribe "tags"
+Meteor.subscribe "tags", Store.get("user_loc")
+
 Meteor.subscribe "sorts"
 Meteor.subscribe "userData"
-Meteor.subscribe "metrics"
 Meteor.subscribe "messages"
+
+Template.account_offer_tags.rendered = ->
+  self = @
+  unless self.handle
+    self.handle = Meteor.autorun ->
+      console.log("RUNNING")
+      self = @
+      Meteor.call "aggregateTags", Store.get("user_loc"), Store.get("tag_selection"), (err, result) ->
+        if err is `undefined`
+          Store.set "stint_tags", result
+        else
+          console.log err
 
 Handlebars.registerHelper "styleDate", (date) ->
   if date
@@ -88,17 +95,32 @@ Handlebars.registerHelper "styleDate", (date) ->
   else
     moment().fromNow()
 
-Handlebars.registerHelper "getAmplify", (a) ->
-  if Session.get(a)
-    true
-  else
-    p = a.split("_").join(".")
-    if amplify.get(p)
-      true
-    else
-      false
-
 Handlebars.registerHelper "getStore", (a) ->
   if Meteor.BrowserStore.get a
-    return true
+    return Store.get a
 
+# {{#key_value obj}} Key: {{key}} // Value: {{value}} {{/key_value}}
+Handlebars.registerHelper "key_value", (obj, fn) ->
+  buffer = ""
+  key = undefined
+  for key of obj
+    if obj.hasOwnProperty(key)
+      buffer += fn(
+        key: key
+        value: obj[key]
+      )
+  buffer
+
+
+# {{#each_with_key container key="myKey"}}...{{/each_with_key}}
+Handlebars.registerHelper "each_with_key", (obj, fn) ->
+  context = undefined
+  buffer = ""
+  key = undefined
+  keyName = fn.hash.key
+  for key of obj
+    if obj.hasOwnProperty(key)
+      context = obj[key]
+      context[keyName] = key  if keyName
+      buffer += fn(context)
+  buffer
