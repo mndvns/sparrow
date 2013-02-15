@@ -1,8 +1,8 @@
-# Meteor.absoluteUrl "http://localhost:3000",
+# Meteor.absoluteUrl
 #   replaceHost: true
 #   rootUrl: "http://localhost:3000"
 
-Meteor.absoluteUrl "http://deffenbaugh.herokuapp.com",
+Meteor.absoluteUrl
   replaceHost: true
   rootUrl: "http://deffenbaugh.herokuapp.com"
 
