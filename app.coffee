@@ -2,9 +2,9 @@
 #   replaceHost: true
 #   rootUrl: "http://localhost:3000"
 
-Meteor.absoluteUrl
-  replaceHost: true
-  rootUrl: "http://deffenbaugh.herokuapp.com"
+# Meteor.absoluteUrl
+#   replaceHost: true
+#   rootUrl: "http://deffenbaugh.herokuapp.com"
 
 Users    = new Meteor.Collection "userData"
 Offers   = new Meteor.Collection "offers"
