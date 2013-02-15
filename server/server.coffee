@@ -13,6 +13,9 @@ require = __meteor_bootstrap__.require
 MongoDB = require "mongodb"
 Future = require "fibers/future"
 
+console.log(Meteor.settings)
+
+
 #                                                        //
 #         ___                               __           //
 #        /   | ______________  __  ______  / /______     //
