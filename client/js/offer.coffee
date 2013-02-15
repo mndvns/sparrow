@@ -17,8 +17,6 @@ handleActions = (event, tmpl, cb) ->
     targetEl.slideUp "fast"
     false
 
-# offer
-
 Template.offer.helpers
   getDistance: (loc) ->
     myLoc = Store.get("user_loc")
@@ -81,6 +79,39 @@ Template.offer.events
   "click section.actions li.reserve": (event, tmpl) ->
     handleActions event, tmpl, ->
       console.log "clicked buy"
+
+  'click .payment-form button': (event, tmpl) ->
+    event.preventDefault()
+    form = $(tmpl.find("form"))
+    form.find("button").prop 'disabled', true
+
+    Stripe.createToken
+      number: $(".card-number").val()
+      cvc: $(".card-cvc").val()
+      exp_month: $(".card-expiry-month").val()
+      exp_year: $(".card-expiry-year").val()
+    , (status, response) ->
+        if response.error
+          form.find("button").prop "disabled", false
+        else
+          token = response.id
+          form.append $("<input type=\"hidden\" name=\"stripeToken\" />").val(token)
+          Meteor.call "stripeCustomerCreate", token, (err, res)->
+            if err then throw err
+            console.log(err, res, "stripeCustomerCreate")
+            customerId = _.compact(res)?.toString()
+            Meteor.call "stripeSaveCustomerId", customerId, (err, res)->
+              if err then throw err
+              console.log(err, res, "stripeSaveCustomerId")
+              Meteor.call "stripeChargeCreate",
+                amount: 1000
+                user: Meteor.user(), (err, res) ->
+                if err then throw err
+                console.log(err, res, "stripeChargeCreate")
+
+
+
+
 
 
   "click .send": (event, tmpl) ->

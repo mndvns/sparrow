@@ -8,6 +8,10 @@
     "jade-handlebars": {},
     "handlebar-helpers": {},
     "dhtmlx-message": {},
-    "browser-store": {}
+    "browser-store": {},
+    "stripe": {},
+    "collectionFS": {},
+    "imgur": {},
+    "logger": {}
   }
 }

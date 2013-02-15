@@ -9,7 +9,11 @@
 #                               /____/           //
 #                                                //
 
-# Stripe.setPublishableKey("pk_test_xB8tcSbkx4mwjHjxZtSMuZDf") 
+
+window.App = {}
+# window.__dirname = "http://localhost:3000/"
+
+Stripe.setPublishableKey("pk_test_xB8tcSbkx4mwjHjxZtSMuZDf") 
 
 Color = net.brehaut.Color
 Store = Meteor.BrowserStore
@@ -77,18 +81,6 @@ Meteor.subscribe "sorts"
 Meteor.subscribe "userData"
 Meteor.subscribe "messages"
 
-Template.account_offer_tags.rendered = ->
-  self = @
-  unless self.handle
-    self.handle = Meteor.autorun ->
-      console.log("RUNNING")
-      self = @
-      Meteor.call "aggregateTags", Store.get("user_loc"), Store.get("tag_selection"), (err, result) ->
-        if err is `undefined`
-          Store.set "stint_tags", result
-        else
-          console.log err
-
 Handlebars.registerHelper "styleDate", (date) ->
   if date
     moment(date).fromNow()
@@ -124,3 +116,6 @@ Handlebars.registerHelper "each_with_key", (obj, fn) ->
       context[keyName] = key  if keyName
       buffer += fn(context)
   buffer
+Handlebars.registerHelper "equal", (a,b) ->
+  return true if a is b
+  return false

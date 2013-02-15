@@ -84,6 +84,9 @@ Offer =
     type: String
     default: "glyph-lamp-2"
 
+  symbol_type:
+    default: "glyph"
+
   tags:
     type: Array
     default: ""

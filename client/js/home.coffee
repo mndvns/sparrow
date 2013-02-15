@@ -56,12 +56,13 @@ statRange = ->
 #////////////////////////////////////////////
 #  $$ helpers
 Handlebars.registerHelper "page_next", (area) ->
-  return false  if area isnt Session.get("shift_area")
+  shift_sub_area = Session.get("shift_sub_area")
+  if area isnt shift_sub_area then return false
+  parse_sub_area = shift_sub_area.split("_").join("/")
   Meteor.Transitioner.setOptions after: ->
-    Meteor.Router.to (if area is "home" then "/" else "/" + area)
-    Session.set "shift_current", area
+    Meteor.Router.to (if shift_sub_area is "home" then "/" else "/" + parse_sub_area)
 
-  area
+  return shift_sub_area
 
 
 
@@ -152,14 +153,17 @@ Template.wrapper.events
     area = event.currentTarget.getAttribute("data-shift-area")
     page = Meteor.Router.page()
     current = _.first(page.split("_"))
+    sub_area = as("page_" + area) or area
 
     # console.log("DIR", dir)
-    # console.log("AREA", area)
+    console.log("AREA", area)
+    console.log("SUB AREA", sub_area)
     # console.log("PAGE", page)
-    # console.log("CURRENT", current)
+    console.log("CURRENT", current)
 
     Session.set "shift_direction", dir
     Session.set "shift_area", area
+    Session.set "shift_sub_area", sub_area
     Session.set "shift_current", current
 
 
@@ -321,10 +325,6 @@ Template.content.events
     else
       $(event.currentTarget).siblings().slideUp()
     $(event.target).toggleClass "active"
-
-
-
-
 
 
 colorFill = (el, selector, value) ->

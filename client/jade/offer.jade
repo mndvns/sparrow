@@ -1,0 +1,113 @@
+template(name='thisOffer')
+  div.thisOffer
+    {{#with getThisOffer}}
+    {{> offer}}
+    .input-append
+      input.text(type="text")
+      button.btn Go!
+    {{/with}}
+
+template(name='offer')
+  .offer(data-tagset="{{this.tagset}}", id="{{this._id}}", data-help-block="false", data-help-selector="offer").long
+
+    style(type="text/css")
+      .offer[id="{{this._id}}"] .light {
+          background: {{hsl 97 90}};
+        }
+      .offer[id="{{this._id}}"] .symbol div {
+          color: {{hsl 45 90}};
+        }
+      .offer[id="{{this._id}}"] .glyph {
+          color: {{hsl 50 50}};
+        }
+      .offer[id="{{this._id}}"] .color-hover[disabled] {
+          color: {{hsl 50 50}}!important;
+        }
+      .offer[id="{{this._id}}"] .color-hover:hover {
+          color: {{hsl 50 100}};
+        }
+      .offer[id="{{this._id}}"] .bright {
+          background: {{hsl 50 20}};
+        }
+      .offer[id="{{this._id}}"] .bumper {
+          background: {{hsl 50 100}};
+        }
+
+    .bumper.left
+    section.symbol.span2.light
+      {{#if equal this.symbol_type "glyph"}}
+      div(class='{{this.symbol}}')
+      {{else}}
+      div(style="background-image: url({{this.symbol}})")
+      {{/if}}
+
+    section.main.span4.extend.light
+      span.field(data-field='name') {{this.name}}
+      p.field(data-field='description') {{this.description}}
+      span.field(data-field='business') {{this.business}}
+      br
+    section.data
+      mixin data(opt)
+        div(class= opt.selector ).span1.margin.left
+          i(class="glyph-" + opt.glyph).glyph
+          .metric.bright
+            span.actual= opt.metric
+            span.after= opt.after
+
+            .bg.light
+
+      {{#isolate}}
+      mixin data({ selector: "votes", glyph: "plus", metric: "{{this.votes.length}}", after:"votes" })
+      mixin data({ selector: "distance", glyph: "location", metric: "{{this.distance}}", after:"miles" })
+      mixin data({ selector: "price", glyph: "tag-2", metric: "${{this.price}}" })
+      mixin data({ selector: "updatedAt", glyph: "history", metric: "{{styleDate this.updatedAt}}" })
+      {{/isolate}}
+
+
+    section.actions.span2.margin.left
+      ul
+        mixin action(opt)
+          li(class= opt.selector, data-status="inactive", data-selector= opt.selector).light.color-hover= opt.label
+            .bumper.right
+
+        mixin action({ selector: "vote", label: "upvote" })
+        mixin action({ selector: "map", label: "directions" })
+        mixin action({ selector: "reserve", label: "reserve" })
+        mixin action({ selector: "message", label: "message" })
+
+    section.extension(data-extension="map")
+      .bumper.right
+      .inner.map.span8.light
+      .inner.span4.margin.left.light
+        p.address
+          | {{this.street}}
+          br
+          | {{this.city}}, {{this.state}}
+          br
+          | {{#if this.zip}}{{this.zip}}{{/if}}
+    section.extension(data-extension="message")
+      .bumper.right
+      .inner.span10
+        textarea(placeholder="Write a little note...")
+        .message-area.light
+      .inner.span2.margin.left.send.light.color-hover send
+    section.extension(data-extension="reserve")
+      .bumper.right
+      .inner.span10(action="", method="POST")
+        form.payment-form
+          span Card Number
+          input(type="text", autocomplete="off", value="4242424242424242").card-number
+          br
+          span CVC
+          input(type="text", autocomplete="off", value="123").card-cvc 123
+          br
+          span Expiration (MM/YYYY)
+          input(type="text", autocomplete="off", value="02").card-expiry-month 02
+          br
+          input(type="text", autocomplete="off", value="2020").card-expiry-year
+          br
+          button(type="submit").sumit-button SUBMIT
+          h3.payment-errors
+
+
+

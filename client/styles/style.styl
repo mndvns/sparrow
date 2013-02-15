@@ -289,10 +289,10 @@ nav.ceiling
     relative top
     z-index 50
     width 100%
-    display none
-    opacity 0
+    // display none
+    // opacity 0
     overflow hidden
-    margin fontSize 0 (fontSize / 2)
+    padding fontSize 0 (fontSize / 2)
     .inputs
     .controls
       float none
@@ -321,7 +321,7 @@ nav.ceiling
     .alert
     buttons.active
     a.active
-      color rgba(white, 0.5)!important
+      color rgba(white, .7)!important
 
 
 @keyframes ceiling-expand
@@ -442,6 +442,7 @@ nav.ceiling
     letter-spacing 1px
     text-shadow none
     font-weight 300
+    opacity .6
     *
       vertical-align middle
     &.active
@@ -701,8 +702,15 @@ Spanner( 940px )
       font-size 4em
       line-height 100px
       height 100px
+      width 100px
       text-align center
-      margin 35px 0
+      margin 35px auto
+      background-size cover
+      background-position 50%
+      backgound-repeat no-repeat
+      border-radius 100px
+      .transitioning &
+        display none
   .field
     &[data-field=name]
       font-weight 300
@@ -845,6 +853,8 @@ Spanner( 940px )
         action(2, 0)
         position absolute
         right 0
+    &[data-extension=reserve]
+      // display block
 
 
 
@@ -869,6 +879,41 @@ Spanner( 940px )
     text-align center
   div
     padding-bottom 2em
+
+.file-table
+  .file
+    float left
+    padding 1px
+    box-sizing border-box
+    text-align center
+    div.image
+      width 100%
+      min-height 100px
+      background-size contain
+      .transitioning &
+        display none
+    img
+      .transitioning &
+        display none
+    span
+      font = fontSize * 2
+      size = fontSize * 3
+      font-size font
+      height size
+      line-height size
+      display inline-block
+      padding (fontSize / 2) 0
+      margin 0 (fontSize / 2)
+      box-sizing border-box
+      color white
+      opacity .7
+      &[data-status='active']
+      &:hover
+        opacity 1
+      i
+        display inline
+        height size
+        line-height size
 
 
 .glyphs-list
@@ -1214,11 +1259,33 @@ body
       margin 0 auto
 
 #terrace-alert
-  display none
   opacity 0
   font-weight 300
   font-family "proxima-nova"
   color rgba(white, .8)
+  &.rallying
+    opacity 1
+    display block
+    .terrace-pane
+      speed = 300ms
+      overflow hidden
+      &.rally-in
+        anim(rally-in)
+        animation-duration speed
+      &.rally-out
+        anim(rally-in)
+        animation-duration speed
+        animation-direction reverse
+        opacity 0
+        display none
+
+@keyframes rally-in
+  from
+    opacity 0
+    transform translateY( -5px )
+  to
+    opacity 1
+    transform translateY( 0 )
 
 #dimmer
   fixed top

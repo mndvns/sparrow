@@ -3,28 +3,6 @@
 //////////////////////////////////////////////
 //  $$ mixins
 
-mixin Field( opt )
-  .control-group
-    label.control-label #{opt.label}
-    .controls
-      | <#{opt.el} class="#{opt.type} #{opt.class}" id="#{opt.id}" type="#{opt.type}" tabindex="#{opt.tabindex}" value="#{opt.value}" #{opt.disabled} rows="#{opt.rows}" placeholder="#{opt.placeholder}" >#{opt.text}</#{opt.el}>
-
-    if typeof opt.characters !== "undefined"
-      span.badge #{opt.characters}
-
-mixin field(i, a, z, b, m, c, ch)
-  .control-group
-    label.control-label #{a}
-    d = ch == "disabled" ? "disabled" : null
-      .controls
-        if b == "textarea"
-          | <#{i} class="#{b} #{m}" id="#{a}" type="#{b}" tabindex="#{c}" value="#{z}" #{d} rows=4 > #{z} </#{i}>
-        else
-          | <#{i} class="#{b} #{m}" id="#{a}" type="#{b}" tabindex="#{c}" value="#{z}" #{d}>
-
-    if ch !== "disabled"
-      span.badge #{ch}
-
 mixin link(opt)
   a(href= opt.href, class= opt.class ): li
     i(class= "glyph-" + opt.glyph)
@@ -49,7 +27,7 @@ mixin topnav(name)
     if (name === "about")
       mixin shift-block({direction: "right", area: "home"})
       ul.links.row.clr-bg.light
-        mixin link({label: "about", href: "/about", glyph: "paper-plane", class: "active" })
+        mixin link({label: "about", href: "/about", glyph: "paper-plane" })
         mixin link({label: "faq", href: "/about/faq", glyph: "question" })
         mixin link({label: "roadmap", href: "/about/roadmap", glyph: "map" })
         mixin link({label: "feedback", href: "/about/feedback", glyph: "keyboard" })
@@ -57,14 +35,11 @@ mixin topnav(name)
     if (name === "account")
       mixin shift-block({direction: "left", area: "home"})
       ul.links.row.clr-bg.light
-        mixin link({label: "dashboard", href: "/account", glyph: "list", class: "active" })
+        mixin link({label: "dashboard", href: "/account", glyph: "list" })
         mixin link({label: "offer", href: "/account/offer", glyph: "bucket" })
         mixin link({label: "messages", href: "/account/messages", glyph: "list" })
         mixin link({label: "profile", href: "/account/profile", glyph: "cog-2" })
         mixin link({label: "feedback", href: "/account/feedback", glyph: "keyboard" })
-
-//////////////////////////////////////////////
-//  $$ head
 
 
 head
@@ -72,10 +47,6 @@ head
   meta(name='viewport',content='initial-scale=1.0, user-scalable=no')
   meta(charset='utf-8')
   style(type="text/css", title="dynamic-theme")
-
-//////////////////////////////////////////////
-//  $$ body
-
 
 body
   {{> wrapper }}
@@ -94,7 +65,9 @@ template(name="ceiling")
         span help
 
     .terrace
+      {{#constant}}
       #terrace-alert.centered
+      {{/constant}}
 
       #help.centered
         h4 You have turned on help.
@@ -128,7 +101,7 @@ template(name="ceiling")
     .toggler-group.right
       {{#if currentUser}}
       .logout
-        span {{currentUser.karma}}  
+        span {{currentUser.karma}}
         span {{currentUser.username}}
       {{else}}
       a.login(data-toggle-mode="sign-in")
@@ -164,129 +137,18 @@ template(name="content")
 
       .container
         {{#if page_next "about"}} {{> about }} {{/if}}
+        {{#if page_next "about_faq"}} {{> about_faq }} {{/if}}
+        {{#if page_next "about_roadmap"}} {{> about_roadmap }} {{/if}}
+        {{#if page_next "about_feedback"}} {{> about_feedback }} {{/if}}
+        {{#if page_next "about_blog"}} {{> about_blog }} {{/if}}
+
         {{#if page_next "home"}} {{> home }} {{/if}}
+
         {{#if page_next "account"}} {{> account }} {{/if}}
-
-
-template(name="about")
-  .row.centered
-    .span8.offset2
-      h2.smashed.clr-text.prime.
-        Sparrow is a real-time web application that finds physical things near you and presents
-        them in an interchangeable format.
-    .clearfix
-    .span10.offset1
-      h4.clr-text.prime What's the beef
-      p.
-        It works with simple words -- verbs, adjectives, and nouns -- and combines them in the same
-        ways you do. The result is a complete sentence that describes what you want, so that you're seeing
-        what you want in seconds and holding it in minutes.
-      h4.clr-text.prime "What do I want?"
-      p.
-        We've rethought how people help each other, from gas stations to search engines, and created
-        a system with a different (but not new) perspective: the perspective of your mom-and-pop shop;
-        of your pharmacist; of your barista; of your mother. It's the perspective of someone who believes that
-        what you want is important and wants to help you get it.
-      p: strong.
-        Our goal is to physically unite people with what they're after, even when they aren't sure what it is.
-      h4.clr-text.prime Here and now only
-      p.
-        It's a little ridiculous how much shipping is done these days. We won't list every single thing that
-        shouldn't have to travel, but the list is long.
-        Why shouldn't things be close to you? Why shouldn't you get something next door instead of Siberia?
-      p.
-        We believe closer is better, so we made system that feels the same way. It shuts out anything that isn't
-        available right now and right next to you.
-      p.
-        Good for you, good for your neighbors, good for your
-        city, bad for Siberians. :..(
-
-template(name="about_faq")
-  .row.centered
-    .span8.offset2
-      .accord
-        header: h4: a(href="#") So... what is Sparrow?
-        .body
-          p.
-            Sparrow is a beta application where people sell things to other people, whether that's
-            spaghetti or a space shuttle.
-            Sellers give a brief description, price, and location of their offer, then they pick adjectives
-            they think sum it up best.
-            The adjectives are how we categorize the offers and ensure that buyers
-            only see things they are interested in.
-            Once an offer is published, it's immediately visible on homepage.
-          p.
-            The homepage appears differently to everyone. It calculates where you are and what you're looking for
-            all the time, as it hides, shows, rearranges, and adjusts offers to match you. It will change even
-            without interaction to reflect the offers in real time.
-      .accord
-        header: h4: a(href="#") What does 'real time' mean?
-        .body
-          p.
-            Sparrow has been built from the ground up to work in the present. When things change on Sparrow, they
-            change for immediately and universally -- no page refreshes are ever necessary.
-            This creates an amazing environment
-            for buyers and sellers.
-          p.
-            For just one example, when someone clicks 'upvote' on an offer, that upvote is immediately
-            visible to any and everyone who sees it, and it may even change the order of everything a buyer is
-            viewing.
-      .accord
-        header: h4: a(href="#") Why can't I sell anything?
-        .body
-          p.
-            Sparrow is still in its beta, so lots of features and improvement are forthcoming. We'll unlock
-            the reserving and selling features when we think their ready. If you want to learn more, check
-            out our <a href="/about/roadmap">roadmap</a>.
-      .accord
-        header: h4: a(href="#") How do I create an offer?
-        .body
-          p.
-            You must be logged in to vote or create an offer. To get started, just return to 
-            the <a class="shift" href="/" data-shift-direction="right" data-shift-area="home" >homepage</a>
-            and click 'login' in the upper-right corner.
-      .accord
-        header: h4: a(href="#") What the #!*@?
-        .body
-          p.
-            Whatever you're what-the-#!*@ing about, <a href="/about/feedback">let us know</a>.
-
-template(name="about_roadmap")
-  h1 some docs
-
-template(name="about_blog")
-  h4.clr-text.prime.centered Ha! Just kidding. Aint nobody got time for that.
-
-template(name="about_feedback")
-  {{> feedback }}
-
-template(name="feedback")
-  .greeting.row
-    .span6.offset3
-      h5.centered.
-        If you have something you'd like to mention to us, go ahead
-        and fill out this little message box and send it our way.
-      br
-
-    form#feedback.span4.offset4
-      .control-group
-        .controls
-          textarea(rows=4).span4
-      button.btn.centered.span4.clr-bg Send
-
-    .span10.offset1
-      h5.centered We'd like to take a moment to say <em>thank you</em>...
-      p.
-        We're in love with Kansas City, and we hope you are
-        too. We've worked hard to make something special for our home
-        -- an elegant tool that lets us to trade with our friends,
-        family, and neighbors in just seconds. With your help,
-        we have a chance to make it great.
-      p.
-        The feedback and interaction we receive from people like you
-        will play a major role in determining how we
-        approach our application, our objectives, and most importantly,
-        our users.
+        {{#if page_next "account_offer"}} {{> account_offer }} {{/if}}
+        {{#if page_next "account_messages"}} {{> account_messages }} {{/if}}
+        {{#if page_next "account_feedback"}} {{> account_feedback }} {{/if}}
+        {{#if page_next "account_profile"}} {{> account_profile }} {{/if}}
 
 template(name='home')
   {{#if getStore "user_loc"}}
@@ -344,455 +206,3 @@ template(name="404")
   h1.
     Are you lost?
 
-template(name='editor')
-  div.editor(id="{{name}}").row
-    h1.capitalize {{name}}
-
-    table.table.table-hover.span4.offset1
-      thead: tr
-        {{#each keys}}
-        th(id="{{this}}") {{this}}
-        {{/each}}
-      tbody
-        {{#each collection}}
-        tr(id="{{this._id}}")
-          {{#key_value this}}
-          td(id="{{key}}") {{value}}
-          {{/key_value}}
-        {{/each}}
-
-    form(action='').span4.offset1
-      {{#each keys}}
-      .control-group(id="{{this}}")
-        label.control-label.capitalize {{this}}
-        .controls
-          input.text(type="text", id="{{this}}")
-      {{/each}}
-      .btn-group
-        button.btn.save(type='button')#update Update
-        button.btn.save(type='button')#add Add
-        button.btn.btn-warning.remove(type='button')#remove Remove
-
-
-//////////////////////////////////////////////
-//  $$ admin
-
-template(name='admin_users')
-  {{#grab "Users"}}
-  {{> editor }}
-  {{/grab}}
-
-template(name='admin_tags')
-  {{#grab "Tagsets"}}
-  {{> editor }}
-  {{/grab}}
-
-  {{#grab "Tags"}}
-  {{> editor }}
-  {{/grab}}
-
-template(name="admin_sorts")
-  {{#grab "Sorts"}}
-  {{> editor }}
-  {{/grab}}
-
-template(name="admin_offers")
-  {{#grab "Offers"}}
-  {{> editor }}
-  {{/grab}}
-
-template(name="admin_metrics")
-  h1 DERP
-
-
-//////////////////////////////////////////////
-//  $$ account
-
-template(name='account')
-  .greeting.centered.span7.offset2
-    h1 Not much here...
-    h5.
-      We haven't fleshed out the dashboard yet. But hey, you don't have to sit around waiting for it --
-      in the meantime, have you made an offer yet? Why not give it a whirl?
-  .clearfix
-
-template(name='account_profile')
-
-  {{#grab "User"}}
-  {{#first this.collection}}
-  .greeting.row
-
-    h5.centered.
-      Make your changes; enter your password; hit save.
-      <br>You know the drill.
-
-
-    form.span5.offset4
-      mixin field("input", "username", "{{this.username}}", "text", "span4 limited", 1 )
-      mixin field("input", "email", "{{getEmail.address}}", "text", "span4 limited", 2 )
-      mixin field("input", "password", "123456", "password", "span4 limited", 2, "disabled" )
-
-    .clearfix
-
-    button.btn.clr-bg.save Save
-    {{/first}}
-    {{/grab}}
-
-template(name="change_password")
-  mixin field("input", "new password", "", "password", "span4 limited", 1 )
-  mixin field("input", "new password (again)", "", "password", "span4 limited", 1 )
-
-template(name='account_metrics')
-  {{#with getUser}}
-  ul
-    li
-      strong Offers: 
-      {{offers}}
-    li
-      strong Votes: 
-      {{votes.length}}{{/with}}
-
-template(name='account_offer')
-
-  {{#with getOffer}}
-
-  .account_offer
-    {{> offer}}
-
-
-  .clearfix
-
-  .account-offer.navbar: .navbar-inner: .container
-    ul.nav.long
-      mixin nav-item(a, b, c)
-        li(class= c, data-value= a).clr-bg.span2
-          i(class="glyph-" + b)
-          | #{a}
-      mixin nav-item("write", "feather", "show margin right")
-      mixin nav-item("tags", "tag-2", "show margin right")
-      mixin nav-item("symbol", "palette", "show margin right")
-      mixin nav-item("location", "map", "show margin right")
-      mixin nav-item("limits", "hourglass", "show margin right")
-      mixin nav-item("save", "disk", "save")
-      // mixin nav-item("help", "help", "help")
-
-  {{#if sessionEquals 'help' 'true'}}
-  .clearfix
-  .help-unit.row
-    {{#if sessionEquals 'show' 'intro'}}
-    .span6.offset3.intro
-      h3 Welcome to your offer area!
-      p.
-        Here you can create, edit, and publish your offer in a matter of seconds. The "help" selection
-        is on by default, so you'll see more of this text. Whenever you want, you can turn off the
-        help text by hitting the toggle in the upper left.
-      br
-      p: strong Ready to make an offer?
-      button.btn.btn-large.show(data-value="write", color="{{this.color}}"): em Let's go!
-    {{/if}}
-    {{#if sessionEquals 'show' 'write'}}
-    .span12
-      h3 What are we selling?
-    .span5.offset1
-      p.
-        Although everyone buys differently, we all want
-        to know what the product is, who is selling it, and for how much.
-      p.
-        You might notice that we limit the amount you can write. Sorry 'bout that. If you're having
-        trouble condensing your product's information, try this little exercise out...
-      p.
-        Pretend you're dangling from a cliff and you needed this object to save your life. Your friend
-        wants to help you, but he is up some distance at the top of the cliff, unable to reach you.
-    .span5
-      p.
-        At this moment, he is waiting for you yell up and describe the object to him so he can
-        retrive it from your car and lower it to you with a rope.
-      p.
-        What do you yell to him?
-      p.
-        Did that help? Maybe? It's a weird exercise. Me, personally, I would just yell for the rope,
-        but for the sake of the exercise, let's pretend that's against the rules.
-    {{/if}}
-    {{#if sessionEquals 'show' 'tags'}}
-    .span12
-      h3 Tags, tags, and more tags
-    .span5.offset1
-      p.
-        Tags are adjectives that describe your offer. They are the words that <em>you</em> feel are important
-        for others to know -- they should cut to right to the chase.
-      p.
-        In order to get your offer to people who are most likely to buy, we limit the tags that an offer can have.
-        That way, your tag gets in front of the buyers you need, and your competitors offers aren't encroaching on
-        your territory.
-    .span5
-      p.
-        So what tags should you choose? That's up to you. You should pick tags that you think others should know
-        about your good -- something that sets it apart from any offers people may find. A quality that your offer
-        has that the other guy's doesn't.
-      p.
-        What makes your offer unique? Is it a savory burger? An killer concert? A vintage scarf?
-    {{/if}}
-    {{#if sessionEquals 'show' 'symbol'}}
-    .span12
-      h3 What's your sign? No, not that sign...
-    .span5.offset1
-      p.
-        You symbol is simply the sign on the left-hand side of the offer that distinguishes it. You can pick
-        a symbol from our list below and combine it with any color.
-    .span5
-      p.
-        No, you can't upload your logo <em>yet</em>, but it's coming. We want to ensure that every offer has
-        at least some sort of symbol, so that even someone without a flashy logo can be represented equally.
-    {{/if}}
-    {{#if sessionEquals 'show' 'location'}}
-    .span12
-      h3 Oh offer, where art thou?
-    .span5.offset1
-      p.
-        We use the address you list here to provide geolocation to the user, so be sure to list where the
-        <em>offer</em> is, not where you are.
-    .span5
-      p.
-        For now, you can only list one location, but don't cry. We'll be rolling out multiple location features
-        just as soon as enough people bug us about it.
-    {{/if}}
-
-  {{/if}}
-
-
-
-  .clearfix.pad
-
-    {{#if show "write"}}
-    .offer-bind-fields
-      {{> account_offer_write }}
-    {{/if}}
-
-    {{#if show "symbol"}}
-    {{> account_offer_symbol }}
-    {{/if}}
-
-    {{#if show "tags"}}
-    {{> account_offer_tags }}
-    {{/if}}
-
-    {{#if show "location"}}
-    .offer-bind-fields
-      {{> account_offer_location }}
-    {{/if}}
-
-    {{/with}}
-
-template(name="account_offer_write")
-  .area
-    form
-      .span5.offset1
-        mixin field("input", "name", "{{this.name}}", "text", "span4 limited", 1, "{{charLength 'name'}}")
-        mixin Field({el: "textarea", label: "description", id: "description", text: "{{this.description}}", type: "textarea", class: "span4 limited", tabindex: 2, characters: "{{charLength 'description'}}", rows: 4 })
-      .span5
-        mixin field("input", "business", "{{this.business}}", "text", "span4 limited", 3, "{{charLength 'business'}}")
-        mixin field("input", "price", "{{this.price}}", "text", "span2", 4 )
-    .clearfix
-
-template(name="account_offer_tags")
-
-  {{aggregateTags}}
-
-  {{#with getStore "stint_tags"}}
-  .offer-tag-list.long
-    ul.span2.margin.right
-      {{#each_with_key this}}
-      li(data-active="{{active}}", data-group="tagset").clr-bg {{this.name}}
-      {{/each_with_key}}
-    {{#each_with_key this}}
-    ul(data-active="{{active}}").span10
-      {{#each this.tags}}
-      li(data-active="{{active}}", data-group="tags", data-name="{{name}}").clr-bg
-        .info-sheet.span7
-          span(data-toggle-mode="shrink")
-          span.span3 {{name}}
-          span.span1 {{ratio}}
-          span.span1 {{rate}}
-
-        .actions.span2
-          {{#if active}}
-          span(data-group="tags"): i.glyph-minus-2 {{else}}
-          span(data-group="tags"): i.glyph-plus {{/if}}
-
-        {{#constant}}
-        .target.hide
-          .expand.hide
-            h1 {{name}}
-        {{/constant}}
-      {{/each}}
-      .clearfix
-      li.create-tag(data-tagset="{{this.name}}")
-        input(type="text", tabindex=1, autofocus).text.span4
-        span.clr-bg.btn.span2.margin.left {{this.ratio}}
-        button.btn.clr-bg.span2.margin.left(tabindex=2) add
-    {{/each_with_key}}
-  {{/with}}
-
-
-// .area
-//   .tag-list.long
-//     {{#each find 'Tagsets' '{}'}}
-//     {{#with checkTagsetActive}}
-//     ul.span2.tagset(data-tagset="{{this.name}}", data-status="{{this.attr}}")
-//       strong {{this.name}}
-//       {{#each getTags}}
-//       li
-//         {{#with checkTagStatus}}
-//         | <span {{attr}}>{{name}}</span>
-//         span: strong {{../name}}
-//         br
-//         br
-//         {{/with}}
-//       {{/each}}
-//     {{/with}}
-//     {{/each}}
-
-template(name="account_offer_symbol")
-  .area
-    .glyphs-list.long
-      .span12.inner
-        input.text.color(type='text', style='background: {{this.color}}', value="{{this.color}}").span10
-        .color-bucket(style='background: {{this.colors.hex}}')
-      .clearfix
-      {{#each getIcons}}
-      .glyph.span3.margin.left
-        .large(class="glyph-{{this}}")
-      {{/each}}
-
-template(name="account_offer_location")
-  .area
-    form#location
-      .span5.offset3
-        mixin field("input", "street", "{{this.street}}", "text", "span5", 1)
-        mixin field("input", "city", "{{this.city}}", "text", "span4", 2 )
-        mixin field("input", "state", "{{this.state}}", "text", "span2", 2 )
-        mixin field("input", "zip", "{{this.zip}}", "text", "span2", 2 )
-
-template(name="account_messages")
-  .greeting.row
-
-
-  {{#each find 'Messages' '{}' '{"sort": {"lastSent": -1}}' }}
-  {{> account_message }}
-  {{/each}}
-
-template(name="account_message")
-
-  .message-container.long.span12
-    {{#each this.content}}
-    article.clearfix
-      .from.span2 {{#first this.from}}{{this.username}}{{/first}}:
-      .message.span7: .inner {{this.message}}
-      .sent.span3 {{styleDate this.sent}}
-    {{/each}}
-    article.clearfix.compose.clr-bg
-      .from.span2 {{currentUser.username}}
-      .message.span7
-        textarea(rows=1, placeholder="...")
-      .sent.span3.send send
-
-template(name="account_feedback")
-  {{> feedback }}
-
-
-//////////////////////////////////////////////
-//  $$ offer
-
-template(name='thisOffer')
-  div.thisOffer
-    {{#with getThisOffer}}
-    {{> offer}}
-    .input-append
-      input.text(type="text")
-      button.btn Go!
-    {{/with}}
-
-template(name='offer')
-  .offer(data-tagset="{{this.tagset}}", id="{{this._id}}", data-help-block="false", data-help-selector="offer").long
-
-    style(type="text/css")
-      .offer[id="{{this._id}}"] .light {
-          background: {{hsl 97 90}};
-        }
-      .offer[id="{{this._id}}"] .symbol div {
-          color: {{hsl 45 90}};
-        }
-      .offer[id="{{this._id}}"] .glyph {
-          color: {{hsl 50 50}};
-        }
-      .offer[id="{{this._id}}"] .color-hover[disabled] {
-          color: {{hsl 50 50}}!important;
-        }
-      .offer[id="{{this._id}}"] .color-hover:hover {
-          color: {{hsl 50 100}};
-        }
-      .offer[id="{{this._id}}"] .bright {
-          background: {{hsl 50 20}};
-        }
-      .offer[id="{{this._id}}"] .bumper {
-          background: {{hsl 50 100}};
-        }
-
-    .bumper.left
-    section.symbol.span2.light
-      div(class='{{this.symbol}}')
-
-    section.main.span4.extend.light
-      span.field(data-field='name') {{this.name}}
-      p.field(data-field='description') {{this.description}}
-      span.field(data-field='business') {{this.business}}
-      br
-    section.data
-      mixin data(opt)
-        div(class= opt.selector ).span1.margin.left
-          i(class="glyph-" + opt.glyph).glyph
-          .metric.bright
-            span.actual= opt.metric
-            span.after= opt.after
-
-            .bg.light
-
-      mixin data({ selector: "votes", glyph: "plus", metric: "{{this.votes.length}}", after:"votes" })
-      mixin data({ selector: "distance", glyph: "location", metric: "{{this.distance}}", after:"miles" })
-      mixin data({ selector: "price", glyph: "tag-2", metric: "${{this.price}}" })
-      mixin data({ selector: "updatedAt", glyph: "history", metric: "{{styleDate this.updatedAt}}" })
-
-
-    section.actions.span2.margin.left
-      ul
-        mixin action(opt)
-          li(class= opt.selector, data-status="inactive", data-selector= opt.selector).light.color-hover= opt.label
-            .bumper.right
-
-        mixin action({ selector: "vote", label: "upvote" })
-        mixin action({ selector: "map", label: "directions" })
-        mixin action({ selector: "reserve", label: "reserve" })
-        mixin action({ selector: "message", label: "message" })
-
-    section.extension(data-extension="map")
-      .bumper.right
-      .inner.map.span8.light
-      .inner.span4.margin.left.light
-        p.address
-          | {{this.street}}
-          br
-          | {{this.city}}, {{this.state}}
-          br
-          | {{#if this.zip}}{{this.zip}}{{/if}}
-    section.extension(data-extension="message")
-      .bumper.right
-      .inner.span10
-        textarea(placeholder="Write a little note...")
-        .message-area.light
-      .inner.span2.margin.left.send.light.color-hover send
-    section.extension(data-extension="buy")
-
-
-
-template(name="redirect")
-  button.btn All done!

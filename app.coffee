@@ -1,12 +1,19 @@
+# Meteor.absoluteUrl "http://localhost:3000",
+#   replaceHost: true
+#   rootUrl: "http://localhost:3000"
 
-Users    = new Meteor.Collection("userData")
-Offers   = new Meteor.Collection("offers")
+Meteor.absoluteUrl "http://deffenbaugh.herokuapp.com",
+  replaceHost: true
+  rootUrl: "http://deffenbaugh.herokuapp.com"
 
-Tags     = new Meteor.Collection("tags")
-Tagsets  = new Meteor.Collection("tagsets")
-Sorts    = new Meteor.Collection("sorts")
+Users    = new Meteor.Collection "userData"
+Offers   = new Meteor.Collection "offers"
 
-Messages = new Meteor.Collection("messages")
+Tags     = new Meteor.Collection "tags"
+Tagsets  = new Meteor.Collection "tagsets"
+Sorts    = new Meteor.Collection "sorts"
+
+Messages = new Meteor.Collection "messages"
 
 String::toProperCase = ->
   @replace /\w\S*/g, (txt) ->
@@ -29,6 +36,7 @@ Time =
     moment(time).add('minutes', min).unix() * 1000
 
 Meteor.methods
+
   getRandomOffer: (cb) ->
     offers = Offers.find({}).fetch()
     offer = offers[_.random(0, offers.length)]
@@ -118,4 +126,8 @@ distance = (lat1, lon1, lat2, lon2, unit) ->
   dist = dist * 1.609344  if unit is "K"
   dist = dist * 0.8684  if unit is "N"
   dist
+
+myOffer = ->
+  Offers.findOne
+    owner: Meteor.userId()
 

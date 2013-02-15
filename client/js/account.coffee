@@ -40,14 +40,19 @@ Handlebars.registerHelper "hsl", (l, a) ->
 
   "hsla(" + hue + "," + sat + "%," + light + "%," + alpha + ")"
 
-Template.content.rendered = =>
-  return  if Meteor.Router.page() is "home"
-  @activateLinks = Meteor.autorun(->
+Template.content.rendered = ->
+  return if Meteor.Router.page() is "home"
+  @activateLinks = Meteor.autorun(=>
     out = Meteor.Router.page()
-    parse = "/" + out.split("_").join("/")
-    target = $("ul.links a[href='" + parse + "']")
-    target.addClass "active"
-    target.siblings().removeClass "active"
+    parse = ("/" + out.split("_").join("/"))
+    target = $(@findAll("ul.links a"))
+    target.removeClass( "active" )
+    target.filter("[href='" + parse + "']").addClass("active")
+    if Session.get("show") isnt null
+      show = Session.get("show")
+      els = $(@findAll("li.show"))
+      els.removeClass("active")
+      els.filter("[data-value=#{show}]").addClass("active")
   )
   @activateLinks.stop()
 
@@ -80,7 +85,7 @@ Template.account_offer.helpers
     Session.get "currentOffer"
 
   show: (a) ->
-    true  if Session.get("show") is a
+    true if Session.get("show") is a
 
 Template.account_offer.events
   "click .save": (event, tmpl) ->
@@ -97,18 +102,27 @@ Template.account_offer.events
       return
 
     type = (if Offers.findOne(owner: Meteor.userId()) then "update" else "insert")
+    console.log("SAVE TYPE", type)
+
+    loading = new TerraceAlert
+      text: "Loading..."
+      temp: true
+
     geo = new google.maps.Geocoder()
     geo.geocode
       address: offer.street + " " + offer.city + " " + offer.state + " " + offer.zip
     , (results, status) ->
       if status isnt "OK"
-        new TerraceAlert
-          text: "We couldn't seem to find your location. Did you enter your address correctly?"
+        window.App.currentTerrace.killText(->
+          new TerraceAlert
+            text: "We couldn't seem to find your location. Did you enter your address correctly?"
+        )
 
       else
         offer.loc =
           lat: results[0].geometry.location.Ya
           long: results[0].geometry.location.Za
+        offer.updatedAt = Time.now()
 
         Meteor.call "editOffer", type, offer, (error) ->
           if error
@@ -116,8 +130,9 @@ Template.account_offer.events
               text: error.reason
 
           else
-            new TerraceAlert
-              text: "You're good to go!"
+            loading.kill ->
+              new TerraceAlert
+                text: "You're good to go!"
 
           return
 
@@ -128,13 +143,8 @@ Template.account_offer.events
   "click .show": (event, tmpl) ->
     area = event.currentTarget.getAttribute("data-value")
     as "show", area
-    Session.set "show", area
+    Session.set "show", as("show")
     Session.set "currentOffer", as()
-
-  "click li.help": (event, tmpl) ->
-    out = (if Session.get("help") then false else true)
-    as "help", out
-    Session.set "help", out
 
   "focus .limited": (event, tmpl) ->
     elem = $(event.currentTarget)
@@ -170,43 +180,100 @@ Template.account_offer.events
     url = "http://deffenbaugh.herokuapp.com/offer/"
     update_qrcode()
 
+transitionEvents = 'webkitTransitionEnd.transitioner oTransitionEnd.transitioner transitionEnd.transitioner msTransitionEnd.transitioner transitionend.transitioner'
+
 Template.account_offer.created = ->
-  Session.set "show", as("show") or "text"
+  # $("body").on self.transitionEvents, (e)->
+  #   console.log("GOT HEEEEEEEEEEEEEEEEEEEEERE")
+  #   if $(e.target).is("body")
+  #     Session.set "show", as("show") or "text"
 
   id = Meteor.userId()
   offer = Offers.findOne owner: Meteor.userId()
-  as "_id", id
-  if not id or id isnt as("owner")
-    if offer
-      for key of Offer
-        as key, offer[key]
-      as "updatedAt", moment().unix()
-      as "owner", Meteor.userId()
-      Session.set "currentOffer", as()
-    else
-      for key of Offer
-        as key, Offer[key].default
-      as "updatedAt", moment().unix()
-      as "owner", Meteor.userId()
-      Session.set "currentOffer", as()
-  else
-    Session.set "currentOffer", as()
+  if id isnt as("owner")
+    for key of Offer
+      as key, offer[key] or Offer[key].default
+    as "owner", id
+  Session.set "currentOffer", as()
 
+# Template.account_offer.destroyed = ->
+#   if Session.get "show"
+#     Session.set "show", null
+#     console.log("DESTORYED !!!!!")
 
 #////////////////////////////////////////////
 #  $$ account_offer_symbol
-Template.account_offer_symbol.helpers getIcons: ->
-  icons
+
+
+Template.account_offer_symbol.helpers
+  getIcons: ->
+    icons
+  files: ->
+    Filesystem.find {},
+      sort:
+        uploadDate: -1
+  file: ->
+    out = {}
+
+    unless @imgur_status or @fileURL then return
+    if @imgur_status is 200
+      out.URL = @imgur.link
+    else if @fileURL?.length
+      done = false
+      for fURL in @fileURL
+        if fURL.path and not done
+          done = true
+          out.URL =  Meteor.absoluteUrl() + fURL.path
+          console.log out.URL
+
+    if out.URL is as("symbol")
+      out.status = "active"
+    out
 
 Template.account_offer_symbol.events
   "click .glyph div": (event, tmpl) ->
     attr = event.target.getAttribute("class")
     as "symbol", attr
-    Session.set "currentOffer", as()
+    as "symbol_type", "glyph"
+    # Session.set "currentOffer", as()
+    $("section.symbol div").attr("class", attr)
+
+  'click .select-file': (e, t) ->
+    target = $(e.currentTarget)
+    url = target.attr("data-url")
+    as "symbol", url
+    as "symbol_type", "image"
+    # Session.set "currentOffer", as()
+    $("section.symbol div").css("background-image", "url(#{url})")
+
+  "change .fileUploader": (e, t) ->
+    files = e.target.files
+    for f in files
+      Filesystem.storeFile(f)
+
+  'click .file': (e, t) ->
+    console.log @
+
+  'click .upload-file': (e, t) ->
+    url = e.target.getAttribute "data-url"
+    ctx = @
+    Meteor.call "imgurUploadUrl", url, ctx, (error)->
+      console.log(error)
+
+  'click .save-file i': (e, t) ->
+    Filesystem.retrieveBlob( @_id, (fileItem) ->
+      console.log(fileItem)
+      if fileItem.blob
+        saveAs(fileItem.blob, fileItem.filename)
+      else
+        saveAs(fileItem.file, fileItem.filename)
+    )
+
+  'click .delete-file': (e, t) ->
+    Filesystem.files.remove @
 
 Template.account_offer_symbol.rendered = ->
-  self = this
-  $("input").spectrum (
+  $("input.color").spectrum (
     showButtons: true
     flat: true
     showInput: true
@@ -222,96 +289,12 @@ Template.account_offer_symbol.rendered = ->
       amplify.set "color", color.toHexString()
       Session.set "currentOffer", as()
       Meteor.call "updateUserColor", color.toHexString()
-    move: (color) ->
-      $(self.find ".color-bucket").css "background", color.toHexString()
+    move: (color) =>
+      $(@find ".color-bucket").css "background", color.toHexString()
   )
 
+Template.account_offer_symbol.preserve ['img']
 
-class Dimmer
-  constructor: (args) ->
-    @el = $("#dimmer")
-    @el.css("background", args?.color or "white")
-    @opacity = args?.opacity or 0.5
-    @speed = args?.speed or 300
-
-  dimIn: =>
-    @el.css("display", "block")
-    @el
-      .stop(true, true)
-      .animate
-        opacity: @opacity
-        , @speed
-
-  dimOut: =>
-    @el
-      .stop(true,true)
-      .animate
-        opacity: 0
-        , @speed
-        , =>
-          @el.css("display", "none")
-
-class TerraceAlert
-  constructor: (args) ->
-
-    @body = $("body")
-    @terrace = $(".terrace")
-    @togglerGroups = $(".toggler-group")
-    @terraceAlert = $("#terrace-alert")
-    @terraceAlert.append("<p>#{args.text}</p>")
-
-    @speed = args.speed or 200
-    @autoFade = args.autoFade or true
-    @dimmer = args.dimmer or new Dimmer(@)
-    @setTimeout() if @autoFade
-
-    @show()
-
-  setTimeout: =>
-    @timeoutId = Meteor.setTimeout =>
-      @hide()
-    , unless typeof @autoFade is "number" then 5000
-    @terraceAlert.on "mouseenter", =>
-      Meteor.clearTimeout @timeoutId
-    @terraceAlert.on "mouseleave", =>
-      @setTimeout()
-
-  show: =>
-    @dimmer.dimIn() if @dimmer
-    @togglerGroups
-      .stop(true, true)
-      .fadeOut(@speed)
-    @terrace
-      .stop(true, true)
-      .slipShow
-        speed: 1
-        haste: 1
-        , =>
-          @terraceAlert.slipShow
-            speed: @speed
-            haste: 1
-          @body.on "click", "#dimmer", =>
-              @hide()
-
-  hide: =>
-    Meteor.clearTimeout @timoutId
-    @body.off "click", "#dimmer"
-    @dimmer.dimOut() if @dimmer
-    @terraceAlert
-      .empty()
-      .stop(true,true)
-      .slipHide
-        speed: @speed
-        haste: 1
-      , =>
-        @togglerGroups
-          .stop(true, true)
-          .fadeIn(@speed)
-        @terrace
-          .stop(true, true)
-          .slipHide
-            speed: @speed
-            haste: 1
 
 
 #////////////////////////////////////////////
@@ -354,6 +337,7 @@ Template.account_offer_tags.events
             console.log(res)
             amplify.store "tagset", store.tagset
             Store.set "tag_selection", store
+            Meteor.flush()
 
 
   "click span[data-group='tags'], click li[data-group='tagset']": (event, tmpl) ->
@@ -381,6 +365,17 @@ Template.account_offer_tags.events
     amplify.store "tags", store.tags
     amplify.store "tagset", store.tagset
     Store.set "tag_selection", store
+
+
+Template.account_offer_tags.rendered = =>
+  unless @handle
+    @handle = Meteor.autorun ->
+      console.log("RUNNING")
+      Meteor.call "aggregateTags", Store.get("user_loc"), Store.get("tag_selection"), (err, result) ->
+        if err is `undefined`
+          Store.set "stint_tags", result
+        else
+          console.log err
 
 
 #////////////////////////////////////////////

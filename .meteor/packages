@@ -29,3 +29,7 @@ handlebar-helpers
 dhtmlx-message
 coffeescript
 browser-store
+stripe
+collectionFS
+imgur
+logger

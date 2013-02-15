@@ -1,0 +1,58 @@
+template(name='editor')
+  div.editor(id="{{name}}").row
+    h1.capitalize {{name}}
+
+    table.table.table-hover.span4.offset1
+      thead: tr
+        {{#each keys}}
+        th(id="{{this}}") {{this}}
+        {{/each}}
+      tbody
+        {{#each collection}}
+        tr(id="{{this._id}}")
+          {{#key_value this}}
+          td(id="{{key}}") {{value}}
+          {{/key_value}}
+        {{/each}}
+
+    form(action='').span4.offset1
+      {{#each keys}}
+      .control-group(id="{{this}}")
+        label.control-label.capitalize {{this}}
+        .controls
+          input.text(type="text", id="{{this}}")
+      {{/each}}
+      .btn-group
+        button.btn.save(type='button')#update Update
+        button.btn.save(type='button')#add Add
+        button.btn.btn-warning.remove(type='button')#remove Remove
+
+
+
+template(name='admin_users')
+  {{#grab "Users"}}
+  {{> editor }}
+  {{/grab}}
+
+template(name='admin_tags')
+  {{#grab "Tagsets"}}
+  {{> editor }}
+  {{/grab}}
+
+  {{#grab "Tags"}}
+  {{> editor }}
+  {{/grab}}
+
+template(name="admin_sorts")
+  {{#grab "Sorts"}}
+  {{> editor }}
+  {{/grab}}
+
+template(name="admin_offers")
+  {{#grab "Offers"}}
+  {{> editor }}
+  {{/grab}}
+
+template(name="admin_metrics")
+  h1 DERP
+
