@@ -11,7 +11,7 @@
 tab = "  "
 
 watch = (arg) ->
-  console.log tab, arg.title.toUpperCase().green
+  console.log tab, arg.title.toUpperCase()
   for field of arg.fields
     if _.isEmpty(arg.fields[field])
       key = field
@@ -19,7 +19,7 @@ watch = (arg) ->
     else
       key = arg.fields[field].name
       value = arg.fields[field].value()
-    console.log tab, tab, key.yellow + ": ", value
+    console.log tab, tab, key + ": ", value
   console.log(" ")
 
 

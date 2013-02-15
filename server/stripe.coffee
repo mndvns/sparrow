@@ -11,9 +11,9 @@ Meteor.methods
     , (err, res)->
       if Meteor.isServer
         if err
-          console.log("ERR".red, err)
+          console.log("ERR", err)
         else
-          console.log("RES".blue, res)
+          console.log("RES", res)
 
 
   stripeCustomerCreate: (token) ->
@@ -24,9 +24,9 @@ Meteor.methods
       keep: "id"
     , (err, res)->
       if err
-        console.log("ERR".red, err)
+        console.log("ERR", err)
       else
-        console.log("RES".blue, res)
+        console.log("RES", res)
 
   stripeSaveCustomerId: (customerId) ->
     Meteor.Future.update Meteor, ["users", "update"],

@@ -9,7 +9,7 @@
 #                                               //
 
 require = __meteor_bootstrap__.require
-Colors = require "colors"
+# Colors = require "colors"
 MongoDB = require "mongodb"
 Future = require "fibers/future"
 

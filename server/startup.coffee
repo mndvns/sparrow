@@ -15,7 +15,7 @@ Meteor.startup ->
     " _\\ \\ / _ \\/ _ `// __// __// _ \\| |/|/ /",
     "/___// .__/\\_,_//_/  /_/   \\___/|__,__/ ", "    /_/", " ", " "]
   while i < j.length
-    console.log "         ", j[i].blue
+    console.log "         ", j[i]
     i += 1
 
   Offers._ensureIndex loc: "2d"
