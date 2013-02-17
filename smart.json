@@ -12,6 +12,7 @@
     "stripe": {},
     "collectionFS": {},
     "imgur": {},
-    "logger": {}
+    "logger": {},
+    "canvas-image-manipulation": {}
   }
 }

@@ -23,10 +23,11 @@ watch = (arg) ->
   console.log(" ")
 
 
-cronSeconds = 360
+
+cronSeconds = 60
 Meteor.setInterval (->
 
-  # u = Meteor.users.findOne( "username": "derpus" )
+  # u = Meteor.users.findOne( "username": "mikey" )
   # watch
   #   selector: u
   #   title: u.username

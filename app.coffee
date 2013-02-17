@@ -6,6 +6,8 @@
 #   replaceHost: true
 #   rootUrl: "http://deffenbaugh.herokuapp.com"
 
+
+Images   = new Meteor.Collection "images"
 Users    = new Meteor.Collection "userData"
 Offers   = new Meteor.Collection "offers"
 
@@ -14,6 +16,7 @@ Tagsets  = new Meteor.Collection "tagsets"
 Sorts    = new Meteor.Collection "sorts"
 
 Messages = new Meteor.Collection "messages"
+Alerts   = new Meteor.Collection "alerts"
 
 String::toProperCase = ->
   @replace /\w\S*/g, (txt) ->
@@ -49,6 +52,14 @@ Meteor.methods
     else
       Tags.insert obj
 
+  # aggregateOffers: ->
+  #   Offers.aggregate
+  #     $group:
+  #       tagset.$
+
+
+
+
   aggregateTags: (userLoc, tagSelection) ->
 
     query = []
@@ -57,10 +68,11 @@ Meteor.methods
     Tags.find().map (d)->
       dist = [1]
 
-      for inv of d.involves
+      for inv in d.involves
         if inv and inv.loc
           miles = distance(inv.loc.lat, inv.loc.long, userLoc.lat, userLoc.long)
-          if miles < 3100 then dist.push miles
+          if miles < 3100
+            dist.push miles
 
       ratio = _.reduce dist, (memo, num)->
         memo + (num / (num^2 + (memo / dist.length)))
@@ -100,9 +112,11 @@ Meteor.methods
     @unblock()
     Offers.update offer._id,
       $push:
-        votes:
+        votes_meta:
           user: @userId
-          exp: Date.now()
+          exp: Time.now()
+      $inc:
+        votes_count: 1
 
     Meteor.users.update offer.owner,
       $inc:

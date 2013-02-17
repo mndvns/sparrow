@@ -136,7 +136,8 @@ Template.offer.events
 
 
 Template.offer.rendered = ->
-  return false  if Meteor.Router.page() is "account_offer"
+  if Session.get("shift_area") is "account" or Meteor.Router.page() is "account_offer"
+    return
   range = statRange()
   keys = [
     name: "updatedAt"
@@ -145,7 +146,7 @@ Template.offer.rendered = ->
     name: "distance"
     invert: true
   ,
-    name: "votes"
+    name: "votes_count"
     invert: false
   ,
     name: "price"
@@ -153,28 +154,28 @@ Template.offer.rendered = ->
   ]
   self = @
 
-  # renderRatio = (callback) ->
-  #   ratio = {}
-  #   _.each keys, (k) ->
-  #     d = k.name
-  #     upperRange = self.data[d] - range.min[d][d] + 0.01
-  #     lowerRange = range.max[d][d] - range.min[d][d]
-  #     out = Math.ceil((100 * (upperRange) / (lowerRange)) * 5) / 10
-  #     ratio[d] = (if k.invert is false then out else Math.abs(out - 50))
+  renderRatio = (callback) ->
+    ratio = {}
+    _.each keys, (k) ->
+      d = k.name
+      upperRange = self.data[d] - range.min[d][d] + 0.01
+      lowerRange = range.max[d][d] - range.min[d][d]
+      out = Math.ceil((100 * (upperRange) / (lowerRange)) * 5) / 10
+      ratio[d] = (if k.invert is false then out else Math.abs(out - 50))
 
-  #   callback ratio
+    callback ratio
 
-  # renderRatio (ratio) ->
-  #   for key of ratio
-  #     if ratio.hasOwnProperty(key) and ratio[key]
-  #       data = d3.select(self.find("section.data ." + key))
-  #       metric = data.select(".metric")
-  #       metric.style height: ->
-  #         ratio[key] + "%"
+  renderRatio (ratio) ->
+    for key of ratio
+      if ratio.hasOwnProperty(key) and ratio[key]
+        data = d3.select(self.find("section.data ." + key))
+        metric = data.select(".metric")
+        metric.style height: ->
+          ratio[key] + "%"
 
   userId = Meteor.userId()
 
-  voted = _.find self.data.votes, (d) ->
+  voted = _.find self.data.votes_meta, (d) ->
     d.user is userId
 
   if voted

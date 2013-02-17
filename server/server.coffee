@@ -30,6 +30,10 @@ Accounts.onCreateUser (options, user) ->
   user.karma = 50
   user.logins = 0
   user.profile = options.profile  if options.profile
+  user.meta =
+    firstPages:
+      home: true
+      account: true
   user
 
 Meteor.users.allow
@@ -145,9 +149,10 @@ Meteor.methods
     out.updatedAt = Time.now()
 
     if type is "insert"
-      out.votes.push
+      out.votes_meta.push
         user: @userId
         exp: Date.now() * 10
+      out.votes_count = 1
       Offers.insert out
     else
       Offers.update
@@ -155,7 +160,7 @@ Meteor.methods
       ,
         $set: out
 
-    tagName = _.pluck(out.tags, "name")
+    tagName = _.pluck(opts.tags_meta, "name")
     existTags = []
     Tags.find().forEach (m) ->
       _.filter m.involves, (f)->

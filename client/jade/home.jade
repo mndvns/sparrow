@@ -67,11 +67,9 @@ template(name="ceiling")
     .terrace
       {{#constant}}
       #terrace-alert.centered
+      #terrace-help.centered
       {{/constant}}
 
-      #help.centered
-        h4 You have turned on help.
-        p To learn more about an area, hover over it.
 
       #sign-in.long
         .inputs
@@ -100,9 +98,11 @@ template(name="ceiling")
 
     .toggler-group.right
       {{#if currentUser}}
+      {{#isolate}}
       .logout
-        span {{currentUser.karma}}
+        span {{dropDecimal currentUser.karma}} 
         span {{currentUser.username}}
+      {{/isolate}}
       {{else}}
       a.login(data-toggle-mode="sign-in")
         span#login login

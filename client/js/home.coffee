@@ -41,13 +41,13 @@ statRange = ->
     max:
       updatedAt: Session.get("max_updatedAt")
       distance: Session.get("max_distance")
-      votes: Session.get("max_votes")
+      votes_count: Session.get("max_votes_count")
       price: Session.get("max_price")
 
     min:
       updatedAt: Session.get("min_updatedAt")
       distance: Session.get("min_distance")
-      votes: Session.get("min_votes")
+      votes_count: Session.get("min_votes_count")
       price: Session.get("min_price")
 
   out
@@ -68,7 +68,7 @@ Handlebars.registerHelper "page_next", (area) ->
 
 Template.wrapper.events
 
-  "click a[data-toggle-mode]": (event, tmpl) ->
+  "click a[data-toggle-mode='sign-in']": (event, tmpl) ->
     selectEl = event.currentTarget
     rivalEl = $(selectEl.parentElement).siblings(".toggler-group")
 
@@ -83,23 +83,25 @@ Template.wrapper.events
       rivalEl : rivalEl
 
   "click a[data-toggle-mode='help']": (event, tmpl) ->
-    dhb = "data-help-block"
-    blocks = $("[#{dhb}]")
-    status = blocks.first().attr(dhb)
-    wrapper = $(tmpl.find(".wrapper"))
-    wrapperClasses = "help-mode clr-bg dark"
-    span = $(event.currentTarget).children("span")
+    Meteor.Help.set()
 
-    if status is "true"
-      blocks.attr(dhb, "false")
-      blocks.removeAttr "help-active"
-      wrapper.removeClass wrapperClasses
-      span.text("help")
+    # dhb = "data-help-block"
+    # blocks = $("[#{dhb}]")
+    # status = blocks.first().attr(dhb)
+    # wrapper = $(tmpl.find(".wrapper"))
+    # wrapperClasses = "help-mode clr-bg dark"
+    # span = $(event.currentTarget).children("span")
 
-    else
-      blocks.attr(dhb, "true")
-      wrapper.addClass wrapperClasses
-      span.text("exit")
+    # if status is "true"
+    #   blocks.attr(dhb, "false")
+    #   blocks.removeAttr "help-active"
+    #   wrapper.removeClass wrapperClasses
+    #   span.text("help")
+
+    # else
+    #   blocks.attr(dhb, "true")
+    #   wrapper.addClass wrapperClasses
+    #   span.text("exit")
 
   "click .help-mode [data-help-block='true']": (event, tmpl) ->
 
@@ -131,14 +133,14 @@ Template.wrapper.events
       help.querySelector("p").innerHTML = helpBlocks[selector] and helpBlocks[selector].summary
       if cb and typeof cb is "function" then cb()
 
-    if help.style.display isnt "block"
-      text()
-      $(help).fadeIn 'fast'
-    else
-      $(help).fadeOut 'fast', ->
-        text(->
-          $(help).fadeIn 'fast'
-        )
+    # if help.style.display isnt "block"
+    #   text()
+    #   $(help).fadeIn 'fast'
+    # else
+    #   $(help).fadeOut 'fast', ->
+    #     text(->
+    #       $(help).fadeIn 'fast'
+    #     )
 
   "mouseleave .help-mode [data-help-block='true']": (event, tmpl) ->
     help = tmpl.find("#help")
@@ -155,11 +157,11 @@ Template.wrapper.events
     current = _.first(page.split("_"))
     sub_area = as("page_" + area) or area
 
-    # console.log("DIR", dir)
-    console.log("AREA", area)
-    console.log("SUB AREA", sub_area)
-    # console.log("PAGE", page)
-    console.log("CURRENT", current)
+    # # console.log("DIR", dir)
+    # console.log("AREA", area)
+    # console.log("SUB AREA", sub_area)
+    # # console.log("PAGE", page)
+    # console.log("CURRENT", current)
 
     Session.set "shift_direction", dir
     Session.set "shift_area", area
@@ -366,20 +368,26 @@ Template.home.helpers
   getOffers: ->
 
     current = statCurrent()?.query
-    offers = Offers.find().fetch()
     myLoc = Store.get "user_loc"
 
-    result = _.filter offers, (o)->
-      if current.tagset?.length is 0
-        return o
+    class Conf
+      constructor: (current)->
+        @sort = {}
+        @sort.sort = {}
+        @sort.sort[current.sort.selector] = current.sort.order
+        @query = {}
+        @query.tagset = current.tagset?.toString()
+        @query.tags = $in: current.tag if current.tag?.length
 
-      else if current.tag?.length is 0
-        contains = _.contains(_.pluck(o.tagset, "name"), current.tagset.toString())
-        return o if contains
+    conf = new Conf(current)
 
-      else
-        intersection = _.intersection(current.tag, _.pluck(o.tags, "name"))
-        return o if intersection?.length > 0
+    console.log(conf)
+
+    result = Offers.find(
+      conf.query,
+      conf.sort
+    ).fetch()
+
 
     if result and myLoc
       survey = _.each(result, (d) ->
@@ -393,8 +401,8 @@ Template.home.helpers
           distance: _.max(result, (o) ->
             o.distance
           )
-          votes: _.max(result, (o) ->
-            o.votes
+          votes_count: _.max(result, (o) ->
+            o.votes_count
           )
           price: _.max(result, (o) ->
             o.price
@@ -407,8 +415,8 @@ Template.home.helpers
           distance: _.min(result, (o) ->
             o.distance
           )
-          votes: _.min(result, (o) ->
-            o.votes
+          votes_count: _.min(result, (o) ->
+            o.votes_count
           )
           price: _.min(result, (o) ->
             o.price
@@ -416,11 +424,11 @@ Template.home.helpers
 
       Session.set "max_updatedAt", range.max.updatedAt
       Session.set "max_distance", range.max.distance
-      Session.set "max_votes", range.max.votes
+      Session.set "max_votes_count", range.max.votes_count
       Session.set "max_price", range.max.price
       Session.set "min_updatedAt", range.min.updatedAt
       Session.set "min_distance", range.min.distance
-      Session.set "min_votes", range.min.votes
+      Session.set "min_votes_count", range.min.votes_count
       Session.set "min_price", range.min.price
       result
 
@@ -453,7 +461,7 @@ Template.intro.events
         #   lat: results[0].geometry.location.Ya
         #   long: results[0].geometry.location.Za
 
-        Store.set "user_loc",
+        Store.set "oser_loc",
           lat: results[0].geometry.location.Ya
           long: results[0].geometry.location.Za
 

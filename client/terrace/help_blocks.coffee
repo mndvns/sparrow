@@ -11,6 +11,10 @@
 
 
 window.helpBlocks =
+  default_text:
+    title: "title thingy"
+    summary: "summmmmmary"
+
   input_tag:
     title: "ASDASDASDAS"
     summary: "ASDASDASDLKJASDASKJDSALKJDLAKSJ"
@@ -27,4 +31,4 @@ window.helpBlocks =
     title: "Hero box"
     summary: "The <strong>hero box</strong> is responsible for the presentation of offers on the homepage. As you add and remove selections, the <strong>hero box</strong> fires queries, while the <strong>offer area</strong> below populates with the appropriate offers. From right to left, the <strong>hero box</strong> is comprised of four consecutive areas: tagsets, sorts, tags, and nouns."
 
-
+  

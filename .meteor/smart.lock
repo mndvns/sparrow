@@ -2,14 +2,15 @@
   "meteor": {
     "git": "https://github.com/meteor/meteor.git",
     "branch": "master",
-    "commit": "3753c989fd6c26406409b4b27f86ac9331e38346"
+    "commit": "405cd9e86c6336bd9aaa7a8f240bb9815dceed2d"
   },
   "dependencies": {
     "basePackages": {
       "moment": {},
       "router": {},
       "imgur": {},
-      "logger": {}
+      "logger": {},
+      "canvas-image-manipulation": {}
     },
     "packages": {
       "moment": {
@@ -31,6 +32,11 @@
         "git": "https://github.com/jerico-dev/meteor-logger.git",
         "tag": "v0.1.2",
         "commit": "8811ff33e4787d7c564e030ff3afaa3d7c4981fc"
+      },
+      "canvas-image-manipulation": {
+        "git": "https://github.com/jackp/canvas-image-manipulation.git",
+        "tag": "v0.1.0",
+        "commit": "bd29971e84b1f37168bca4548f621df26845c978"
       },
       "page-js": {
         "git": "https://github.com/tmeasday/meteor-page-js.git",

@@ -99,9 +99,11 @@ Offer =
     type: Date
     default: ""
 
-  votes:
+  votes_meta:
     type: Array
     default: []
+  votes_count:
+    default: 0
 
   zip:
     type: String

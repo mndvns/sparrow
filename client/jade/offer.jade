@@ -33,6 +33,29 @@ template(name='offer')
           background: {{hsl 50 100}};
         }
 
+    // style(type="text/css")
+    //   .offer[id="{{this._id}}"] .light {
+    //       background: {{hsl 97 90}};
+    //     }
+    //   .offer[id="{{this._id}}"] .symbol div {
+    //       color: {{hsl 45 90}};
+    //     }
+    //   .offer[id="{{this._id}}"] .glyph {
+    //       color: {{hsl 50 50}};
+    //     }
+    //   .offer[id="{{this._id}}"] .color-hover[disabled] {
+    //       color: {{hsl 50 50}}!important;
+    //     }
+    //   .offer[id="{{this._id}}"] .color-hover:hover {
+    //       color: {{hsl 50 100}};
+    //     }
+    //   .offer[id="{{this._id}}"] .bright {
+    //       background: {{hsl 50 20}};
+    //     }
+    //   .offer[id="{{this._id}}"] .bumper {
+    //       background: {{hsl 50 100}};
+    //     }
+
     .bumper.left
     section.symbol.span2.light
       {{#if equal this.symbol_type "glyph"}}
@@ -56,12 +79,10 @@ template(name='offer')
 
             .bg.light
 
-      {{#isolate}}
-      mixin data({ selector: "votes", glyph: "plus", metric: "{{this.votes.length}}", after:"votes" })
+      mixin data({ selector: "votes", glyph: "plus", metric: "{{this.votes_count}}", after:"votes" })
       mixin data({ selector: "distance", glyph: "location", metric: "{{this.distance}}", after:"miles" })
       mixin data({ selector: "price", glyph: "tag-2", metric: "${{this.price}}" })
       mixin data({ selector: "updatedAt", glyph: "history", metric: "{{styleDate this.updatedAt}}" })
-      {{/isolate}}
 
 
     section.actions.span2.margin.left

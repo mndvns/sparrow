@@ -3,6 +3,7 @@
     "moment": {},
     "router": {},
     "imgur": {},
-    "logger": {}
+    "logger": {},
+    "canvas-image-manipulation": {}
   }
 }

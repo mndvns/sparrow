@@ -64,17 +64,17 @@ Template.account_profile.events "click .save": (event, tmpl) ->
   newUsername = tmpl.find("#username").value
 
   unless validateEmail(newEmail)
-    new TerraceAlert
+    Meteor.Alert.set
       text: "Invalid email"
     return
 
   Meteor.call "updateUser", newEmail, newUsername, (err) ->
     if err
-      new TerraceAlert
+      Meteor.Alert.set
         text: err.reason
 
     else
-      new TerraceAlert
+      Meteor.Alert.set
         text: "Saved successfully"
 
 
@@ -97,14 +97,14 @@ Template.account_offer.events
       errors.push key if Offer[key].hasOwnProperty("maxLength") unless offer[key]
 
     if errors.length
-      new TerraceAlert
+      Meteor.Alert.set
         text: "You didn't enter anything for your #{errors.join(", ")}."
       return
 
     type = (if Offers.findOne(owner: Meteor.userId()) then "update" else "insert")
     console.log("SAVE TYPE", type)
 
-    loading = new TerraceAlert
+    loading = Meteor.Alert.set
       text: "Loading..."
       temp: true
 
@@ -113,10 +113,8 @@ Template.account_offer.events
       address: offer.street + " " + offer.city + " " + offer.state + " " + offer.zip
     , (results, status) ->
       if status isnt "OK"
-        window.App.currentTerrace.killText(->
-          new TerraceAlert
-            text: "We couldn't seem to find your location. Did you enter your address correctly?"
-        )
+        Meteor.Alert.set
+          text: "We couldn't seem to find your location. Did you enter your address correctly?"
 
       else
         offer.loc =
@@ -126,13 +124,12 @@ Template.account_offer.events
 
         Meteor.call "editOffer", type, offer, (error) ->
           if error
-            new TerraceAlert
+            Meteor.Alert.set
               text: error.reason
 
           else
-            loading.kill ->
-              new TerraceAlert
-                text: "You're good to go!"
+            Meteor.Alert.set
+              text: "You're good to go!"
 
           return
 
@@ -146,8 +143,8 @@ Template.account_offer.events
     Session.set "show", as("show")
     Session.set "currentOffer", as()
 
-  "focus .limited": (event, tmpl) ->
     elem = $(event.currentTarget)
+  "focus .limited": (event, tmpl) ->
     max = Offer[elem.attr("id")].maxLength
     if elem.val().lenth >= max
       elem.data "prevent", true
@@ -190,10 +187,18 @@ Template.account_offer.created = ->
 
   id = Meteor.userId()
   offer = Offers.findOne owner: Meteor.userId()
+  as "_id", "123"
+  as "votes", [1]
+  as "updatedAt", Time.now()
   if id isnt as("owner")
-    for key of Offer
-      as key, offer[key] or Offer[key].default
-    as "owner", id
+    if not offer
+      for key of Offer
+        as(key, Offer[key].default)
+      as "owner", id
+    else
+      for key of Offer
+        as(key, offer[key])
+      as "owner", id
   Session.set "currentOffer", as()
 
 # Template.account_offer.destroyed = ->
@@ -208,69 +213,53 @@ Template.account_offer.created = ->
 Template.account_offer_symbol.helpers
   getIcons: ->
     icons
-  files: ->
-    Filesystem.find {},
-      sort:
-        uploadDate: -1
-  file: ->
-    out = {}
-
-    unless @imgur_status or @fileURL then return
-    if @imgur_status is 200
-      out.URL = @imgur.link
-    else if @fileURL?.length
-      done = false
-      for fURL in @fileURL
-        if fURL.path and not done
-          done = true
-          out.URL =  Meteor.absoluteUrl() + fURL.path
-          console.log out.URL
-
-    if out.URL is as("symbol")
-      out.status = "active"
-    out
 
 Template.account_offer_symbol.events
   "click .glyph div": (event, tmpl) ->
     attr = event.target.getAttribute("class")
+    $("section.symbol div").attr("class", attr).css("background-image", "")
     as "symbol", attr
     as "symbol_type", "glyph"
+    Store.set "offer_active_symbol", attr
     # Session.set "currentOffer", as()
-    $("section.symbol div").attr("class", attr)
 
   'click .select-file': (e, t) ->
     target = $(e.currentTarget)
-    url = target.attr("data-url")
-    as "symbol", url
+    $("section.symbol div").attr("class", "").css("background-image", "url(#{@src})")
+    as "symbol", @src
     as "symbol_type", "image"
+    Store.set "offer_active_symbol", @src
     # Session.set "currentOffer", as()
-    $("section.symbol div").css("background-image", "url(#{url})")
+
+  'click .save-file': (e, t)->
+    Meteor.call "imgurUploadFile", @
 
   "change .fileUploader": (e, t) ->
-    files = e.target.files
-    for f in files
-      Filesystem.storeFile(f)
+    file = e.target.files?[0]
+    Meteor.Alert.set
+      text: "Compressing image..."
+      wait: true
+
+    if file
+      reader = new FileReader()
+      reader.onloadend = (e)->
+        img = new Image()
+        img.onload = ->
+
+          canvas = document.createElement "canvas"
+          new thumbnailer canvas, img, 200, 3, ->
+
+            Meteor.call "imgurPrepFile", @canvas.toDataURL()
+
+        img.src = reader.result
+
+      reader.readAsDataURL( file )
 
   'click .file': (e, t) ->
     console.log @
 
-  'click .upload-file': (e, t) ->
-    url = e.target.getAttribute "data-url"
-    ctx = @
-    Meteor.call "imgurUploadUrl", url, ctx, (error)->
-      console.log(error)
-
-  'click .save-file i': (e, t) ->
-    Filesystem.retrieveBlob( @_id, (fileItem) ->
-      console.log(fileItem)
-      if fileItem.blob
-        saveAs(fileItem.blob, fileItem.filename)
-      else
-        saveAs(fileItem.file, fileItem.filename)
-    )
-
   'click .delete-file': (e, t) ->
-    Filesystem.files.remove @
+    Meteor.call "imgurDelete", @, @deletehash
 
 Template.account_offer_symbol.rendered = ->
   $("input.color").spectrum (
@@ -290,11 +279,11 @@ Template.account_offer_symbol.rendered = ->
       Session.set "currentOffer", as()
       Meteor.call "updateUserColor", color.toHexString()
     move: (color) =>
-      $(@find ".color-bucket").css "background", color.toHexString()
+      console.log "MOVED", @find(".color-bucket")
+      @find(".color-bucket").style.background = color.toHexString()
   )
 
-Template.account_offer_symbol.preserve ['img']
-
+# Template.account_offer_symbol.preserve ['.color-bucket']
 
 
 #////////////////////////////////////////////
@@ -310,7 +299,7 @@ Template.account_offer_tags.events
     text = target.siblings("input").val()
 
     if not text
-      new TerraceAlert
+      Meteor.Alert.set
         text: "You must enter a name in order to add a tag"
 
     else
@@ -323,7 +312,7 @@ Template.account_offer_tags.events
         collection: "tags"
         , (err, res) ->
           if err
-            new TerraceAlert
+            Meteor.Alert.set
               text: err.reason
           else
             userLoc = Store.get("user_loc")
@@ -362,9 +351,11 @@ Template.account_offer_tags.events
         disabled: false
         active: true
 
-    amplify.store "tags", store.tags
-    amplify.store "tagset", store.tagset
     Store.set "tag_selection", store
+
+    amplify.store "tags_meta", store.tags, "name"
+    amplify.store "tags", _.pluck(store.tags, "name")
+    amplify.store "tagset", _.pluck(store.tagset, "name")?[0]
 
 
 Template.account_offer_tags.rendered = =>

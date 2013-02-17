@@ -247,6 +247,10 @@ nav.ceiling
   z-index 200
   padding 0 $padding
   box-sizing border-box
+  &[data-rally=alert]
+    .toggler-group
+      opacity 0
+
   i
     padding-right 10px
 
@@ -257,7 +261,9 @@ nav.ceiling
       relative right
 
   .toggler-group
+    trans(opacity)
     absolute top
+    opacity 1
     z-index 100
     vertical-align middle
     line-height ceiling-height
@@ -891,10 +897,15 @@ Spanner( 940px )
       min-height 100px
       background-size contain
       .transitioning &
-        display none
+        opacity 0
     img
-      .transitioning &
-        display none
+      trans(opacity)
+      opacity 1
+      .transitioning.from_home &
+        anim(fade-in-full)
+      .transitioning.to_home &
+        anim(fade-in-full)
+        animation-direction reverse
     span
       font = fontSize * 2
       size = fontSize * 3
@@ -907,7 +918,7 @@ Spanner( 940px )
       box-sizing border-box
       color white
       opacity .7
-      &[data-status='active']
+      &[data-active=true]
       &:hover
         opacity 1
       i
@@ -1178,9 +1189,11 @@ easing(args...)
       opacity 1
       li
         opacity 0!important
+    &.help-active
     &[help-active=true]
     &[help-active=false]
       transition-duration 200ms
+    &.help-active
     &[help-active=true]
     &:hover
       transform scale( .8 )
@@ -1221,53 +1234,32 @@ body
     overflow visible!important
     background transparent!important
 
-.terrace
-  #help
-    width 100%
-  #help
-  #help > p
-    display none
-    max-height 0
-    opacity 0
-    margin 0
-    padding-bottom 0
-    trans(opacity max-height)
-  .help-mode &
-    absolute top
-    overflow visible!important
-    height 0
-    opacity 1
-    #help
-    #help > p
-      absolute top
-      max-height 1000px
-      display block
-      color white
-      opacity 1
-      margin 0 auto
-    #help
-      width 100%
-    p
-      width 70%
-      left 15%
-      padding-top (fontSize * 2)
-      line-height 1.25
-      font-weight normal
-      opacity .8
-    *
-      text-align center
-      margin 0 auto
 
+
+#terrace-help
+  relative top
+  wdith 70%
+  display none
+  opacity 0
+  margin 0 0 0 15%
+  padding-bottom 0
+  trans(opacity max-height)
+  [data-rally=help] &
+    overflow visible!important
+    height 100%
+    opacity 1
+    display block
+
+speed = 300ms
 #terrace-alert
   opacity 0
   font-weight 300
   font-family "proxima-nova"
   color rgba(white, .8)
-  &.rallying
+  [data-rally=alert] &
     opacity 1
     display block
-    .terrace-pane
-      speed = 300ms
+    .terrace-alert-pane
       overflow hidden
       &.rally-in
         anim(rally-in)
@@ -1295,12 +1287,39 @@ body
   background white
   display none
   opacity 0
+  trans(opacity)
+  &.on
+    trans(opacity)
+    anim(fade-in-half)
+    animation-duration speed
+    display block
+    opacity .5
+  &.off
+    anim(fade-in-half)
+    animation-duration speed
+    animation-direction reverse
+    opacity 0
+    display none
+
+@keyframes fade-in-full
+  from
+    opacity 0
+  to
+    opacity 1
+
+
+@keyframes fade-in-half
+  from
+    opacity 0
+  to
+    opacity .5
 
 .wrapper
   absolute top left
   display block
   width 100%
   height 100%
+  overflow visible
   trans(all)
 
 .wrapper

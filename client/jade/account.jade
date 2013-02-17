@@ -237,15 +237,13 @@ template(name="account_offer_tags")
           span(data-group="tags"): i.glyph-minus-2 {{else}}
           span(data-group="tags"): i.glyph-plus {{/if}}
 
-        {{#constant}}
         .target.hide
           .expand.hide
             h1 {{name}}
-        {{/constant}}
       {{/each}}
       .clearfix
       li.create-tag(data-tagset="{{this.name}}")
-        input(type="text", tabindex=1, autofocus).text.span4
+        input(type="text", tabindex=1).text.span4
         span.clr-bg.btn.span2.margin.left {{this.ratio}}
         button.btn.clr-bg.span2.margin.left(tabindex=2) add
     {{/each_with_key}}
@@ -262,28 +260,24 @@ template(name="account_offer_symbol")
         h3 Select file(s) to upload
         input(name="files", type="file", multiple).fileUploader
       .clearfix
-      {{#each files}}
+      canvas#canvas
+      {{#each find 'Images' '{}'}}
       .file.span3.clr-bg
-        {{#if file}}
         // div.image(style="background-image: url({{file.URL}})")
-        img(src="{{file.URL}}")
-        span.select-file(data-url="{{file.URL}}", data-status="{{file.status}}"): i.glyph-checkmark
+        img(src="{{this.src}}", class="{{this.status}}")
+        {{#if this.imgur}}
+        span.select-file(data-url="{{this.src}}", data-active="{{storeEquals 'offer_active_symbol' this.src}}"): i.glyph-checkmark
+        {{else}}
         span.save-file: i.glyph-disk
-        span.delete-file: i.glyph-cancel
-        span.upload-file(data-url="{{file.URL}}"): i.glyph-paper-plane
-        .clearfix
-        {{else}}
-        p Loading...
-        span.delete-file: i.glyph-cancel
         {{/if}}
-        {{else}}
-        p No files uploaded
+        span.delete-file: i.glyph-cancel
+        .clearfix
       {{/each}}
     .glyphs-list.long
       .clearfix
       .span12.inner
         input.text.color(type='text', style='background: {{this.color}}', value="{{this.color}}").span10
-        .color-bucket(style='background: {{this.colors.hex}}')
+        .color-bucket(style='background-color: {{this.colors.hex}}')
       .clearfix
       {{#each getIcons}}
       .glyph.span3.margin.left

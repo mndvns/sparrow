@@ -145,7 +145,7 @@ Template.hero.events
         Session.set "current_sorts_selector", story.selector
         order = story.order
         if story.name is "nearest"
-          loc = amplify.get("user.loc")
+          loc = Store.get("user_loc")
           order = [loc.lat, loc.long]
         Session.set "current_sorts_order", order
     Session.set selector, output

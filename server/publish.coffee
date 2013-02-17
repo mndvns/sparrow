@@ -30,3 +30,11 @@ Meteor.publish "messages", ->
   Messages.find involve:
     $in: [@userId]
 
+Meteor.publish "images", ->
+  Images.find
+    owner: @userId
+    status:
+      $nin: ["deactivated"]
+
+Meteor.publish "alerts", ->
+  Alerts.find owner: @userId
