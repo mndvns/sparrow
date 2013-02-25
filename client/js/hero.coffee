@@ -17,34 +17,34 @@ heroColor =
 
 heroAdjustColors = (d)->
 
-  # user = Meteor.user()
-  # if user and user.colors
-  #   heroColor.shiftColor user.colors.prime.medium
-  #   Session.set "user_colors_set", true
-  # else if not $(document.body).hasClass("transitioning")
-  #   themeColors = _.find document.styleSheets, (d) ->
-  #     d.title is "dynamic-theme"
+  user = Meteor.user()
+  if user and user.colors
+    heroColor.shiftColor user.colors.prime.medium
+    Session.set "user_colors_set", true
+  else if not $(document.body).hasClass("transitioning")
+    themeColors = _.find document.styleSheets, (d) ->
+      d.title is "dynamic-theme"
 
-  #   for rule in themeColors.rules
-  #     themeColors.removeRule()
+    for rule in themeColors.rules
+      themeColors.removeRule()
 
-  #   themeColors.insertRule( colorFill ".clr-text.prime", "color", heroColor.normal )
-  #   themeColors.insertRule( colorFill "a", "color", heroColor.normal)
-  #   themeColors.insertRule( colorFill "a:hover, a.active", "color", heroColor.dark)
+    themeColors.insertRule( colorFill ".clr-text.prime", "color", heroColor.normal )
+    themeColors.insertRule( colorFill "a", "color", heroColor.normal)
+    themeColors.insertRule( colorFill "a:hover, a.active", "color", heroColor.dark)
 
-  #   themeColors.insertRule( colorFill ".clr-bg", "background", heroColor.normal)
-  #   themeColors.insertRule( colorFill ".clr-bg.btn:hover", "background", heroColor.dark)
+    themeColors.insertRule( colorFill ".clr-bg", "background", heroColor.normal)
+    themeColors.insertRule( colorFill ".clr-bg.btn:hover", "background", heroColor.dark)
 
-  #   themeColors.insertRule( colorFill ".clr-bg.light", "background", heroColor.light )
-  #   themeColors.insertRule( colorFill ".clr-bg.dark", "background", heroColor.dark)
+    themeColors.insertRule( colorFill ".clr-bg.light", "background", heroColor.light )
+    themeColors.insertRule( colorFill ".clr-bg.dark", "background", heroColor.dark)
 
-  #   heroColor.shiftColor d.color
+    heroColor.shiftColor d.color
 
-  # else
+  else
 
-  #   heroColor.shiftColor d.color
+    #   heroColor.shiftColor d.color
 
-  heroColor.shiftColor('hsla(200, 90%, 40%, 1)')
+    heroColor.shiftColor('hsla(200, 90%, 40%, 1)')
 
 HeroList = (opt) ->
   fontSize = undefined
