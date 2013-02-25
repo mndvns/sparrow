@@ -73,7 +73,7 @@ Meteor.methods
 
   getRandomOffer: (cb) ->
     offers = Offers.find({}).fetch()
-    offer = offers[_.random(0, offers.length)]
+    offer = offers[_.random(0, offers?.length)]
 
   insertTag: (obj) ->
     names = Tags.find().map (m) ->
@@ -115,7 +115,7 @@ Meteor.methods
             dist.push miles
 
       ratio = _.reduce dist, (memo, num)->
-        memo + (num / (num^2 + (memo / dist.length)))
+        memo + (num / (num^2 + (memo / dist?.length)))
 
       d.ratio = (Math.round(ratio * 10)/100)
       d.rate = Math.round(Meteor.user()?.karma / d.ratio)
