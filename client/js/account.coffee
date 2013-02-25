@@ -195,7 +195,7 @@ Template.account_offer_tags.events
   'dblclick li[data-group="tags"]': (event, tmpl) ->
     Tags.remove name: $(event.currentTarget).attr("data-name")
 
-  'click .create-tag button': (event, tmpl) ->
+  'click .create-tag .insert': (event, tmpl) ->
     target = $(event.currentTarget)
     text = target.siblings("input").val()
 
