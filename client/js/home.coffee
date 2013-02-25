@@ -333,6 +333,22 @@ Template.ceiling.events
 Template.content.rendered = ->
   return if Meteor.Router.page() is "home"
 
+  userId = Meteor.userId()
+  storeId = Store.get("userId")
+  
+
+  if as("owner") isnt userId
+    amplify.clear()
+    console.log("!!!!!!! CLEARED AMPLIFY")
+
+  if storeId isnt userId
+    Store.clear()
+    console.log("!!!!!!! CLEARED STORE")
+
+  if userId
+    Store.set("userId", userId)
+    console.log("!!!!!!! SET STORE")
+
   unless @activateLinks
     @activateLinks = =>
       context = new Meteor.deps.Context()
@@ -469,8 +485,8 @@ Template.content.events
       if status isnt "OK"
         Meteor.Alert.set
           text: "We couldn't seem to find your location. Did you enter your address correctly?"
-
       else
+
         geometry = _.values(results[0].geometry.location)
         offer.loc =
           lat: geometry[0]
