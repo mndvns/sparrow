@@ -243,10 +243,10 @@ template(name="account_offer_location")
   .area.offer-bind-fields
     form#location
       .span5.offset3
-        mixin field("input", "street", "{{this.street}}", "text", "span5", 1)
-        mixin field("input", "city", "{{this.city}}", "text", "span4", 2 )
-        mixin field("input", "state", "{{this.state}}", "text", "span2", 2 )
-        mixin field("input", "zip", "{{this.zip}}", "text", "span2", 2 )
+        mixin Field({ el: "input", label: "street", id: "street", value: "{{this.street}}", type: "text", class: "span5", tabindex: 1 , attributes: "data-validate"})
+        mixin Field({ el: "input", label: "city", id: "city", value: "{{this.city}}", type: "text", class: "span4", tabindex: 2 , attributes: "data-validate"})
+        mixin Field({ el: "input", label: "state", id: "state", value: "{{this.state}}", type: "text", class: "span2", tabindex: 3 , attributes: "data-validate"})
+        mixin Field({ el: "input", label: "zip", id: "zip", value: "{{this.zip}}", type: "text", class: "span2", tabindex: 4, attributes: "data-validate" })
   {{/with}}
 
 template(name="account_messages")
