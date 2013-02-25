@@ -89,7 +89,9 @@ Meteor.methods
   #       tagset.$
 
 
-  aggregateStintTags: (userLoc, tagSelection) ->
+  pushStintTags: (userLoc, tagSelection) ->
+    if not tagSelection
+      tagSelection = Meteor.user()?.stint?.tag_selection
 
     query = []
     stintTags = []
@@ -133,8 +135,8 @@ Meteor.methods
       Meteor.users.update _id: @userId,
         $set:
           stint:
-            tags:
-              stintTags
+            tags: stintTags
+            tag_selection: tagSelection
 
     query
 

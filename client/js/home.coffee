@@ -325,29 +325,15 @@ Template.ceiling.events
       return
 
   "click .logout": (event, tmpl) ->
-    Meteor.logout()
+    Meteor.logout(->
+      Store.clear()
+    )
 
 #////////////////////////////////////////////
 #  $$ content
 
 Template.content.rendered = ->
   return if Meteor.Router.page() is "home"
-
-  userId = Meteor.userId()
-  storeId = Store.get("userId")
-  
-
-  if as("owner") isnt userId
-    amplify.clear()
-    console.log("!!!!!!! CLEARED AMPLIFY")
-
-  if storeId isnt userId
-    Store.clear()
-    console.log("!!!!!!! CLEARED STORE")
-
-  if userId
-    Store.set("userId", userId)
-    console.log("!!!!!!! SET STORE")
 
   unless @activateLinks
     @activateLinks = =>

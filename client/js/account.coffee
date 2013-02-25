@@ -264,7 +264,7 @@ Template.account_offer_tags.rendered = ->
     @handle = Meteor.autorun ->
 
       console.log("RUNNING")
-      Meteor.call "aggregateStintTags", Store.get("user_loc"), Store.get("tag_selection"), (err, result) ->
+      Meteor.call "pushStintTags", Store.get("user_loc"), Store.get("tag_selection"), (err, result) ->
         if typeof err is 'undefined'
           Store.set "stint_tags", result
         else

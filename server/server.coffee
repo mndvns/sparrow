@@ -199,6 +199,7 @@ Meteor.methods
       ,
         multi: true
 
+
   updateUserColor: (color) ->
     prime = Color(color).setLightness(.4)
     comp = prime.setSaturation(.5).tetradicScheme()[1]
