@@ -24,31 +24,32 @@ watch = (arg) ->
 
 
 
-cronSeconds = 60
+cronSeconds = 360
 Meteor.setInterval (->
+  console.log("RAN CRON")
 
-  # u = Meteor.users.findOne( "username": "mikey" )
-  # watch
-  #   selector: u
-  #   title: u.username
-  #   fields:
-  #     karma: {}
-  #     activeTags:
-  #       name: "active tags"
-  #       value: ->
-  #         _.filter( u.stint.tags, (s)->
-  #           s.active ).length
+  u = Meteor.users.findOne( "username": "mikey" )
+  watch
+    selector: u
+    title: u.username
+    fields:
+      karma: {}
+      activeTags:
+        name: "active tags"
+        value: ->
+          _.filter( u.stint.tags, (s)->
+            s.active ).length
 
-  # t = Tags.findOne( "name" : "vegan" )
-  # watch
-  #   selector: t
-  #   title: "TAG (VEGAN)"
-  #   fields:
-  #     inv:
-  #       name: "involves"
-  #       value: ->
-  #         _.filter( t.involves, (i) ->
-  #           i.user = u._id ).length
+  t = Tags.findOne( "name" : "vegan" )
+  watch
+    selector: t
+    title: "TAG (VEGAN)"
+    fields:
+      inv:
+        name: "involves"
+        value: ->
+          _.filter( t.involves, (i) ->
+            i.user = u._id ).length
 
 
   Meteor.users.find( "stint.tags": $exists: true ).forEach (user)->
@@ -81,11 +82,17 @@ Meteor.setInterval (->
       $set:
         tags: adjustedTags
 
-    Tags.update
-      "involves.user": user._id
-    ,
-      $set:
-        "involves.$.disabled": tagsDisabled
+    userOffer = Offers.findOne(owner: user._id)
+
+    if userOffer
+      Tags.update
+        "involves.user": user._id
+      ,
+        $set:
+          "involves.$.disabled": tagsDisabled
+          "involves.$.votes_count": userOffer.votes_count
+      ,
+        multi: true
 
 ), cronSeconds * 1000
 

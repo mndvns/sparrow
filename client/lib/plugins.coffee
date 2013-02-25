@@ -53,6 +53,7 @@
         top: 0
       .slideUp(( opt.speed * 2 ), ->
         $(this).attr("data-slip-show", false)
+        $(this).attr "style", ""
         if cb and typeof cb is "function" then cb()
       )
 

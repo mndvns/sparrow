@@ -1,203 +1,272 @@
 #////////////////////////////////////////////
 #  $$ globals and locals
-color = shiftColor: (a) ->
-  self = this
-  Col = Color(a)
-  white = Color("#fff")
-  self.normal = Col
-  self.bright = Col.desaturateByAmount(.1)
-  self.sat_dark = Col.darkenByAmount(.5).saturateByAmount(0.3)
-  self.hue = Col.getHue()
-  self.light = Col.setSaturation(.8).setLightness(.7).toString()
-  self.desat = Col.desaturateByAmount(.8).darkenByAmount(0.2).toString()
-  self.dark = Col.setSaturation(1).setLightness(.2).toString()
+
+heroColor = 
+  shiftColor: (a) ->
+
+    white     = Color("#fff")
+    col       = Color(a)
+
+    @normal   = col.toString()
+    @bright   = col.desaturateByAmount(.1)
+    @sat_dark = col.darkenByAmount(.5).saturateByAmount(0.3)
+    @hue      = col.getHue()
+    @light    = col.setSaturation(.8).setLightness(.7).toString()
+    @desat    = col.desaturateByAmount(.8).darkenByAmount(0.2).toString()
+    @dark     = col.setSaturation(1).setLightness(.2).toString()
+
+heroAdjustColors = (d)->
+
+  # user = Meteor.user()
+  # if user and user.colors
+  #   heroColor.shiftColor user.colors.prime.medium
+  #   Session.set "user_colors_set", true
+  # else if not $(document.body).hasClass("transitioning")
+  #   themeColors = _.find document.styleSheets, (d) ->
+  #     d.title is "dynamic-theme"
+
+  #   for rule in themeColors.rules
+  #     themeColors.removeRule()
+
+  #   themeColors.insertRule( colorFill ".clr-text.prime", "color", heroColor.normal )
+  #   themeColors.insertRule( colorFill "a", "color", heroColor.normal)
+  #   themeColors.insertRule( colorFill "a:hover, a.active", "color", heroColor.dark)
+
+  #   themeColors.insertRule( colorFill ".clr-bg", "background", heroColor.normal)
+  #   themeColors.insertRule( colorFill ".clr-bg.btn:hover", "background", heroColor.dark)
+
+  #   themeColors.insertRule( colorFill ".clr-bg.light", "background", heroColor.light )
+  #   themeColors.insertRule( colorFill ".clr-bg.dark", "background", heroColor.dark)
+
+  #   heroColor.shiftColor d.color
+
+  # else
+
+  #   heroColor.shiftColor d.color
+
+  heroColor.shiftColor('hsla(200, 90%, 40%, 1)')
 
 HeroList = (opt) ->
   fontSize = undefined
   chars = _.flatten(opt.current).toString().length
-  opt.current[opt.name] = []  unless opt.current[opt.name]
+  opt.current[opt.name] ?= []
+
   hero = d3.select(".headline ." + opt.name)
     .selectAll("span")
     .data(opt.current[opt.name])
 
-  hero.enter()
+  hero
+    .enter()
     .append "span"
 
-  hero.exit().transition().style(
+  hero
+    .exit()
+    .transition()
+    .style
       opacity: 0
       "font-size": "0px"
+    .remove()
 
-    ).remove()
-
-  hero.text((d) ->
-    d
-  ).transition().style
-    "opacity": "1"
-    "color": (d) ->
-      color.normal
-    "font-size": (d) ->
-      fontSize = (Math.round(20 + (100 / chars))) + "px"  unless fontSize
-      fontSize
+  hero
+    .text (d) ->
+      d
+    .transition()
+    .style
+      "opacity": "1"
+      "color": (d) ->
+        heroColor.normal
+      "font-size": (d) ->
+        fontSize = (Math.round(15 + (200 / chars))) + "px"  unless fontSize
+        fontSize
 
   return false  if opt.skipList
+
+  current_tagset        = opt.current.tagset?.toString()
+  current_noun          = opt.current.noun?.toString()
+  current_sort_selector = opt.current.sort_selector
+
+  limbo = false
 
   list = d3.select("ul." + opt.name + "-list")
 
   item = list.selectAll("li")
     .data(opt.collection)
 
-  item.enter()
+  item
+    .enter()
     .insert "li"
-  item.datum((d, i) ->
-      limbo = (if opt.current.tagset.toString() is "find" or opt.current.noun.toString() is "offer" then true else false)
-      active = (if _.contains(opt.current[opt.name], d[opt.selector]) then "active" else "inactive")
-      d.status = (if limbo and opt.leader then "limbo" else active)
+
+  item
+    .datum (d, i) ->
+      if limbo and opt.leader
+        d.status = "limbo"
+      else if _.contains(opt.current[opt.name], d[opt.selector])
+        d.status = "active"
+      else
+        d.status = "inactive"
+
       d
-    ).attr("class", (d) ->
+
+    .attr "class", (d) ->
       d.status
-    ).text (d) ->
-      d[opt.selector]
+    .html (d) ->
+      child = ""
+      if opt.name is "tag"
+        child = "<span class='badge #{d.status}'>#{d.count}</span>"
+      d[opt.selector] + child
 
-  item.exit().remove()
-  # limbo = list.selectAll("li.limbo").style(
-  #   background: (d) ->
-  #     user = Meteor.user()
-  #     color.shiftColor "teal" if opt.leader
-  #     color.normal
+  item.order (a,b)->
+      s = current_sort_selector
+      return unless opt.name is "tag"
+      return unless a[s] and b[s]
 
-  #   color: "white"
-  # )
-  active = list.selectAll("li.active").style(
-    background: (d) ->
-      if opt.leader
-        user = Meteor.user()
-        if user and user.colors
-          color.shiftColor user.colors.prime.medium
-          Session.set "user_colors_set", true
-        else if not $(document.body).hasClass("transitioning")
-          themeColors = _.find document.styleSheets, (d) ->
-            d.title is "dynamic-theme"
+      console.log(current_sort_selector, opt.name)
 
-          for rule in themeColors.rules
-            themeColors.removeRule()
-
-          themeColors.insertRule( colorFill ".clr-text.prime", "color", color.normal )
-          themeColors.insertRule( colorFill "a", "color", color.normal)
-          themeColors.insertRule( colorFill "a:hover, a.active", "color", color.dark)
-
-          themeColors.insertRule( colorFill ".clr-bg", "background", color.normal)
-          themeColors.insertRule( colorFill ".clr-bg.btn:hover", "background", color.dark)
-
-          themeColors.insertRule( colorFill ".clr-bg.light", "background", color.light )
-          themeColors.insertRule( colorFill ".clr-bg.dark", "background", color.dark)
-
-          color.shiftColor d.color
+      a[s]
 
 
-      color.normal
+  item
+    .exit()
+    .remove()
 
-    color: "rgba(255, 255, 255, 0.9)"
-  )
 
-  inactive = list.selectAll("li.inactive").style(
-    background: (d) ->
-      if opt.leader
-        "transparent"
-      else
-        color.bright
+  active = list.selectAll("li.active")
+    .transition()
+    .style
+      'color': (c) ->
+        if opt.leader then heroAdjustColors(c)
+        heroColor.normal
+      'font-size': '18px'
 
-    color: (d) ->
-      if opt.leader
-        color.desat
-      else
-        "rgba(255,255,255, 0.9)"
-  )
+  inactive = list.selectAll("li.inactive")
+    .transition()
+    .style
+      'color': (d) ->
+        if opt.leader
+          "#bbb"
+        else
+          heroColor.bright
+      'font-size': '13px'
+
+
   [list, hero]
+
+
+
 
 #////////////////////////////////////////////
 #  $$  hero
 Template.hero.events
   "click .list li": (event, tmpl) ->
+    watchOffer.click()
 
     if checkHelpMode() then return
 
     tmpl.handle.stop()
-    story = d3.select(event.target).data()[0]
+
+    story = d3.select(event.currentTarget).data()[0]
+    Session.set "current_changed", story.collection
+
     selector = "current_" + story.collection
-    current = Session.get(selector)
-    active = event.target.getAttribute("class") is "active"
+
+    current = Store.get(selector)
+    active = $(event.currentTarget).is ".active"
     output = undefined
+    # console.log(story)
+
     if active
       output = _.without(current, story.name)
       if story.collection is "tagsets"
-        nouns = Session.get("current_nouns")
-        Session.set "current_nouns", _.without(nouns, story.noun)
+        nouns = Store.get("current_nouns")
+        Store.set "current_nouns", _.without(nouns, story.noun)
     else
       if story.collection is "tags"
         output = current.concat(story.name) 
-        console.log(output)
+        # console.log(output)
       if story.collection is "tagsets"
         output = [story.name]
-        Session.set "current_nouns", [story.noun]
-        Session.set "current_tags", []
+        Store.set "current_nouns", [story.noun]
+        Store.set "current_tags", []
       if story.collection is "sorts"
         output = [story.name]
-        Session.set "current_sorts_selector", story.selector
+        Store.set "current_sorts_selector", story.selector
+        # Session.set "modifyy_query_type", "sort"
+        # Meteor.Isotope.sort(story.selector)
+
+
         order = story.order
-        if story.name is "nearest"
-          loc = Store.get("user_loc")
-          order = [loc.lat, loc.long]
-        Session.set "current_sorts_order", order
-    Session.set selector, output
+        # if story.name is "nearest"
+        #   loc = Store.get("user_loc")
+        #   order = [loc.lat, loc.long]
+        Store.set "current_sorts_order", order
+    Store.set selector, output
 
   "click .headline .tag span": (event, tmpl) ->
     selector = event.target.textContent
-    current = Session.get("current_tags")
+    current = Store.get("current_tags")
     out = _.without(current, selector)
-    Session.set "current_tags", out
+    Store.set "current_tags", out
+
+
+
+
+
+
+
+
 
 Template.hero.created = ->
   # getLocation()
   Session.set "heroRendered", false
+  Session.set "current_changed", null
   self = this
   unless self.handle
     self.handle = Meteor.autorun(->
-      getOffer = ->
-        out = Offers.findOne()
-        out
 
-      gotOffer = getOffer()
-      getCollection = ->
-        out =
-          tagsets: Tagsets.find().fetch()
-          tags: Tags.find().fetch()
-          sorts: Sorts.find().fetch()
+      uloc = Store.get('user_loc')
 
-        out
+      tagsets = Tagsets.find().fetch()
+      sorts = Sorts.find().fetch()
+      tags = Tags.find().map (d)->
 
-      gotCollection = getCollection()
-      if gotOffer and gotCollection
-        console.log "got offer and collection", gotOffer, "got collection: ", gotCollection
-        getNoun = ->
-          out = _.find(gotCollection.tagsets, (d) ->
-            d.name is gotOffer.tagset
-          )
-          console.log out
-          out
+        count = d.involves.length
+        if not count then return false
 
-        gotNoun = getNoun()
+        ctx =
+          updatedAt   : 0
+          votes_count : 0
+          price       : 0
+          distance    : 0
 
-        console.log("GOT OFFER", gotOffer)
+        for inv in d.involves
+          for c of ctx
+            if c is "distance"
+              ctx[c] += distance(inv.loc.lat,inv.loc.long,uloc.lat,uloc.long)
+            else
+              ctx[c] += parseInt(inv[c])
 
-        Session.set "current_tagsets", [gotOffer.tagset?[0]?.name]
-        Session.set "current_tags", []
-        Session.set "current_sorts", ["latest"]
-        Session.set "current_sorts_selector", "updatedAt"
-        Session.set "current_sorts_order", "-1"
-        Session.set "current_nouns", [gotNoun?.noun]
-        out = {}
-        for key of gotCollection
-          out[key] = gotCollection[key]
+        for c of ctx
+          ctx[c] = (ctx[c] / count)
+          d[c] = ctx[c]
+
+        d.count = count
+        d
+
+      if tags and tags.length
+
+        unless Store.get "current_tagsets"
+          Store.set "current_tagsets", ["eat"]
+          Store.set "current_tags", []
+          Store.set "current_sorts", ["latest"]
+          Store.set "current_sorts_selector", "updatedAt"
+          Store.set "current_sorts_order", "-1"
+          Store.set "current_nouns", ["food"]
+
+        out = 
+          tagsets: tagsets
+          tags: tags
+          sorts: sorts
+
         as "collection", out
 
         Session.set "heroDataReady", true
@@ -213,57 +282,88 @@ Template.hero.created = ->
         unless Session.get("heroDataReady")
           console.log "no data"
           return false
+
         current = statCurrent().verbose
         Collection = as("collection")
+
         collection =
           tagset: Collection.tagsets
-          tag: _.filter(Collection.tags, (d) ->
+          tag   : _.filter( Collection.tags , (d) ->
             _.contains current.tagset, d.tagset
           )
-          sort: Collection.sorts
-          noun: Collection.tagsets
+          sort  : Collection.sorts
+          noun  : Collection.tagsets
+
+        tagList = $(".tag-list")
+
+        if Session.get("current_changed") is "tagsets"
+          tagList.data("jsp")?.destroy()
 
         heroList =
-          tagset: new HeroList(
+          tagset: new HeroList
             name: "tagset"
             selector: "name"
             leader: true
             current: current
             collection: collection.tagset
-          )
-          article: new HeroList(
+
+          article: new HeroList
             name: "article"
             skipItem: true
             current: current
             collection: collection.article
-          )
-          sort: new HeroList(
+
+          sort: new HeroList
             name: "sort"
             selector: "name"
             leader: false
             prepend: "the"
             current: current
             collection: collection.sort
-          )
-          tag: new HeroList(
+
+          tag: new HeroList
             name: "tag"
             selector: "name"
             leader: false
             current: current
             collection: collection.tag
-          )
-          noun: new HeroList(
+
+          noun: new HeroList
             name: "noun"
             selector: "noun"
             leader: true
             current: current
             collection: collection.noun
-          )
 
+        if Session.get("current_changed") isnt "tags"
+          tagList.jScrollPane
+            horizontalGutter: 100
+            verticalGutter: 100
+            hideFocus: true
+
+          tagDrag = tagList.find(".jspDrag")
+          tagDrag.css('display', 'none')
+          tagList.mouseenter ->
+            tagDrag.stop(true, true).fadeIn('fast')
+
+          tagList.mouseleave ->
+            tagDrag.stop(true, true).fadeOut('fast')
+
+        # Meteor.Isotope = new Isotope()
+
+      Session.set("heroUpdated", true)
 
     updateHero()
     )()
 
+
+
+
+
+
 Template.hero.rendered = (tmpl) ->
   Session.set "heroRendered", true  unless Session.get("heroRendered")
   @handle and @handle.stop()  if Session.get("heroDataReady")
+  # if Meteor.Isotope
+  #   Meteor.Isotope.reload()
+

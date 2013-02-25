@@ -7,6 +7,8 @@
 #   rootUrl: "http://deffenbaugh.herokuapp.com"
 
 
+
+
 Images   = new Meteor.Collection "images"
 Users    = new Meteor.Collection "userData"
 Offers   = new Meteor.Collection "offers"
@@ -30,13 +32,42 @@ Color = net.brehaut.Color
 Time =
   now: ->
     Date.now()
-  setStart: ->
-    console.log("START TIME")
-    @start = @now()
-  endStart: ->
-    console.log("END TIME",  numberWithCommas(@now() - @start) + " milliseconds" )
   addMinutes: (time, min) ->
     moment(time).add('minutes', min).unix() * 1000
+
+class Stopwatch
+  constructor: (name)->
+    window[name] = this
+    @countKeeper = 1
+    @start = Time.now()
+
+  click: =>
+    @start = Time.now()
+    @clicked  = true
+
+  stop: =>
+    # console.log(@countKeeper, @count)
+    switch @clicked
+      when false
+        console.log("    redundant...")
+        @clicked = null
+      when null
+        return
+      when true
+        switch @countKeeper
+          when @count
+            stopValue = numberWithCommas( Time.now() - @start ) + " milliseconds"
+            console.log(stopValue, " for ", @count, " items")
+            @clicked = false
+          else
+            @countKeeper += 1
+
+  setCount: (count) =>
+    @count = count
+    @countKeeper = 1
+
+
+
 
 Meteor.methods
 
@@ -58,12 +89,21 @@ Meteor.methods
   #       tagset.$
 
 
-
-
-  aggregateTags: (userLoc, tagSelection) ->
+  aggregateStintTags: (userLoc, tagSelection) ->
 
     query = []
     stintTags = []
+
+    Tagsets.find().map (d) ->
+      tagset =
+        name: d.name
+        active: false
+        tags: []
+        ratio: 0
+
+      tagset.active = true if _.find(tagSelection?.tagset, (t)-> t.name is d?.name)
+      query.push tagset
+
 
     Tags.find().map (d)->
       dist = [1]
@@ -81,22 +121,12 @@ Meteor.methods
       d.rate = Math.round(Meteor.user()?.karma / d.ratio)
 
       tagset = _.find query, (r)->
-        r.name is d?.tagset
-
-      unless tagset
-        tagset =
-          name: d?.tagset
-          active: false
-          tags: []
-          ratio: 0
-
-        tagset.active = true if _.find(tagSelection?.tagset, (t)-> t.name is d?.tagset)
-        query.push tagset
+        r.name is d.tagset
 
       d.active = true if  _.contains( _.pluck( tagSelection?.tags, "name"), d.name)
       tagset.ratio = (Math.round(tagset.ratio + (d.ratio / 2)*100)/100)
 
-      tagset?.tags.push d
+      tagset.tags.push d
       stintTags.push d
 
     if Meteor.isServer
@@ -107,20 +137,6 @@ Meteor.methods
               stintTags
 
     query
-
-  upvoteEvent: (offer) ->
-    @unblock()
-    Offers.update offer._id,
-      $push:
-        votes_meta:
-          user: @userId
-          exp: Time.now()
-      $inc:
-        votes_count: 1
-
-    Meteor.users.update offer.owner,
-      $inc:
-        karma: 1
 
   getColors: () ->
     @.unblock()

@@ -1,7 +1,8 @@
 
-class Help extends Terrace
-  rally: =>
-    super "terrace_help", "help"
+class Help extends Listener
+  init: =>
+    @name = "help"
+    @rallyPoint = "terrace_help"
 
   set: (args)=>
     if @_active > 0 then return

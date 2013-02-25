@@ -13,6 +13,7 @@
     "collectionFS": {},
     "imgur": {},
     "logger": {},
-    "canvas-image-manipulation": {}
+    "canvas-image-manipulation": {},
+    "jqbootstrapvalidation": {}
   }
 }

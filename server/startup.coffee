@@ -48,25 +48,6 @@ Meteor.startup ->
     )
     future.wait()
 
-  Offers.aggregate = (pipline) ->
-    self = this
-    future = new Future()
-    self.find()._mongo.db.createCollection self._name, (err, collection) ->
-
-      if err
-        future.throw err
-        return
-
-      collection.aggregate pipline, (err, result) ->
-        if err
-          future.throw err
-          return
-        future.ret [true, result]
-
-    result = future.wait()
-    throw result[1]  unless result[0]
-    result[1]
-
   Tags.aggregate = (pipline) ->
     self = this
     future = new Future()

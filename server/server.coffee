@@ -8,10 +8,11 @@
 #                                               //
 #                                               //
 
-require = __meteor_bootstrap__.require
+require  = __meteor_bootstrap__.require
 # Colors = require "colors"
-MongoDB = require "mongodb"
-Future = require "fibers/future"
+MongoDB  = require "mongodb"
+Future   = require "fibers/future"
+# fs       = require "fs"
 
 console.log(Meteor.settings)
 
@@ -26,10 +27,11 @@ console.log(Meteor.settings)
 #                                                        //
 
 Accounts.onCreateUser (options, user) ->
-  user.type = "admin"
+  user.type = "basic"
   user.karma = 50
   user.logins = 0
-  user.profile = options.profile  if options.profile
+  if options.profile
+    user.profile = options.profile
   user.meta =
     firstPages:
       home: true
@@ -40,7 +42,7 @@ Meteor.users.allow
   insert: (userId, docs) ->
     out = undefined
     out = _.all(docs)  if Meteor.users.findOne(_id: userId).type is "admin"
-    out
+    true
 
   update: (userId, docs, fields, modifier) ->
     _.all docs, (doc) ->
@@ -135,18 +137,19 @@ Meteor.methods
 
 
   editOffer: (type, opts) ->
-    @unblock()
     opts ?= {}
     out = {}
 
-    throw new Meteor.Error(400, "Offer name is too short")  if opts.name.length < 5
+    if opts.name.length < 5
+      throw new Meteor.Error(400, "Offer name is too short")  
 
     for key of Offer
       out[key] = opts[key]
 
-    out.owner = Meteor.userId()
-    out.createdAt ?= Time.now()
-    out.updatedAt = Time.now()
+    out.owner       = Meteor.userId()
+    out.createdAt  ?= Time.now()
+    out.updatedAt   = Time.now()
+    out.price       = parseInt(out.price)
 
     if type is "insert"
       out.votes_meta.push
@@ -159,6 +162,7 @@ Meteor.methods
         owner: @userId
       ,
         $set: out
+
 
     tagName = _.pluck(opts.tags_meta, "name")
     existTags = []
@@ -189,6 +193,9 @@ Meteor.methods
             loc:
               lat: out.loc.lat
               long: out.loc.long
+            price: out.price
+            updatedAt: out.updatedAt
+            votes_count: out.votes_count
       ,
         multi: true
 
@@ -224,10 +231,12 @@ Meteor.methods
     existing = _.reject(users, (d) ->
       d._id is Meteor.userId()
     )
-    existingEmails = _.pluck(_.flatten(_.compact(_.pluck(existing, "emails"))), "address")
-    existingUsernames = _.pluck(existing, "username")
 
-    throw new Meteor.Error(400, "Email unavailable")  if _.contains(existingEmails, email)
+    if email
+      existingEmails = _.pluck(_.flatten(_.compact(_.pluck(existing, "emails"))), "address")
+      throw new Meteor.Error(400, "Email unavailable")  if _.contains(existingEmails, email)
+
+    existingUsernames = _.pluck(existing, "username")
     throw new Meteor.Error(400, "Username unavailable")  if _.contains(existingUsernames, username)
 
     set = $set:
@@ -240,7 +249,32 @@ Meteor.methods
     Meteor.users.update
       _id: Meteor.userId()
     , set, {}, (err) ->
-      err  if err
+      if err
+        new Alert
+          text: "Uh oh..."
+      else
+        new Alert
+          text: "Profile saved successfully"
+
+
+  activateAdmin: (code) ->
+
+    if code isnt "secret"
+      throw new Meteor.Error(400, "Activation failed")
+      return
+
+    else
+      Meteor.users.update _id: @userId,
+        $set:
+          type: "admin"
+        , (err) ->
+          if err
+            new Alert
+              text: err
+          else
+            new Alert
+              text: "Profile saved successfully"
+
 
   isAdmin: (id) ->
     type = Meteor.users.findOne(_id: id).type

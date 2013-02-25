@@ -3,15 +3,59 @@
 mixin Field( opt )
   .control-group
     label.control-label #{opt.label}
-    .controls
-      | <#{opt.el} class="#{opt.type} #{opt.class}" id="#{opt.id}" type="#{opt.type}" tabindex="#{opt.tabindex}" value="#{opt.value}" #{opt.disabled} rows="#{opt.rows}" placeholder="#{opt.placeholder}" >#{opt.text}</#{opt.el}>
 
-    if typeof opt.characters !== "undefined"
-      span.badge #{opt.characters}
+    if opt.charMax
+      validate_maxlength = "maxlength=" + opt.charMax
+    if opt.type == "email"
+      validate_email_message = "data-validation-email-message='Invalid email'"
+    if opt.type == "number"
+      validate_number = "data-validation-number-message='Please enter a number'"
+
+    if opt.max
+      validate_max = "max=" + opt.max
+      validate_max_message = "data-validation-max-message='Too high'"
+    if opt.min
+      validate_min = "min=" + opt.min
+      validate_min_message = "data-validation-min-message='Too low'"
+
+
+
+    if validate_maxlength || validate_email_message || validate_number
+      validate = 'data-validate'
+
+    .controls
+      | <#{opt.el}
+      |   class="#{opt.type} #{opt.class}"
+      |   id="#{opt.id}"
+      |   type="#{opt.type}"
+      |   tabindex="#{opt.tabindex}"
+      |   value="#{opt.value}"
+      |   rows="#{opt.rows}"
+      |   placeholder="#{opt.placeholder}"
+
+      |   #{ validate_maxlength }
+      |   #{ validate_email_message }
+      |   #{ validate_number }
+      |   #{ validate_max }
+      |   #{ validate_max_message }
+      |   #{ validate_min }
+      |   #{ validate_min_message }
+      |   #{ validate }
+
+      |   #{ opt.disabled }
+      |   #{ opt.attributes }
+
+      |   >#{opt.text}</#{opt.el}>
+
+    if opt.charLeft
+      span.badge <span class="characters">characters</span> #{opt.charLeft} / #{opt.charMax}
+
 
 mixin field(i, a, z, b, m, c, ch)
   .control-group
+    {{#constant}}
     label.control-label #{a}
+    {{/constant}}
     d = ch == "disabled" ? "disabled" : null
       .controls
         if b == "textarea"
@@ -22,36 +66,46 @@ mixin field(i, a, z, b, m, c, ch)
     if ch !== "disabled"
       span.badge #{ch}
 
-
-template(name='account')
-  .greeting.centered.span7.offset2
-    h1 Not much here...
-    h5.
-      We haven't fleshed out the dashboard yet. But hey, you don't have to sit around waiting for it --
-      in the meantime, have you made an offer yet? Why not give it a whirl?
-  .clearfix
+template(name="account")
+  {{> account_profile }}
 
 template(name='account_profile')
+  {{> account_profile_edit }}
+
+template(name='account_profile_edit')
 
   {{#grab "User"}}
   {{#first this.collection}}
-  .greeting.row
 
-    h5.centered.
-      Make your changes; enter your password; hit save.
-      <br>You know the drill.
+  form.account_profile_edit.span5.offset4
+    mixin field("input", "username", "{{this.username}}", "text", "span4 limited", 1 )
+    mixin Field({ el: "input", id: "email", label: "email", value: "{{getEmail.address}}", type: "email", class: "span4", tabindex: 2, attributes: "required" })
+    mixin field("input", "password", "123456", "password", "span4 limited", 2, "disabled" )
+
+  {{/first}}
+  {{/grab}}
 
 
-    form.span5.offset4
-      mixin field("input", "username", "{{this.username}}", "text", "span4 limited", 1 )
-      mixin field("input", "email", "{{getEmail.address}}", "text", "span4 limited", 2 )
-      mixin field("input", "password", "123456", "password", "span4 limited", 2, "disabled" )
+template(name="account_profile_colors")
+  {{#with getSession 'currentOffer'}}
+  {{renderColors}}
+  .area.row
+    .span12.inner
+      {{#constant}}
+      input.text.color(type='text').span10
+      .color-bucket(style='background: {{this.colors.hex}}')
+      {{/constant}}
+  {{/with}}
 
-    .clearfix
+template(name="account_profile_settings")
+  form.account_profile_settings.span5.offset4
+    {{#if equal currentUser.type "admin"}}
+    mixin Field({ el: "input", id: "admin", label: "activate admin", type: "password", class: "span4", tabindex:1, placeholder: "••••••", attributes: "disabled" })
+    {{else}}
+    mixin Field({ el: "input", id: "admin", label: "activate admin", type: "password", class: "span4", tabindex:1, placeholder: "Enter activation code" })
+    {{/if}}
 
-    button.btn.clr-bg.save Save
-    {{/first}}
-    {{/grab}}
+
 
 template(name="change_password")
   mixin field("input", "new password", "", "password", "span4 limited", 1 )
@@ -60,135 +114,16 @@ template(name="change_password")
 
 template(name='account_offer')
 
-  {{#with getOffer}}
 
   .account_offer
+    {{#with getSession 'currentOffer'}}
     {{> offer}}
-
-
-  .clearfix
-
-  .account-offer.navbar: .navbar-inner: .container
-    ul.nav.long
-      mixin nav-item(a, b, c)
-        li(class= c, data-value= a).clr-bg.span2
-          i(class="glyph-" + b)
-          | #{a}
-      mixin nav-item("write", "feather", "show margin right")
-      mixin nav-item("tags", "tag-2", "show margin right")
-      mixin nav-item("symbol", "palette", "show margin right")
-      mixin nav-item("location", "map", "show margin right")
-      mixin nav-item("limits", "hourglass", "show margin right")
-      mixin nav-item("save", "disk", "save")
-      // mixin nav-item("help", "help", "help")
-
-  {{#if sessionEquals 'help' 'true'}}
-  .clearfix
-  .help-unit.row
-    {{#if sessionEquals 'show' 'intro'}}
-    .span6.offset3.intro
-      h3 Welcome to your offer area!
-      p.
-        Here you can create, edit, and publish your offer in a matter of seconds. The "help" selection
-        is on by default, so you'll see more of this text. Whenever you want, you can turn off the
-        help text by hitting the toggle in the upper left.
-      br
-      p: strong Ready to make an offer?
-      button.btn.btn-large.show(data-value="write", color="{{this.color}}"): em Let's go!
-    {{/if}}
-    {{#if sessionEquals 'show' 'write'}}
-    .span12
-      h3 What are we selling?
-    .span5.offset1
-      p.
-        Although everyone buys differently, we all want
-        to know what the product is, who is selling it, and for how much.
-      p.
-        You might notice that we limit the amount you can write. Sorry 'bout that. If you're having
-        trouble condensing your product's information, try this little exercise out...
-      p.
-        Pretend you're dangling from a cliff and you needed this object to save your life. Your friend
-        wants to help you, but he is up some distance at the top of the cliff, unable to reach you.
-    .span5
-      p.
-        At this moment, he is waiting for you yell up and describe the object to him so he can
-        retrive it from your car and lower it to you with a rope.
-      p.
-        What do you yell to him?
-      p.
-        Did that help? Maybe? It's a weird exercise. Me, personally, I would just yell for the rope,
-        but for the sake of the exercise, let's pretend that's against the rules.
-    {{/if}}
-    {{#if sessionEquals 'show' 'tags'}}
-    .span12
-      h3 Tags, tags, and more tags
-    .span5.offset1
-      p.
-        Tags are adjectives that describe your offer. They are the words that <em>you</em> feel are important
-        for others to know -- they should cut to right to the chase.
-      p.
-        In order to get your offer to people who are most likely to buy, we limit the tags that an offer can have.
-        That way, your tag gets in front of the buyers you need, and your competitors offers aren't encroaching on
-        your territory.
-    .span5
-      p.
-        So what tags should you choose? That's up to you. You should pick tags that you think others should know
-        about your good -- something that sets it apart from any offers people may find. A quality that your offer
-        has that the other guy's doesn't.
-      p.
-        What makes your offer unique? Is it a savory burger? An killer concert? A vintage scarf?
-    {{/if}}
-    {{#if sessionEquals 'show' 'symbol'}}
-    .span12
-      h3 What's your sign? No, not that sign...
-    .span5.offset1
-      p.
-        You symbol is simply the sign on the left-hand side of the offer that distinguishes it. You can pick
-        a symbol from our list below and combine it with any color.
-    .span5
-      p.
-        No, you can't upload your logo <em>yet</em>, but it's coming. We want to ensure that every offer has
-        at least some sort of symbol, so that even someone without a flashy logo can be represented equally.
-    {{/if}}
-    {{#if sessionEquals 'show' 'location'}}
-    .span12
-      h3 Oh offer, where art thou?
-    .span5.offset1
-      p.
-        We use the address you list here to provide geolocation to the user, so be sure to list where the
-        <em>offer</em> is, not where you are.
-    .span5
-      p.
-        For now, you can only list one location, but don't cry. We'll be rolling out multiple location features
-        just as soon as enough people bug us about it.
-    {{/if}}
-
-  {{/if}}
-
-
-
-  .clearfix.pad
-
-    {{#if show "write"}}
-    .offer-bind-fields
-      {{> account_offer_write }}
-    {{/if}}
-
-    {{#if show "symbol"}}
-    {{> account_offer_symbol }}
-    {{/if}}
-
-    {{#if show "tags"}}
-    {{> account_offer_tags }}
-    {{/if}}
-
-    {{#if show "location"}}
-    .offer-bind-fields
-      {{> account_offer_location }}
-    {{/if}}
-
     {{/with}}
 
+    .clearfix
+    hr
+    .clearfix
+    {{{show_block "account_offer"}}}
 
 template(name='account_metrics')
   {{#with getUser}}
@@ -201,105 +136,133 @@ template(name='account_metrics')
       {{votes.length}}{{/with}}
 
 
-template(name="account_offer_write")
-  .area
+template(name="account_offer_info")
+  {{#with getSession 'currentOffer'}}
+  .area.offer-bind-fields
     form
       .span5.offset1
-        mixin field("input", "name", "{{this.name}}", "text", "span4 limited", 1, "{{charLength 'name'}}")
-        mixin Field({el: "textarea", label: "description", id: "description", text: "{{this.description}}", type: "textarea", class: "span4 limited", tabindex: 2, characters: "{{charLength 'description'}}", rows: 4 })
+        mixin Field({ el: "input", label: "name", id: "name", value: "{{this.name}}", type: "text", class: "span4", tabindex: 1, charLeft: "{{charLeft 'name'}}", charMax: "{{charMax 'name'}}"})
+        mixin Field({ el: "textarea", label: "description", id: "description", text: "{{this.description}}", type: "textarea", class: "span4 limited", tabindex: 2, charLeft: "{{charLeft 'description'}}", charMax: "{{charMax 'description'}}", rows: 6 })
       .span5
-        mixin field("input", "business", "{{this.business}}", "text", "span4 limited", 3, "{{charLength 'business'}}")
-        mixin field("input", "price", "{{this.price}}", "text", "span2", 4 )
+        mixin Field({ el:"input", label: "business", id: "business", value: "{{this.business}}", type: "text", class: "span4", tabindex: 3, charLeft: "{{charLeft 'business'}}", charMax: "{{charMax 'business'}}" })
+        mixin Field({ el: "input", label: "price", id: "price", value: "{{this.price}}", type: "number", class: "span2", tabindex: 4, max: 2000, min: 5})
+        // mixin field("input", "price", "{{this.price}}", "text", "span2", 4 )
     .clearfix
+  {{/with}}
 
 template(name="account_offer_tags")
 
-  {{aggregateTags}}
+  {{aggregateStintTags}}
 
   {{#with getStore "stint_tags"}}
-  .offer-tag-list.long
-    ul.span2.margin.right
+  #offer-tag-list.row-fluid
+
+
+    ul.tagsets.span4
+      li.header
+        span tagsets
+      li.sub-header.span12
+        span.span6 name
+        span.span4 count
+      hr.shadow.bottom.thin
       {{#each_with_key this}}
-      li(data-active="{{active}}", data-group="tagset").clr-bg {{this.name}}
+      li(data-active="{{active}}", data-group="tagset").clr-bg.span12
+        span.span6 {{this.name}}
+        span.span4 {{this.tags.length}}
+        span.span2: i.glyph-arrow-right
       {{/each_with_key}}
+
     {{#each_with_key this}}
-    ul(data-active="{{active}}").span10
+    ul(data-active="{{active}}").tags.span8
+      li.header
+        span tags
+      li.sub-header.span12
+        span.span5 name
+        span.span2 ratio
+        span.span3 rate
+        span.span2 toggle
+      hr.shadow.bottom.thin
       {{#each this.tags}}
-      li(data-active="{{active}}", data-group="tags", data-name="{{name}}").clr-bg
-        .info-sheet.span7
-          span(data-toggle-mode="shrink")
-          span.span3 {{name}}
-          span.span1 {{ratio}}
-          span.span1 {{rate}}
+      li(data-active="{{active}}", data-group="tags", data-name="{{name}}").clr-bg.span12
+        span.span5 {{name}}
+        span.span2 {{ratio}}
+        span.span3 {{rate}}
 
         .actions.span2
           {{#if active}}
           span(data-group="tags"): i.glyph-minus-2 {{else}}
           span(data-group="tags"): i.glyph-plus {{/if}}
 
-        .target.hide
-          .expand.hide
-            h1 {{name}}
       {{/each}}
+
       .clearfix
-      li.create-tag(data-tagset="{{this.name}}")
-        input(type="text", tabindex=1).text.span4
-        span.clr-bg.btn.span2.margin.left {{this.ratio}}
-        button.btn.clr-bg.span2.margin.left(tabindex=2) add
+
+      hr.shadow.top.thin
+      li.footer.span12
+        span create tag
+      li.sub-footer.span12
+        span.span5 name
+        span.span2 ratio
+        span.span3 rate
+        span.span2 add
+      hr.shadow.bottom.thin.white
+      li.create-tag(data-tagset="{{this.name}}").span12
+        input(type="text", tabindex=1).text.span5
+        span.span2 {{this.ratio}}
+        span.span3 10
+        span.span2: i.glyph-plus-2
+
     {{/each_with_key}}
   {{/with}}
 
 
-
-
-
-template(name="account_offer_symbol")
+template(name="account_offer_images")
+  {{#with getSession 'currentOffer'}}
   .area
     .file-table.row
-      .span12
-        h3 Select file(s) to upload
-        input(name="files", type="file", multiple).fileUploader
-      .clearfix
-      canvas#canvas
+      .file-input.span3
+        input(name="files", type="file", multiple).file-uploader
+        .proxy
+          span click to upload a new image
       {{#each find 'Images' '{}'}}
       .file.span3.clr-bg
-        // div.image(style="background-image: url({{file.URL}})")
         img(src="{{this.src}}", class="{{this.status}}")
         {{#if this.imgur}}
-        span.select-file(data-url="{{this.src}}", data-active="{{storeEquals 'offer_active_symbol' this.src}}"): i.glyph-checkmark
+        span.select-file(data-url="{{this.src}}", data-active="{{storeEquals 'offer_active_image' this.src}}"): i.glyph-checkmark
         {{else}}
         span.save-file: i.glyph-disk
         {{/if}}
         span.delete-file: i.glyph-cancel
         .clearfix
       {{/each}}
-    .glyphs-list.long
-      .clearfix
-      .span12.inner
-        input.text.color(type='text', style='background: {{this.color}}', value="{{this.color}}").span10
-        .color-bucket(style='background-color: {{this.colors.hex}}')
-      .clearfix
-      {{#each getIcons}}
-      .glyph.span3.margin.left
-        .large(class="glyph-{{this}}")
-      {{/each}}
+  {{/with}}
+
 
 template(name="account_offer_location")
-  .area
+  {{#with getSession 'currentOffer'}}
+  .area.offer-bind-fields
     form#location
       .span5.offset3
         mixin field("input", "street", "{{this.street}}", "text", "span5", 1)
         mixin field("input", "city", "{{this.city}}", "text", "span4", 2 )
         mixin field("input", "state", "{{this.state}}", "text", "span2", 2 )
         mixin field("input", "zip", "{{this.zip}}", "text", "span2", 2 )
+  {{/with}}
 
 template(name="account_messages")
+  {{> account_messages_inbox }}
+
+template(name="account_messages_inbox")
   .greeting.row
 
-
+  {{#if findOne 'Messages' '{}'}}
   {{#each find 'Messages' '{}' '{"sort": {"lastSent": -1}}' }}
   {{> account_message }}
   {{/each}}
+  {{else}}
+  h3.centered :(
+  h5.centered You don't have any messages in your inbox.
+  {{/if}}
 
 template(name="account_message")
 
@@ -316,7 +279,26 @@ template(name="account_message")
         textarea(rows=1, placeholder="...")
       .sent.span3.send send
 
-template(name="account_feedback")
+template(name="account_messages_feedback")
   {{> feedback }}
 
 
+template(name="account_earnings")
+  {{> account_earnings_dashboard }}
+
+template(name="account_earnings_dashboard")
+  .area.centered.span5.offset3
+    {{#if currentUser.stripe.access_token}}
+    h3 Woohoo!
+    p.
+      You've successfully connected to your Stripe account. We can now sell on your behalf!
+      Please familiarize yourself with our <a href="/account/earnings/guidelines">guidelines</a> to take
+      full advantage of Connected's system.
+    {{else}}
+    a(href="#").stripe-connect.light-blue: span Connect with Stripe
+    {{/if}}
+
+template(name="account_earnings_guidelines")
+  .row.centered
+    .span8.offset2
+      h3 guidelines

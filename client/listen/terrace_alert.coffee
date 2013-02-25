@@ -1,13 +1,16 @@
 
-class Alert extends Terrace
-  rally: =>
-    super "terrace_alert", "alert"
+class Alert extends Listener
+  init: =>
+    @name   = "alert"
+    @family = "terrace"
+    @king   = ".ceiling"
 
   set: (args)=>
     @_text = args.text or "Lorem ipsum"
     @_el = args.el or "p"
     @_time = args.time or 5000
     @_wait = args.wait or false
+    @_speed = 400
     @paneContent = "<#{@_el}>#{@_text}</#{@_el}>"
     @toggle =
       el: args.dimmer or $("#dimmer")
@@ -37,19 +40,31 @@ class Alert extends Terrace
     @timeoutId = Meteor.setTimeout =>
       @cleanUp()
     , @_time
-    @terraceAlert.on "mouseenter", =>
+    @$rally.on "mouseenter", =>
       @clearTimeout()
-    @terraceAlert.on "mouseleave", =>
+    @$rally.on "mouseleave", =>
       @setTimeout()
 
   clearTimeout: =>
     Meteor.clearTimeout @timeoutId
 
   ready : =>
+    @$rally.slideDown().fadeIn()
   aim   : =>
   fire  : =>
 
   cleanUp: =>
-    @clearTimeout()
-    @finish()
+    @killToggle()
+
+    @$rally.animate
+      opacity: 0
+    , (@speed * 10)
+
+    @$rally.animate
+      height: 0
+      marginTop: -15
+    , @speed, =>
+
+      @clearTimeout()
+      @finish()
 

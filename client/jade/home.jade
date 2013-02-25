@@ -3,15 +3,27 @@
 //////////////////////////////////////////////
 //  $$ mixins
 
+mixin shift-block(opt)
+  .shift-block(data-help-block="false", data-help-selector="shift", class= opt.area +" "+ opt.direction )
+    a.shift(href= "#", data-shift-direction= opt.direction, data-shift-area= opt.area )
+      i(class="glyph-arrow-" + opt.direction)
+
 mixin link(opt)
   a(href= opt.href, class= opt.class ): li
     i(class= "glyph-" + opt.glyph)
     span= opt.label
 
-mixin shift-block(opt)
-  .shift-block(data-help-block="false", data-help-selector="shift", class= opt.area +" "+ opt.direction )
-    a.shift(href= "#", data-shift-direction= opt.direction, data-shift-area= opt.area )
-      i(class="glyph-arrow-" + opt.direction)
+mixin sublink(type, area, sub_area, name)
+  a(href="/#{area}/#{sub_area}/#{name}", data-type=type): li: span #{name}
+
+mixin sublink-action( name )
+  a(href="#", class= name): li: span.action #{ name }
+
+mixin sublink-separator()
+  li.separator: span |  
+
+mixin sublink-shadow()
+  hr.shadow.bottom.thin
 
 mixin topnav(name)
   .topnav.navbar(class= name)
@@ -29,24 +41,76 @@ mixin topnav(name)
       ul.links.row.clr-bg.light
         mixin link({label: "about", href: "/about", glyph: "paper-plane" })
         mixin link({label: "faq", href: "/about/faq", glyph: "question" })
-        mixin link({label: "roadmap", href: "/about/roadmap", glyph: "map" })
-        mixin link({label: "feedback", href: "/about/feedback", glyph: "keyboard" })
         mixin link({label: "blog", href: "/about/blog", glyph: "ampersand" })
+        // mixin link({label: "roadmap", href: "/about/roadmap", glyph: "map" })
+        // mixin link({label: "feedback", href: "/about/feedback", glyph: "keyboard" })
+      ul.sublinks
     if (name === "account")
       mixin shift-block({direction: "left", area: "home"})
       ul.links.row.clr-bg.light
-        mixin link({label: "dashboard", href: "/account", glyph: "list" })
-        mixin link({label: "offer", href: "/account/offer", glyph: "bucket" })
-        mixin link({label: "messages", href: "/account/messages", glyph: "list" })
         mixin link({label: "profile", href: "/account/profile", glyph: "cog-2" })
-        mixin link({label: "feedback", href: "/account/feedback", glyph: "keyboard" })
+        mixin link({label: "offer", href: "/account/offer", glyph: "bucket" })
+        mixin link({label: "earnings", href: "/account/earnings", glyph: "pig" })
+        mixin link({label: "messages", href: "/account/messages", glyph: "list" })
+        // mixin link({label: "feedback", href: "/account/feedback", glyph: "keyboard" })
+
+      {{#if sublink "account" "profile"}}
+      area = "profile"
+      ul.sublinks(class="#{name}_#{area}")
+        .inner
+          mixin sublink( "page", name, area, "edit" )
+          mixin sublink( "page", name, area, "colors" )
+          mixin sublink( "page", name, area, "settings" )
+          mixin sublink-separator()
+          mixin sublink-action( "save" )
+        .bg
+        mixin sublink-shadow
+      {{/if}}
+
+      {{#if sublink "account" "offer"}}
+      area = "offer"
+      ul.sublinks(class="#{name}_#{area}")
+        .inner
+          mixin sublink( "show", name, area, "info" )
+          mixin sublink( "show", name, area, "tags" )
+          mixin sublink( "show", name, area, "images" )
+          mixin sublink( "show", name, area, "location" )
+          mixin sublink-separator()
+          mixin sublink-action( "save" )
+          // mixin sublink( "show", name, area, "limits" )
+        .bg
+        mixin sublink-shadow
+      {{/if}}
+
+      {{#if sublink "account" "earnings"}}
+      area = "earnings"
+      ul.sublinks(class="#{name}_#{area}")
+        .inner
+          mixin sublink( "page", name, area, "dashboard" )
+          mixin sublink( "page", name, area, "guidelines" )
+          mixin sublink( "page", name, area, "reference" )
+        .bg
+        mixin sublink-shadow
+      {{/if}}
+
+      {{#if sublink "account" "messages"}}
+      area = "messages"
+      ul.sublinks(class="#{name}_#{area}")
+        .inner
+          mixin sublink( "page", name, area, "inbox" )
+          mixin sublink( "page", name, area, "feedback" )
+        .bg
+        mixin sublink-shadow
+      {{/if}}
+
 
 
 head
-  title Sparrow
+  title Connected
   meta(name='viewport',content='initial-scale=1.0, user-scalable=no')
   meta(charset='utf-8')
   style(type="text/css", title="dynamic-theme")
+
 
 body
   {{> wrapper }}
@@ -60,9 +124,11 @@ template(name="wrapper")
 template(name="ceiling")
   nav.ceiling.clr-bg.dark(data-terrace= "true")
     .toggler-group.left
-      a(data-toggle-mode="help")
-        i.glyph-help
-        span help
+      a(href="#")
+        .brand
+      // a(data-toggle-mode="help")
+      //   i.glyph-help
+      //   span help
 
     .terrace
       {{#constant}}
@@ -100,7 +166,7 @@ template(name="ceiling")
       {{#if currentUser}}
       {{#isolate}}
       .logout
-        span {{dropDecimal currentUser.karma}} 
+        span.badge {{dropDecimal currentUser.karma}} 
         span {{currentUser.username}}
       {{/isolate}}
       {{else}}
@@ -136,24 +202,13 @@ template(name="content")
       mixin topnav("about") {{/if}}
 
       .container
-        {{#if page_next "about"}} {{> about }} {{/if}}
-        {{#if page_next "about_faq"}} {{> about_faq }} {{/if}}
-        {{#if page_next "about_roadmap"}} {{> about_roadmap }} {{/if}}
-        {{#if page_next "about_feedback"}} {{> about_feedback }} {{/if}}
-        {{#if page_next "about_blog"}} {{> about_blog }} {{/if}}
+        {{{next_page}}}
 
-        {{#if page_next "home"}} {{> home }} {{/if}}
-
-        {{#if page_next "account"}} {{> account }} {{/if}}
-        {{#if page_next "account_offer"}} {{> account_offer }} {{/if}}
-        {{#if page_next "account_messages"}} {{> account_messages }} {{/if}}
-        {{#if page_next "account_feedback"}} {{> account_feedback }} {{/if}}
-        {{#if page_next "account_profile"}} {{> account_profile }} {{/if}}
 
 template(name='home')
   {{#if getStore "user_loc"}}
   {{> hero }}
-  .offers(data-help-block="false", data-help-selector="offers")
+  .offers(data-help-block="false", data-help-selector="offers", data-gray="{{gray 'offers'}}")
     {{#each getOffers}}
     {{> offer }}
     {{/each}}
@@ -163,24 +218,28 @@ template(name='home')
 
 template(name='intro')
   #intro
-    .row
-      .span12
-        h1.clr-text.clearfix Sparrow
-        h3.span8.offset2.smashed.
-          A real-time web application that finds 
-          things near you and presents them interchangeably.
-          <a href="/about" class="shift" data-shift-direction="left" data-shift-area="about"> Learn more </a>
-      .clearfix
-      button.btn.clr-bg.comp#getLocation Locate me automatically
+    .body
+      {{#constant}}
+      div#big-brand
+      {{/constant}}
+      h3.smashed.
+        A real-time web application that finds 
+        things near you and presents them interchangeably.
+        <a href="/about" class="shift" data-shift-direction="left" data-shift-area="about"> Learn more </a>
+
+    .clearfix
+
+    footer
+      button.btn.clr-bg.prime#getLocation Locate me automatically
       h4 or
       .input-append
         input(type="text", placeholder="address, city, or zip")
-        button.btn.clr-bg.comp(type="button").geolocate Go
+        button.btn.clr-bg.prime(type="button").geolocate Go
 
 template(name="hero")
-  .hero
-    {{#constant}}
+  .hero(data-gray="{{gray 'hero'}}")
 
+    {{#constant}}
     .headline(data-help-block="false", data-help-selector="heroHeadline")
       .inner
         .tagset
@@ -194,13 +253,29 @@ template(name="hero")
         .noun
           span
 
-    .list.long(data-help-block="false", data-help-selector="heroList")
-      ul.tagset-list.span3(data-constant=true, data-help-block="false", data-help-selector="heroListTagset")
-      ul.sort-list.span3(data-constant=true, data-help-block="false", data-help-selector="heroListSort").margin.left
-      ul.tag-list.span3.margin.left(data-help-block="false", data-help-selector="heroListTag")
-      ul.noun-list.span3(data-constant=true, data-help-block="false", data-help-selector="heroListNoun").margin.left
-
     {{/constant}}
+
+    .list.long(data-help-block="false", data-help-selector="heroList")
+      .contents.span12
+
+        {{#isolate}}
+        {{#with getStore 'notes'}}
+        .notes.clr-text.prime.centered
+          p {{el 'strong' this.count}} offers | {{el 'strong' this.votes}} votes | {{el 'strong' 0}} purchases
+        {{/with}}
+        {{/isolate}}
+
+        hr.shadow.top
+
+        {{#constant}}
+        .items
+          ul.tagset-list.span3(data-constant=true, data-help-block="false", data-help-selector="heroListTagset")
+          ul.sort-list.span3(data-constant=true, data-help-block="false", data-help-selector="heroListSort").margin.left
+          ul.tag-list.span3(data-help-block="false", data-help-selector="heroListTag").margin.left
+          ul.noun-list.span3(data-constant=true, data-help-block="false", data-help-selector="heroListNoun").margin.left
+        {{/constant}}
+
+        hr.shadow.bottom
 
 template(name="404")
   h1.

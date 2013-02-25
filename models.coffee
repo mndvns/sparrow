@@ -80,12 +80,9 @@ Offer =
     default: "MO"
     maxLength: 30
 
-  symbol:
+  image:
     type: String
-    default: "glyph-lamp-2"
-
-  symbol_type:
-    default: "glyph"
+    default: "http://i.imgur.com/YhUFTyA.jpg"
 
   tags:
     type: Array
@@ -102,6 +99,7 @@ Offer =
   votes_meta:
     type: Array
     default: []
+
   votes_count:
     default: 0
 

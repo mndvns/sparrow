@@ -16,21 +16,26 @@ Sparrow.shift = ->
 statCurrent = ->
   out =
     query:
-      tagset: Session.get("current_tagsets")
-      tag: Session.get("current_tags")
+      tagset : Store.get("current_tagsets")
+      tag    : Store.get("current_tags")
       sort:
-        selector: Session.get("current_sorts_selector")
-        order: Session.get("current_sorts_order")
+        selector : Store.get("current_sorts_selector")
+        order    : Store.get("current_sorts_order")
 
     verbose:
-      tagset: Session.get("current_tagsets")
-      tag: Session.get("current_tags")
-      sort: Session.get("current_sorts")
-      noun: Session.get("current_nouns")
+      tagset        : Store.get("current_tagsets")
+      tag           : Store.get("current_tags")
+      sort          : Store.get("current_sorts")
+      sort_selector : Store.get("current_sorts_selector")
+      noun          : Store.get("current_nouns")
 
-  out.verbose.tagset = (if out.verbose.tagset and out.verbose.tagset.length then out.verbose.tagset else ["find"])
-  out.verbose.noun = (if out.verbose.noun and out.verbose.noun.length then out.verbose.noun else ["offer"])
-  out.verbose.article = (if out.verbose.sort and out.verbose.sort.length then ["the"] else ["some"])
+  out.verbose.tagset  = (if out.verbose.tagset?.length then out.verbose.tagset else ["find"])
+  out.verbose.noun    = (if out.verbose.noun?.length then out.verbose.noun else ["offer"])
+  out.verbose.article = (if out.verbose.sort?.length then ["the"] else ["some"])
+
+  if out.verbose.sort_selector is "$natural"
+      out.verbose.sort_selector = "distance"
+
   if out.verbose.tagset.toString() is "shop"
     article = out.verbose.article.toString()
     out.verbose.article = ["for " + article]
@@ -39,48 +44,55 @@ statCurrent = ->
 statRange = ->
   out =
     max:
-      updatedAt: Session.get("max_updatedAt")
-      distance: Session.get("max_distance")
-      votes_count: Session.get("max_votes_count")
-      price: Session.get("max_price")
+      updatedAt   : amplify.store("max_updatedAt")
+      distance    : amplify.store("max_distance")
+      votes_count : amplify.store("max_votes_count")
+      price       : amplify.store("max_price")
 
     min:
-      updatedAt: Session.get("min_updatedAt")
-      distance: Session.get("min_distance")
-      votes_count: Session.get("min_votes_count")
-      price: Session.get("min_price")
+      updatedAt   : amplify.store("min_updatedAt")
+      distance    : amplify.store("min_distance")
+      votes_count : amplify.store("min_votes_count")
+      price       : amplify.store("min_price")
 
   out
-
-
-#////////////////////////////////////////////
-#  $$ helpers
-Handlebars.registerHelper "page_next", (area) ->
-  shift_sub_area = Session.get("shift_sub_area")
-  if area isnt shift_sub_area then return false
-  parse_sub_area = shift_sub_area.split("_").join("/")
-  Meteor.Transitioner.setOptions after: ->
-    Meteor.Router.to (if shift_sub_area is "home" then "/" else "/" + parse_sub_area)
-
-  return shift_sub_area
-
 
 
 Template.wrapper.events
 
   "click a[data-toggle-mode='sign-in']": (event, tmpl) ->
-    selectEl = event.currentTarget
-    rivalEl = $(selectEl.parentElement).siblings(".toggler-group")
 
-    mode     = selectEl.getAttribute "data-toggle-mode"
-    targetEl = tmpl.find(".terrace")
-    modeEl   = targetEl.querySelector("##{mode}")
+    speed = 300
 
-    slipElements
-      selectEl: $(selectEl)
-      targetEl: $(targetEl)
-      modeEl  : $(modeEl)
-      rivalEl : rivalEl
+    selector = $(event.currentTarget)
+    rival  = $(".toggler-group.left")
+    target = $(tmpl.find ".terrace")
+    sign = $("#sign-in")
+
+    selector.toggleClass "active"
+
+    if selector.is(".active")
+      rival.animate
+        opacity: 0
+      , "fast"
+
+      sign.show()
+      target.slipShow
+        speed: speed
+        haste: 1
+
+    else
+      target.slipHide
+        speed: speed
+        haste: 1
+      , ->
+        sign.hide()
+
+      rival.show()
+      rival.animate
+        opacity: 1
+      , "fast"
+
 
   "click a[data-toggle-mode='help']": (event, tmpl) ->
     Meteor.Help.set()
@@ -151,11 +163,15 @@ Template.wrapper.events
     if checkHelpMode() then return
     if event.currentTarget.hasAttribute("disabled") then return
 
-    dir = event.currentTarget.getAttribute("data-shift-direction")
-    area = event.currentTarget.getAttribute("data-shift-area")
-    page = Meteor.Router.page()
-    current = _.first(page.split("_"))
-    sub_area = as("page_" + area) or area
+    dir     = event.currentTarget.getAttribute("data-shift-direction")
+    area    = event.currentTarget.getAttribute("data-shift-area")
+    page    = Meteor.Router.page()
+    current = page.split("_")[0]
+
+    store_area     = Store.get("page_" + area) or area
+    store_sub_area = Store.get("page_" + store_area )
+
+    sub_area       = store_sub_area or store_area
 
     # # console.log("DIR", dir)
     # console.log("AREA", area)
@@ -175,29 +191,28 @@ Template.wrapper.events
 #// $$ ceiling
 
 slipElements = (opt) ->
-  $select = opt.selectEl
-  $target = opt.targetEl
-  $mode   = opt.modeEl
-  $rival  = opt.rivalEl
+  # $select = opt.selectEl
+  # $target = opt.targetEl
+  # $mode   = opt.modeEl
+  # $rival  = opt.rivalEl
 
-  $select.toggleClass("active")
+  # $select.toggleClass("active")
 
-  $speed = 300
+  # $speed = 300
 
   if $select.hasClass("active")
     $mode.show()
-    $rival.fadeToggle()
+    $rival.fadeOut('fast')
     $target.slipShow
       speed: $speed
       haste: 1
 
-  else
     $target.slipHide
       speed: $speed
       haste: 1
       , ->
         $mode.hide()
-        $rival.fadeToggle()
+        $rival.fadeIn('fast')
 
 
 Template.ceiling.events
@@ -314,12 +329,164 @@ Template.ceiling.events
 
 #////////////////////////////////////////////
 #  $$ content
+
+Template.content.rendered = ->
+  return if Meteor.Router.page() is "home"
+
+  unless @activateLinks
+    @activateLinks = =>
+      context = new Meteor.deps.Context()
+      context.onInvalidate @activateLinks
+      context.run =>
+
+        href = (link) ->
+          if link
+            '[href="/' + link.join('/') + '"]'
+
+        page          = Meteor.Router.page()
+        page_links    = page.split("_").splice(0, 2)
+        page_sublinks = page.split("_")
+        show_sublinks = Store.get("show_#{page}")?.split("_")
+
+        hrefs = [
+            href(page_links),
+            href(page_sublinks),
+            href(show_sublinks)
+          ]
+
+        format_hrefs = _.compact( hrefs ).toString()
+        # console.log( "FORMAT HREFS", format_hrefs )
+
+        $(@findAll("ul.links a, ul.sublinks a"))
+          .removeClass( "active" )
+          .addClass( "inactive" )
+        .filter( format_hrefs )
+          .removeClass("inactive")
+          .addClass("active")
+
+        if $(@find("[data-validate]")).is(":focus") then return
+
+        if @page_sublinks is page_sublinks.toString() then return
+        @page_sublinks = page_sublinks.toString()
+        console.log("RANG IT")
+
+        $(@findAll("[data-validate]")).jqBootstrapValidation()
+
+  @activateLinks()
+
+
 Template.content.events
 
   'click .links a': (event, tmpl) ->
     href = event.currentTarget.getAttribute "href"
     area = href.slice(1).split("/")
-    amplify.set "page_#{area[0]}", area.join("_")
+    Store.set "page_#{area[0]}", area.join("_")
+
+  'click .sublinks a': (event, tmpl) ->
+    tar  = $(event.currentTarget)
+    type = tar.attr "data-type"
+
+    if type is "show"
+      event.preventDefault()
+
+    href = tar.attr "href"
+    area = href.slice(1).split("/")
+    Store.set "#{type}_#{area[0]}_#{area[1]}", area.join("_")
+
+  'click .sublinks.account_offer a': (event, tmpl) ->
+    Session.set "currentOffer", as()
+
+  "click .sublinks.account_profile a.save": (event, tmpl) ->
+    sub_area = Store.get "page_account_profile"
+
+    unless sub_area
+      Meteor.Alert.set
+        text: "An error occurred..."
+      console.log("sub_area not defined...which area are we in?")
+      return
+
+    form = $(tmpl.find("form"))
+
+    switch sub_area
+      when "account_profile_edit"
+        newEmail    = form.find("#email").val()
+        newUsername = form.find("#username").val()
+
+        if newEmail
+          unless validateEmail(newEmail)
+            Meteor.Alert.set
+              text: "Invalid email"
+            return
+
+        Meteor.call "updateUser", newEmail, newUsername, (err) ->
+          if err
+            Meteor.Alert.set
+              text: err.reason
+
+      when "account_profile_colors"
+        Meteor.Alert.set
+          text: "Profile successfully saved"
+
+      when "account_profile_settings"
+        adminCode = form.find("#admin")
+        if adminCode.is(":disabled") is false
+          Meteor.call "activateAdmin", adminCode.val(), (err) ->
+            if err
+              Meteor.Alert.set
+                text: err.reason
+
+        else
+          Meteor.Alert.set
+            text: "Profile saved successfully"
+
+
+
+
+  "click .sublinks.account_offer a.save": (event, tmpl) ->
+    offer = as()
+    Session.set "currentOffer", offer
+    errors = []
+
+    for key of Offer
+      errors.push key if Offer[key].hasOwnProperty("maxLength") unless offer[key]
+
+    if errors.length
+      Meteor.Alert.set
+        text: "You didn't enter anything for your #{errors.join(", ")}."
+      return
+
+    userOffer = Offers.findOne(owner: Meteor.userId())
+    type = (if userOffer then "update" else "insert")
+
+    Meteor.Alert.set
+      text: "Loading..."
+      wait: true
+
+    geo = new google.maps.Geocoder()
+    geo.geocode
+      address: "#{offer.street} #{offer.city} #{offer.state} #{offer.zip}"
+    , (results, status) ->
+      if status isnt "OK"
+        Meteor.Alert.set
+          text: "We couldn't seem to find your location. Did you enter your address correctly?"
+
+      else
+        geometry = _.values(results[0].geometry.location)
+        offer.loc =
+          lat: geometry[0]
+          long: geometry[1]
+        offer.updatedAt = Time.now()
+
+        Meteor.call "editOffer", type, offer, (error) ->
+          unless error
+            Meteor.Alert.set
+              text: "You're good to go!"
+            return
+
+          else
+            Meteor.Alert.set
+              text: error.reason
+            return
 
   'click .accord header': (event, tmpl) ->
     if not $(event.target).hasClass "active"
@@ -329,40 +496,36 @@ Template.content.events
     $(event.target).toggleClass "active"
 
 
+  'mouseenter [data-gray]': (e, t)->
+    # console.log("mouseENTER")
+    tar = $(e.currentTarget)
+    t.find("[data-gray='true']")?.setAttribute("data-gray", false)
+    tar.attr("data-gray", true)
+
+  'click [data-gray]': (e, t)->
+    Store.set "gray", e.currentTarget.getAttribute("class")
+
+
+# 
+# Template.content.preserve 'section.main'
+
+
 colorFill = (el, selector, value) ->
   "#{el} { #{selector} : #{value} }"
-
-Handlebars.registerHelper "renderThemeColors", (user, selector) ->
-
-  if user and user.colors
-    color = user.colors
-
-    themeColors = _.find document.styleSheets, (d) ->
-      d.title is "dynamic-theme"
-
-    for rule in themeColors.rules
-      themeColors.removeRule()
-
-
-    themeColors.insertRule( colorFill ".clr-text.prime", "color", color.prime.medium)
-    themeColors.insertRule( colorFill "a", "color", color.prime.medium)
-    themeColors.insertRule( colorFill "a:hover, a.active", "color", color.prime.medium )
-
-    themeColors.insertRule( colorFill ".clr-text.desat", "color", color.prime.light )
-    themeColors.insertRule( colorFill ".clr-text.desat:hover", "color", color.prime.medium )
-    themeColors.insertRule( colorFill ".clr-text.desat:active", "color", color.prime.dark )
-
-    themeColors.insertRule( colorFill ".clr-bg", "background", color.prime.medium)
-    themeColors.insertRule( colorFill ".clr-bg.btn:hover", "background", color.prime.medium)
-
-    themeColors.insertRule( colorFill ".clr-bg.light", "background", color.prime.light )
-    themeColors.insertRule( colorFill ".clr-bg.dark", "background", color.prime.dark )
-    return
 
 
 
 #////////////////////////////////////////////
 #  $$ home
+
+class Conf
+  constructor: (current)->
+    @sort = {}
+    @sort.sort = {}
+    @sort.sort[current.sort.selector] = current.sort.order
+    @query = {}
+    @query.tagset = current.tagset?.toString() if current.tagset?.length
+    @query.tags = $in: current.tag if current.tag?.length and current.tagset?.length
 
 Template.home.helpers
   getOffers: ->
@@ -370,111 +533,115 @@ Template.home.helpers
     current = statCurrent()?.query
     myLoc = Store.get "user_loc"
 
-    class Conf
-      constructor: (current)->
-        @sort = {}
-        @sort.sort = {}
-        @sort.sort[current.sort.selector] = current.sort.order
-        @query = {}
-        @query.tagset = current.tagset?.toString()
-        @query.tags = $in: current.tag if current.tag?.length
-
     conf = new Conf(current)
 
-    console.log(conf)
+    ranges =
+      updatedAt   : []
+      distance    : []
+      votes_count : []
+      price       : []
+
+    notes =
+      count: 0
+      votes: 0
 
     result = Offers.find(
       conf.query,
       conf.sort
-    ).fetch()
+    ).map (d) ->
 
+        d.distance = Math.round(distance(myLoc.lat, myLoc.long, d.loc.lat, d.loc.long, "M") * 10) / 10
+        for r of ranges
+          ranges[r].push d[r]
+
+        notes.count +=1
+        notes.votes += d.votes_count
+
+        d
+
+    # console.log(ranges)
 
     if result and myLoc
-      survey = _.each(result, (d) ->
-        d.distance = Math.round(distance(myLoc.lat, myLoc.long, d.loc.lat, d.loc.long, "M") * 10) / 10
-      )
-      range =
-        max:
-          updatedAt: _.max(result, (o) ->
-            o.updatedAt
-          )
-          distance: _.max(result, (o) ->
-            o.distance
-          )
-          votes_count: _.max(result, (o) ->
-            o.votes_count
-          )
-          price: _.max(result, (o) ->
-            o.price
-          )
 
-        min:
-          updatedAt: _.min(result, (o) ->
-            o.updatedAt
-          )
-          distance: _.min(result, (o) ->
-            o.distance
-          )
-          votes_count: _.min(result, (o) ->
-            o.votes_count
-          )
-          price: _.min(result, (o) ->
-            o.price
-          )
+      watchOffer?.setCount(result.length)
 
-      Session.set "max_updatedAt", range.max.updatedAt
-      Session.set "max_distance", range.max.distance
-      Session.set "max_votes_count", range.max.votes_count
-      Session.set "max_price", range.max.price
-      Session.set "min_updatedAt", range.min.updatedAt
-      Session.set "min_distance", range.min.distance
-      Session.set "min_votes_count", range.min.votes_count
-      Session.set "min_price", range.min.price
+      for r of ranges
+        amplify.store "max_#{r}", _.max(ranges[r])
+        amplify.store "min_#{r}", _.min(ranges[r])
+
+      for n of notes
+        notes[n] = numberWithCommas(notes[n])
+
+      Store.set "notes", notes
+
       result
 
   styleDate: (date) ->
     moment(date).fromNow()
+
 
 #////////////////////////////////////////////
 #  $$ intro
 
 Template.intro.events
   "click #getLocation": (event, tmpl) ->
-    getLocation()
+    Meteor.Alert.set
+      text: "One moment while we charge the lasers..."
+      wait: true
+
+    noLocation = ->
+      Meteor.Alert.set
+        text: "Uh oh... something went wrong"
+
+    foundLocation = (location) ->
+      Meteor.Alert.set
+        text: "Booya! Lasers charged!"
+
+      Store.set "user_loc",
+        lat: location.coords.latitude
+        long: location.coords.longitude
+
+    navigator.geolocation.getCurrentPosition foundLocation, noLocation
 
   'click .geolocate': (event, tmpl)->
 
     location = tmpl.find("input").value
-    if not location then return
+    if not location
+      Meteor.Alert.set
+        text: "No location entered"
+      return
+
+    Meteor.Alert.set
+      text: "One moment..."
+      wait: true
 
     geo = new google.maps.Geocoder()
     geo.geocode
       address: location
     , (results, status) ->
       if status isnt "OK"
-        dhtmlx.message
-          type: "warning"
-          text: icon.warning + "We couldn't seem to find your location. Did you enter your address correctly?"
+        Meteor.Alert.set
+          text: "We couldn't seem to find your location. Did you enter your address correctly?"
 
       else
-        # console.log
-        #   lat: results[0].geometry.location.Ya
-        #   long: results[0].geometry.location.Za
+        Meteor.Alert.set
+          text: "Found ya!"
 
-        Store.set "oser_loc",
-          lat: results[0].geometry.location.Ya
-          long: results[0].geometry.location.Za
+        loc = results[0].geometry.location
+        userLoc = []
+        for key of loc
+          if typeof loc[key] isnt 'number' then break
+          userLoc.push loc[key]
+        console.log("USERLOC", userLoc)
 
+        Store.set "user_loc",
+          lat: userLoc[0]
+          long: userLoc[1]
 
-resizeButton = ->
-  button = $("button")
-  text = button.siblings()
-  height = text.outerHeight()
-  $("#intro").height(height)
 
 Template.intro.rendered = ->
-  $(@find("h1")).fitText .6
-  $(@find("h2")).fitText 2
-  # resizeButton()
-  # $(window).on "resize", ->
-  #   resizeButton()
+  window_height = $(".current").height() / 2
+  intro = $(@find("#intro"))
+  intro_height = (intro.outerHeight() * .75)
+  intro.css
+    'margin-top': window_height - intro_height

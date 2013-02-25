@@ -11,12 +11,14 @@
 Meteor.publish "offers", (storeLoc) ->
   if storeLoc
     Offers.find loc:
-      $near: [ storeLoc.long, storeLoc.lat ]
+      $near: [ storeLoc.lat, storeLoc.long ]
+  else
+    Offers.find {}
 
 Meteor.publish "tagsets", ->
   Tagsets.find {}
 
-Meteor.publish "tags", (storeLoc) ->
+Meteor.publish "tags", (userLoc) ->
   Tags.find {}
 
 Meteor.publish "sorts", ->
@@ -25,6 +27,7 @@ Meteor.publish "sorts", ->
 Meteor.publish "userData", ->
   Meteor.users.find {},
     type: 1
+
 
 Meteor.publish "messages", ->
   Messages.find involve:

@@ -4,6 +4,9 @@
     "router": {},
     "imgur": {},
     "logger": {},
-    "canvas-image-manipulation": {}
+    "canvas-image-manipulation": {},
+    "isotope": {},
+    "profile-online": {},
+    "jqbootstrapvalidation": {}
   }
 }

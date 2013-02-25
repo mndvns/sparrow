@@ -1,21 +1,6 @@
-class Terrace
-  constructor: ->
-    @ceiling = $(".ceiling")
-    @terrace = $(".terrace")
-    @terraceAlert = $("#terrace-alert")
-    @terraceHelp = $("#terrace-help")
 
-  trigger: =>
-    @toggle?.el.removeClass("off")
-      .addClass("on")
-      .on("click", =>
-        @cleanUp())
-
-    @_active = Time.now()
-    @ceiling.attr "data-rally", @name
-    Session.set @rallyPoint, Meteor.uuid()
-
-  rally: (@rallyPoint, @name)=>
+class Listener
+  rally: =>
     context = new Meteor.deps.Context()
     context.onInvalidate(@rally)
     context.run =>
@@ -24,9 +9,30 @@ class Terrace
       @_ready newPane
       @ready?()
 
+  constructor: ->
+    @_init()
+
+
+  _init: =>
+    @init?()
+
+    @rallyPoint = "#{@family}-#{@name}"
+
+    @$rally     = $("##{@rallyPoint}")
+    @$king      = $("#{@king}")
+
+  trigger: =>
+    @toggle?.el.removeClass("off")
+      .addClass("on")
+      .on("click", =>
+        @cleanUp())
+
+    @_active = Time.now()
+    @$king.attr "data-rally", @name
+    Session.set @rallyPoint, Meteor.uuid()
+
   _ready: (newPane) =>
-    @Name = @name.toProperCase()
-    @["terrace#{@Name}"].find(".rally-out").remove()
+    @$rally.find(".rally-out").remove()
     @_aim newPane
     @aim?()
 
@@ -45,22 +51,29 @@ class Terrace
     @enterNewPane()
 
   enterNewPane: () =>
-    @["terrace#{@Name}"].append """
+    @$rally.append """
     <div data-pane-id=#{@newPane} class='terrace-#{@name}-pane rally-in'>
       #{@paneContent}
     </div>
     """
 
   exitCurrentPane: (currentPane) =>
-    @["terrace#{@Name}"].find("[data-pane-id=#{currentPane}]")
+    @$rally.find("[data-pane-id=#{currentPane}]")
       .addClass("rally-out").removeClass("rally-in")
 
-  finish: =>
+  killToggle: =>
     @toggle?.el.removeClass("on")
       .addClass("off")
       .off()
 
+  finish: =>
+    if @toggle?.el.is ".on"
+      @killToggle()
+
     @_active = 0
-    @ceiling.attr "data-rally", ""
+    @$rally.attr "style", ""
+    @$rally.css
+      display: "none"
+    @$king.attr "data-rally", ""
     Session.set @rallyPoint, null
 

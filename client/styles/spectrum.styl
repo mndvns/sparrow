@@ -9,9 +9,11 @@
   *zoom: 1
   z-index: 2147483647
   overflow: hidden
+  width 100%
+  z-index 1
 
 .sp-container.sp-flat
-  position: relative
+  position: absolute
 
 .sp-top
   position: relative
@@ -151,9 +153,8 @@
   border-radius: 0
   padding: 0
 
-.sp-container, .sp-container button, .sp-container input, .sp-color, .sp-hue
-  font: normal 12px "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Verdana, sans-serif
-  box-sizing: border-box
+// .sp-container, .sp-container button, .sp-container input, .sp-color, .sp-hue
+//   font: normal 12px "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", Geneva, Verdana, sans-serif
 
 .sp-top
   margin-bottom: 3px
@@ -165,37 +166,31 @@
   float: right
   width: 100px
   margin-bottom: 4px
+  // overflow hidden
 
 .sp-initial-disabled  .sp-input-container
   width: 100%
 
-.sp-input
-  font-size: 12px !important
-  border: 1px inset
-  padding: 4px 5px
-  margin: 0
-  width: 100%
-  background: transparent
-  border-radius: 3px
-  color: #222
-
-.sp-input:focus
-  border: 1px solid orange
+// .sp-input:focus
+//   border: 1px solid orange
 
 .sp-input.sp-validation-error
   border: 1px solid red
   background: #fdd
 
 .sp-picker-container , .sp-palette-container
-  float: left
+  // float: left
   position: relative
   padding: 10px
   padding-bottom: 300px
   margin-bottom: -290px
+  padding-top 15px
+  display block
+  margin 0 auto
 
 .sp-picker-container
   width: 172px
-  border-left: solid 1px #fff
+  // border-left: solid 1px #fff
 
 .sp-palette-container
   border-right: solid 1px #ccc
@@ -229,7 +224,8 @@
   margin: 0
 
 .sp-button-container
-  float: right
+  // float: right
+  text-align center
 
 .sp-replacer
   margin: 0
@@ -282,45 +278,58 @@
 .sp-container
   padding-bottom: 0
 
-.sp-container button
-  background-color: #eeeeee
-  background-image: linear-gradient(top, #eeeeee, #cccccc)
-  border: 1px solid #ccc
-  border-bottom: 1px solid #bbb
-  border-radius: 3px
-  color: #333
-  font-size: 14px
-  line-height: 1
-  padding: 5px 4px
-  text-align: center
-  text-shadow: 0 1px 0 #eee
-  vertical-align: middle
-
-.sp-container button:hover
-  background-color: #dddddd
-  background-image: linear-gradient(top, #dddddd, #bbbbbb)
-  border: 1px solid #bbb
-  border-bottom: 1px solid #999
-  cursor: pointer
-  text-shadow: 0 1px 0 #ddd
-
-.sp-container button:active
-  border: 1px solid #aaa
-  border-bottom: 1px solid #888
-  box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee
-
+.sp-choose
 .sp-cancel
-  font-size: 11px
-  color: #d93f3f !important
-  margin: 0
-  padding: 2px
-  margin-right: 5px
-  vertical-align: middle
-  text-decoration: none
+  background transparent
+  border none
+  color rgba(white, .8)
+  font-size 16px
+  line-height 1.5
+  padding 5px
+  margin 0
+  appearance normal
+  &:hover
+    color rgba(white, 1)
 
-.sp-cancel:hover
-  color: #d93f3f !important
-  text-decoration: underline
+// .sp-container button
+//   background-color: #eeeeee
+//   background-image: linear-gradient(top, #eeeeee, #cccccc)
+//   border: 1px solid #ccc
+//   border-bottom: 1px solid #bbb
+//   border-radius: 3px
+//   color: #333
+//   font-size: 14px
+//   line-height: 1
+//   padding: 5px 4px
+//   text-align: center
+//   text-shadow: 0 1px 0 #eee
+//   vertical-align: middle
+// 
+// .sp-container button:hover
+//   background-color: #dddddd
+//   background-image: linear-gradient(top, #dddddd, #bbbbbb)
+//   border: 1px solid #bbb
+//   border-bottom: 1px solid #999
+//   cursor: pointer
+//   text-shadow: 0 1px 0 #ddd
+// 
+// .sp-container button:active
+//   border: 1px solid #aaa
+//   border-bottom: 1px solid #888
+//   box-shadow: inset 0 0 5px 2px #aaaaaa, 0 1px 0 0 #eeeeee
+
+// .sp-cancel
+//   font-size: 11px
+//   color: #d93f3f !important
+//   margin: 0
+//   padding: 2px
+//   margin-right: 5px
+//   vertical-align: middle
+//   text-decoration: none
+// 
+// .sp-cancel:hover
+//   color: #d93f3f !important
+//   text-decoration: underline
 
 .sp-palette span:hover, .sp-palette span.sp-thumb-active
   border-color: #000
@@ -347,4 +356,16 @@
 .sp-palette .sp-thumb-dark.sp-thumb-active .sp-thumb-inner
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAadEVYdFNvZnR3YXJlAFBhaW50Lk5FVCB2My41LjEwMPRyoQAAAMdJREFUOE+tkgsNwzAMRMugEAahEAahEAZhEAqlEAZhEAohEAYh81X2dIm8fKpEspLGvudPOsUYpxE2BIJCroJmEW9qJ+MKaBFhEMNabSy9oIcIPwrB+afvAUFoK4H0tMaQ3XtlrggDhOVVMuT4E5MMG0FBbCEYzjYT7OxLEvIHQLY2zWwQ3D+9luyOQTfKDiFD3iUIfPk8VqrKjgAiSfGFPecrg6HN6m/iBcwiDAo7WiBeawa+Kwh7tZoSCGLMqwlSAzVDhoK+6vH4G0P5wdkAAAAASUVORK5CYII=")
 
+
+input.sp-input
+  // font-size: 12px !important
+  // border: 1px inset
+  // padding: 4px 5px
+  // margin: 0
+  // background: transparent
+  // border-radius: 3px
+  // color: #222
+  width: 100%
+  box-sizing: border-box
+  height 35px
 

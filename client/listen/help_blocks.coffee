@@ -15,10 +15,6 @@ window.helpBlocks =
     title: "title thingy"
     summary: "summmmmmary"
 
-  input_tag:
-    title: "ASDASDASDAS"
-    summary: "ASDASDASDLKJASDASKJDSALKJDLAKSJ"
-
   shift:
     title: "Shift buttons"
     summary: "The <strong>shift buttons</strong> are used to navigate around the site."

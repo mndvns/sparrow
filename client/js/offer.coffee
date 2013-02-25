@@ -2,7 +2,7 @@
 # globals
 
 handleActions = (event, tmpl, cb) ->
-  eventEl = event.target
+  eventEl = event.currentTarget
   extension = eventEl.getAttribute("data-selector")
   targetEl = $(tmpl.find("section.extension[data-extension='" + extension + "']"))
   if eventEl.getAttribute("data-status") is "inactive"
@@ -38,6 +38,8 @@ Template.offer.events
 
   'click .vote': (event, tmpl) ->
     # if event.currentTarget.hasAttribute "disabled" then return
+
+    watchOffer.click()
     Meteor.call "upvoteEvent", tmpl.data
 
   "click section.actions li.map": (event, tmpl) ->
@@ -69,6 +71,8 @@ Template.offer.events
         directionsDisplay.setMap map
         directionsDisplay.setDirections response
 
+        tmpl.find(".time span.value").textContent = response.routes[0].legs[0].duration.text
+
 
 
   "click section.actions li.message": (event, tmpl) ->
@@ -86,28 +90,42 @@ Template.offer.events
     form.find("button").prop 'disabled', true
 
     Stripe.createToken
-      number: $(".card-number").val()
-      cvc: $(".card-cvc").val()
-      exp_month: $(".card-expiry-month").val()
-      exp_year: $(".card-expiry-year").val()
-    , (status, response) ->
+      number    : $(".card-number").val()
+      cvc       : $(".card-cvc").val()
+      exp_month : $(".card-expiry-month").val()
+      exp_year  : $(".card-expiry-year").val()
+    , "sk_test_AAKXLw2R4kozgEqCoMFu9ufH", (status, response) ->
         if response.error
           form.find("button").prop "disabled", false
+          Meteor.Alert.set
+            text: response.error.message
         else
+          console.log(response.id)
           token = response.id
           form.append $("<input type=\"hidden\" name=\"stripeToken\" />").val(token)
-          Meteor.call "stripeCustomerCreate", token, (err, res)->
-            if err then throw err
-            console.log(err, res, "stripeCustomerCreate")
-            customerId = _.compact(res)?.toString()
-            Meteor.call "stripeSaveCustomerId", customerId, (err, res)->
-              if err then throw err
-              console.log(err, res, "stripeSaveCustomerId")
-              Meteor.call "stripeChargeCreate",
-                amount: 1000
-                user: Meteor.user(), (err, res) ->
+
+          customer_id = Meteor.user().stripe_customer_id
+          createCharge = ->
+            Meteor.call "stripeChargeCreate",
+              amount: 1000
+              application_fee: 250
+              user: Meteor.user(), (err, res) ->
                 if err then throw err
                 console.log(err, res, "stripeChargeCreate")
+
+          if not customer_id
+            console.log("NEW CUSTOMER")
+            Meteor.call "stripeCustomerCreate", token, (err, res)->
+              if err then throw err
+              console.log(err, res, "stripeCustomerCreate")
+              customerId = _.compact(res)?.toString()
+              Meteor.call "stripeSaveCustomerId", customerId, (err, res)->
+                if err then throw err
+                console.log(err, res, "stripeSaveCustomerId")
+                createCharge()
+          else
+            console.log("CUSTOMER EXISTS")
+            createCharge()
 
 
 
@@ -134,10 +152,27 @@ Template.offer.events
           target.removeClass "busy"
         ), 3000
 
+adjustOfferElements = (main) ->
+
+  kids   = main.children
+
+  bottom = kids[kids.length - 1].offsetTop
+
+  padding_top = (170 - bottom) * .3
+
+  return padding_top
+
+setPadding = (section_main)=>
+  padding_top = adjustOfferElements(section_main)
+  $(section_main).css("padding-top", padding_top)
 
 Template.offer.rendered = ->
+
+  setPadding(@find("section.main"))
+
   if Session.get("shift_area") is "account" or Meteor.Router.page() is "account_offer"
     return
+
   range = statRange()
   keys = [
     name: "updatedAt"
@@ -158,8 +193,8 @@ Template.offer.rendered = ->
     ratio = {}
     _.each keys, (k) ->
       d = k.name
-      upperRange = self.data[d] - range.min[d][d] + 0.01
-      lowerRange = range.max[d][d] - range.min[d][d]
+      upperRange = self.data[d] - range.min[d] + 0.01
+      lowerRange = range.max[d] - range.min[d]
       out = Math.ceil((100 * (upperRange) / (lowerRange)) * 5) / 10
       ratio[d] = (if k.invert is false then out else Math.abs(out - 50))
 
@@ -181,6 +216,31 @@ Template.offer.rendered = ->
   if voted
     self.find( "li.vote" ).setAttribute "disabled"
 
+  if watchOffer?
+    watchOffer.stop()
+
+# Template.offer.created = ->
+#   # console.log("OFFFFER", @)
+#   # themeColors = _.find document.styleSheets, (d) ->
+#   #   d.title is "dynamic-offers"
+# 
+#   # for rule in themeColors.rules
+#   #   themeColors.removeRule()
+# 
+# 
+#   # themeColors.insertRule( colorFill ".clr-text.prime", "color", color.prime.medium)
+#   # themeColors.insertRule( colorFill "a", "color", color.prime.medium)
+#   # themeColors.insertRule( colorFill "a:hover, a.active", "color", color.prime.medium )
+# 
+#   # themeColors.insertRule( colorFill ".clr-text.desat", "color", color.prime.light )
+#   # themeColors.insertRule( colorFill ".clr-text.desat:hover", "color", color.prime.medium )
+#   # themeColors.insertRule( colorFill ".clr-text.desat:active", "color", color.prime.dark )
+# 
+#   # themeColors.insertRule( colorFill ".clr-bg", "background", color.prime.medium)
+#   # themeColors.insertRule( colorFill ".clr-bg.btn:hover", "background", color.prime.medium)
+# 
+#   # themeColors.insertRule( colorFill ".clr-bg.light", "background", color.prime.light )
+#   # themeColors.insertRule( colorFill ".clr-bg.dark", "background", color.prime.dark )
 
 
 Template.thisOffer.events "click button": (event, tmpl) ->

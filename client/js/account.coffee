@@ -21,156 +21,45 @@ update_qrcode = ->
     height: "10px"
 
 permittedKeys = [8, 37, 38, 39, 40, 46, 9, 91, 93]
-icons = ["drink", "drink-2", "drink-3", "microphone", "coffee", "ice-cream", "cake", "pacman", "wallet", "gamepad", "bowling", "space-invaders", "batman", "lamp", "lamp-2", "appbarmoon"]
+# icons = ["drink", "drink-2", "drink-3", "microphone", "coffee", "ice-cream", "cake", "pacman", "wallet", "gamepad", "bowling", "space-invaders", "batman", "lamp", "lamp-2", "appbarmoon"]
 
 #////////////////////////////////////////////
 #  $$ helpers
-Handlebars.registerHelper "charLength", (a) ->
-  Offer[a].maxLength - (this[a] and this[a].length)
+
+Handlebars.registerHelper "charMax", (a) ->
+  Offer[a].maxLength
+
+Handlebars.registerHelper "charLeft", (a) ->
+  Offer[a].maxLength - (this[a]?.length)
 
 Handlebars.registerHelper "getEmail", (a) ->
   user = Meteor.user()
-  user.emails and user.emails[0]
+  user?.emails and user.emails[0]
 
-Handlebars.registerHelper "hsl", (l, a) ->
-  hue = @.colors and @.colors.hsl.h * 360
-  sat = @.colors and @.colors.hsl.s * 100
-  light = l or 50
-  alpha = a / 100 or 1
-
-  "hsla(" + hue + "," + sat + "%," + light + "%," + alpha + ")"
-
-Template.content.rendered = ->
-  return if Meteor.Router.page() is "home"
-  @activateLinks = Meteor.autorun(=>
-    out = Meteor.Router.page()
-    parse = ("/" + out.split("_").join("/"))
-    target = $(@findAll("ul.links a"))
-    target.removeClass( "active" )
-    target.filter("[href='" + parse + "']").addClass("active")
-    if Session.get("show") isnt null
-      show = Session.get("show")
-      els = $(@findAll("li.show"))
-      els.removeClass("active")
-      els.filter("[data-value=#{show}]").addClass("active")
-  )
-  @activateLinks.stop()
-
-#////////////////////////////////////////////
-#  $$ account_profile
-Template.account_profile.events "click .save": (event, tmpl) ->
-
-  newEmail = tmpl.find("#email").value
-  newUsername = tmpl.find("#username").value
-
-  unless validateEmail(newEmail)
-    Meteor.Alert.set
-      text: "Invalid email"
-    return
-
-  Meteor.call "updateUser", newEmail, newUsername, (err) ->
-    if err
-      Meteor.Alert.set
-        text: err.reason
-
-    else
-      Meteor.Alert.set
-        text: "Saved successfully"
-
+Template.account.rendered = ->
+  Store.set("page_account", "account_profile")
+  Store.set("page_account_profile", "account_profile_edit")
 
 #////////////////////////////////////////////
 # $$  account_offer
-Template.account_offer.helpers
-  getOffer: ->
-    Session.get "currentOffer"
-
-  show: (a) ->
-    true if Session.get("show") is a
 
 Template.account_offer.events
-  "click .save": (event, tmpl) ->
-    offer = as()
-    Session.set "currentOffer", offer
-    errors = []
-
-    for key of Offer
-      errors.push key if Offer[key].hasOwnProperty("maxLength") unless offer[key]
-
-    if errors.length
-      Meteor.Alert.set
-        text: "You didn't enter anything for your #{errors.join(", ")}."
-      return
-
-    type = (if Offers.findOne(owner: Meteor.userId()) then "update" else "insert")
-    console.log("SAVE TYPE", type)
-
-    loading = Meteor.Alert.set
-      text: "Loading..."
-      temp: true
-
-    geo = new google.maps.Geocoder()
-    geo.geocode
-      address: offer.street + " " + offer.city + " " + offer.state + " " + offer.zip
-    , (results, status) ->
-      if status isnt "OK"
-        Meteor.Alert.set
-          text: "We couldn't seem to find your location. Did you enter your address correctly?"
-
-      else
-        offer.loc =
-          lat: results[0].geometry.location.Ya
-          long: results[0].geometry.location.Za
-        offer.updatedAt = Time.now()
-
-        Meteor.call "editOffer", type, offer, (error) ->
-          if error
-            Meteor.Alert.set
-              text: error.reason
-
-          else
-            Meteor.Alert.set
-              text: "You're good to go!"
-
-          return
-
-
   "click .offer": (event, tmpl) ->
     return false
 
-  "click .show": (event, tmpl) ->
-    area = event.currentTarget.getAttribute("data-value")
-    as "show", area
-    Session.set "show", as("show")
-    Session.set "currentOffer", as()
-
-    elem = $(event.currentTarget)
-  "focus .limited": (event, tmpl) ->
-    max = Offer[elem.attr("id")].maxLength
-    if elem.val().lenth >= max
-      elem.data "prevent", true
-      elem.data "value", elem.val()
-
-  "blur .limited": (event, tmpl) ->
-    elem = $(event.currentTarget)
-    elem.val elem.data("value")  if elem.data("prevent")
-
-  "keydown .limited": (event, tmpl) ->
-    elem = $(event.currentTarget)
-    max = Offer[event.currentTarget.id].maxLength
-    count = elem.val().length
-    if count >= max and $.inArray(event.which, permittedKeys) < 0
-      elem.data "prevent", true
-      elem.data "value", elem.val()
-      false
-    else
-      elem.data "prevent", false
-
-  "keyup .offer-bind-fields input.text, keyup .offer-bind-fields textarea": (event, tmpl) ->
+  "keyup [data-validate], change [data-validate]": (event, tmpl) ->
     target = event.currentTarget
     val = target.value.toString()
-    val = parseInt(target.value)  if target.id is "price"
     as target.id, val
     Session.set "currentOffer", as()
+
+  'keydown [data-validate]#price': (e, t) ->
+    isNumberKey = (evt) ->
+      charCode = (if (evt.which) then evt.which else event.keyCode)
+      return false  if charCode > 31 and (charCode < 48 or charCode > 57)
+      true
+
+    unless isNumberKey(e) then return false
 
   "click #qr-button": (event, tmpl) ->
     offerId = @business
@@ -184,6 +73,9 @@ Template.account_offer.created = ->
   #   console.log("GOT HEEEEEEEEEEEEEEEEEEEEERE")
   #   if $(e.target).is("body")
   #     Session.set "show", as("show") or "text"
+  unless Store.get("show_account_offer")
+    Store.set("show_account_offer", "account_offer_info")
+
 
   id = Meteor.userId()
   offer = Offers.findOne owner: Meteor.userId()
@@ -210,31 +102,46 @@ Template.account_offer.created = ->
 #  $$ account_offer_symbol
 
 
-Template.account_offer_symbol.helpers
-  getIcons: ->
-    icons
+Template.account_profile_colors.rendered = ->
+  offer = as()
 
-Template.account_offer_symbol.events
-  "click .glyph div": (event, tmpl) ->
-    attr = event.target.getAttribute("class")
-    $("section.symbol div").attr("class", attr).css("background-image", "")
-    as "symbol", attr
-    as "symbol_type", "glyph"
-    Store.set "offer_active_symbol", attr
-    # Session.set "currentOffer", as()
+  $(@find("input.color")).spectrum(
+    showButtons: true
+    flat: true
+    showInput: true
+    showPallette: true
+    showSelectionPallette: true
+    pallette: []
+    localStorageKey: "color.pallete"
+    color: offer.color
+    change: (color) ->
+      amplify.set "colors.hex", color.toHexString()
+      amplify.set "colors.hsl", color.toHsl()
+      amplify.set "color", color.toHexString()
+      Session.set "currentOffer", as()
+      Meteor.call "updateUserColor", color.toHexString()
+    move: (color) =>
+      $(@find(".color-bucket")).css("background", color.toHexString())
+  )
+
+
+Template.account_offer_images.events
 
   'click .select-file': (e, t) ->
     target = $(e.currentTarget)
-    $("section.symbol div").attr("class", "").css("background-image", "url(#{@src})")
-    as "symbol", @src
-    as "symbol_type", "image"
-    Store.set "offer_active_symbol", @src
+    $("section.image div").attr("class", "").css("background-image", "url(#{@src})")
+    as "image", @src
+    Store.set "offer_active_image", @src
     # Session.set "currentOffer", as()
 
   'click .save-file': (e, t)->
     Meteor.call "imgurUploadFile", @
 
-  "change .fileUploader": (e, t) ->
+  'click .file-input .proxy': (e, t) ->
+    $(e.currentTarget).siblings("input").trigger('click')
+
+
+  "change .file-uploader": (e, t) ->
     file = e.target.files?[0]
     Meteor.Alert.set
       text: "Compressing image..."
@@ -246,10 +153,12 @@ Template.account_offer_symbol.events
         img = new Image()
         img.onload = ->
 
-          canvas = document.createElement "canvas"
-          new thumbnailer canvas, img, 200, 3, ->
+          Meteor.call "imgurPrepFile", reader.result
 
-            Meteor.call "imgurPrepFile", @canvas.toDataURL()
+          # canvas = document.createElement "canvas"
+          # new thumbnailer canvas, img, 500, 3, ->
+
+          #   Meteor.call "imgurPrepFile", @canvas.toDataURL()
 
         img.src = reader.result
 
@@ -261,29 +170,21 @@ Template.account_offer_symbol.events
   'click .delete-file': (e, t) ->
     Meteor.call "imgurDelete", @, @deletehash
 
-Template.account_offer_symbol.rendered = ->
-  $("input.color").spectrum (
-    showButtons: true
-    flat: true
-    showInput: true
-    showPallette: true
-    showSelectionPallette: true
-    pallette: []
-    localStorageKey: "color.pallete"
-    preferredFormat: "hsl"
-    color: @data.color
-    change: (color) ->
-      amplify.set "colors.hex", color.toHexString()
-      amplify.set "colors.hsl", color.toHsl()
-      amplify.set "color", color.toHexString()
-      Session.set "currentOffer", as()
-      Meteor.call "updateUserColor", color.toHexString()
-    move: (color) =>
-      console.log "MOVED", @find(".color-bucket")
-      @find(".color-bucket").style.background = color.toHexString()
-  )
+Template.account_offer_images.rendered = ->
+  adjustFileInput = =>
+    file_input = $(@find(".file-input"))
+    width      = file_input.width()
+    file_input.height(width)
 
-# Template.account_offer_symbol.preserve ['.color-bucket']
+    proxy = $(@find(".proxy span"))
+    proxy_height = (width / 2) - (proxy.height() / 2)
+    proxy.css("top", proxy_height + "px")
+
+
+  adjustFileInput()
+
+  $(window).on "resize", ->
+    _.throttle(adjustFileInput(), 100)
 
 
 #////////////////////////////////////////////
@@ -358,20 +259,23 @@ Template.account_offer_tags.events
     amplify.store "tagset", _.pluck(store.tagset, "name")?[0]
 
 
-Template.account_offer_tags.rendered = =>
+Template.account_offer_tags.rendered = ->
   unless @handle
     @handle = Meteor.autorun ->
+
       console.log("RUNNING")
-      Meteor.call "aggregateTags", Store.get("user_loc"), Store.get("tag_selection"), (err, result) ->
-        if err is `undefined`
+      Meteor.call "aggregateStintTags", Store.get("user_loc"), Store.get("tag_selection"), (err, result) ->
+        if typeof err is 'undefined'
           Store.set "stint_tags", result
         else
           console.log err
 
+Template.account_offer_tags.destroyed = ->
+  @handle.stop()
 
 #////////////////////////////////////////////
 #  $$ account_feedback
-Template.account_feedback.events "click #feedback button": (event, tmpl) ->
+Template.account_messages_feedback.events "click #feedback button": (event, tmpl) ->
   event.preventDefault()
   message = tmpl.find("textarea").value
   Meteor.call "message", message, "toAdmins"
@@ -379,7 +283,30 @@ Template.account_feedback.events "click #feedback button": (event, tmpl) ->
 
 #////////////////////////////////////////////
 #  $$ account_messages
+
+Template.account_messages.rendered = ->
+  Store.set("page_account", "account_messages")
+  Store.set("page_account_messages", "account_messages_inbox")
+
 Template.account_message.events "click .send": (event, tmpl) ->
   textarea = $(tmpl.find("textarea"))
   console.log tmpl.data
   Meteor.call "message", textarea.val(), "reply", tmpl.data._id
+
+
+
+
+
+#////////////////////////////////////////////
+#  $$ account_earnings
+
+Template.account_earnings.rendered = ->
+  Store.set("page_account", "account_earnings")
+  Store.set("page_account_earnings", "account_earnings_dashboard")
+
+Template.account_earnings_dashboard.events
+  'click a.stripe-connect': (event, tmpl) ->
+    Meteor.Alert.set
+      text: "Connecting to Stripe..."
+      wait: true
+    window.open "https://connect.stripe.com/oauth/authorize?response_type=code&client_id=#{Stripe.client_id}"

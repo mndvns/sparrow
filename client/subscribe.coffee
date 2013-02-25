@@ -8,3 +8,4 @@ Meteor.subscribe "images"
 Meteor.subscribe "userData"
 Meteor.subscribe "messages"
 Meteor.subscribe "alerts"
+
