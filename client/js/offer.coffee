@@ -42,6 +42,13 @@ Template.offer.events
     watchOffer.click()
     Meteor.call "upvoteEvent", tmpl.data
 
+  'click .image': (event, tmpl) ->
+    console.log(this)
+
+  'click .main': (event, tmpl) ->
+    console.log( Meteor.users.findOne _id: @owner )
+
+
   "click section.actions li.map": (event, tmpl) ->
     targetEl = tmpl.find("section.extension[data-extension='map'] .inner.map")
     handleActions event, tmpl, ->
@@ -72,7 +79,6 @@ Template.offer.events
         directionsDisplay.setDirections response
 
         tmpl.find(".time span.value").textContent = response.routes[0].legs[0].duration.text
-
 
 
   "click section.actions li.message": (event, tmpl) ->
