@@ -38,5 +38,12 @@ Store.clear = ->
     console.log(diff)
     Store.set(diff, null)
 
+Store.clearAll = ->
+  keys = _.keys(Store.keys)
+  for key in keys
+    console.log(key)
+    Store.set(key, null)
+
+
 Accounts.ui.config passwordSignupFields: "USERNAME_AND_OPTIONAL_EMAIL"
 

@@ -12,8 +12,8 @@ Meteor.publish "offers", (storeLoc) ->
   if storeLoc
     Offers.find loc:
       $near: [ storeLoc.lat, storeLoc.long ]
-  else
-    Offers.find {}
+  # else
+  #   Offers.find {}
 
 Meteor.publish "tagsets", ->
   Tagsets.find {}
