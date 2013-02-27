@@ -4,9 +4,9 @@ Meteor.startup ->
   #   Meteor.SignIn = new SignIn()
   #   Meteor.SignIn.rally()
 
-  unless Meteor.Links
-    Meteor.Links = new Links()
-    Meteor.Links.rally()
+  # unless Meteor.Links
+  #   Meteor.Links = new Links()
+  #   Meteor.Links.rally()
 
   # unless Meteor.Help
   #   Meteor.Help = new Help()

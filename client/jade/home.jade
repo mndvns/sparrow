@@ -27,82 +27,97 @@ mixin sublink-shadow()
 
 mixin topnav(name)
   .topnav.navbar(class= name)
-    if (name === "home")
-      mixin shift-block({direction: "left", area: "about"})
-      {{#if currentUser}}
-      mixin shift-block({direction: "right", area: "account"})
-      {{else}}
-      .shift-block(data-help-block="false", data-help-selector="shift").account.right
-        a(href="#").shift(disabled): i.glyph-arrow-right
-      {{/if}}
-      ul.links.row.clr-bg.light
-    if (name === "about")
-      mixin shift-block({direction: "right", area: "home"})
-      ul.links.row.clr-bg.light
-        mixin link({label: "about", href: "/about", glyph: "paper-plane" })
-        mixin link({label: "faq", href: "/about/faq", glyph: "question" })
-        mixin link({label: "blog", href: "/about/blog", glyph: "ampersand" })
-        // mixin link({label: "roadmap", href: "/about/roadmap", glyph: "map" })
-        // mixin link({label: "feedback", href: "/about/feedback", glyph: "keyboard" })
-      ul.sublinks
-    if (name === "account")
-      mixin shift-block({direction: "left", area: "home"})
-      ul.links.row.clr-bg.light
-        mixin link({label: "profile", href: "/account/profile", glyph: "cog-2" })
-        mixin link({label: "offer", href: "/account/offer", glyph: "bucket" })
-        mixin link({label: "earnings", href: "/account/earnings", glyph: "pig" })
-        mixin link({label: "messages", href: "/account/messages", glyph: "list" })
-        // mixin link({label: "feedback", href: "/account/feedback", glyph: "keyboard" })
 
-      {{#if sublink "account" "profile"}}
-      area = "profile"
-      ul.sublinks(class="#{name}_#{area}")
-        .inner
-          mixin sublink( "page", name, area, "edit" )
-          mixin sublink( "page", name, area, "colors" )
-          mixin sublink( "page", name, area, "settings" )
-          mixin sublink-separator()
-          mixin sublink-action( "save" )
-        .bg
-        mixin sublink-shadow
-      {{/if}}
+    case name
+      when "home"
+        mixin shift-block({direction: "left", area: "about"})
+        {{#if currentUser}}
+        mixin shift-block({direction: "right", area: "account"})
+        {{else}}
+        .shift-block(data-help-block="false", data-help-selector="shift").account.right
+          a(href="#").shift(disabled): i.glyph-arrow-right
+        {{/if}}
+        ul.links.row.clr-bg.light
 
-      {{#if sublink "account" "offer"}}
-      area = "offer"
-      ul.sublinks(class="#{name}_#{area}")
-        .inner
-          mixin sublink( "show", name, area, "info" )
-          mixin sublink( "show", name, area, "tags" )
-          mixin sublink( "show", name, area, "images" )
-          mixin sublink( "show", name, area, "location" )
-          mixin sublink-separator()
-          mixin sublink-action( "save" )
-          // mixin sublink( "show", name, area, "limits" )
-        .bg
-        mixin sublink-shadow
-      {{/if}}
+      when "about"
+        mixin shift-block({direction: "right", area: "home"})
+        ul.links.row.clr-bg.light
+          mixin link({label: "about", href: "/about", glyph: "paper-plane" })
+          mixin link({label: "faq", href: "/about/faq", glyph: "question" })
+          mixin link({label: "blog", href: "/about/blog", glyph: "ampersand" })
+          // mixin link({label: "roadmap", href: "/about/roadmap", glyph: "map" })
+          // mixin link({label: "feedback", href: "/about/feedback", glyph: "keyboard" })
+        ul.sublinks
 
-      {{#if sublink "account" "earnings"}}
-      area = "earnings"
-      ul.sublinks(class="#{name}_#{area}")
-        .inner
-          mixin sublink( "page", name, area, "dashboard" )
-          mixin sublink( "page", name, area, "guidelines" )
-          mixin sublink( "page", name, area, "reference" )
-        .bg
-        mixin sublink-shadow
-      {{/if}}
+      when "account"
+        mixin shift-block({direction: "left", area: "home"})
+        ul.links.row.clr-bg.light
+          mixin link({label: "profile", href: "/account/profile", glyph: "cog-2" })
+          mixin link({label: "offer", href: "/account/offer", glyph: "bucket" })
+          mixin link({label: "earnings", href: "/account/earnings", glyph: "pig" })
+          mixin link({label: "messages", href: "/account/messages", glyph: "list" })
+          // mixin link({label: "feedback", href: "/account/feedback", glyph: "keyboard" })
+        {{#if equal currentUser.type "admin"}}
+        mixin shift-block({direction: "right", area: "admin"})
+        {{/if}}
 
-      {{#if sublink "account" "messages"}}
-      area = "messages"
-      ul.sublinks(class="#{name}_#{area}")
-        .inner
-          mixin sublink( "page", name, area, "inbox" )
-          mixin sublink( "page", name, area, "feedback" )
-        .bg
-        mixin sublink-shadow
-      {{/if}}
+        {{#if sublink "account" "profile"}}
+        area = "profile"
+        ul.sublinks(class="#{name}_#{area}")
+          .inner
+            mixin sublink( "page", name, area, "edit" )
+            mixin sublink( "page", name, area, "colors" )
+            mixin sublink( "page", name, area, "settings" )
+            mixin sublink-separator()
+            mixin sublink-action( "save" )
+          .bg
+          mixin sublink-shadow
+        {{/if}}
 
+        {{#if sublink "account" "offer"}}
+        area = "offer"
+        ul.sublinks(class="#{name}_#{area}")
+          .inner
+            mixin sublink( "show", name, area, "info" )
+            mixin sublink( "show", name, area, "tags" )
+            mixin sublink( "show", name, area, "images" )
+            mixin sublink( "show", name, area, "location" )
+            mixin sublink-separator()
+            mixin sublink-action( "save" )
+            // mixin sublink( "show", name, area, "limits" )
+          .bg
+          mixin sublink-shadow
+        {{/if}}
+
+        {{#if sublink "account" "earnings"}}
+        area = "earnings"
+        ul.sublinks(class="#{name}_#{area}")
+          .inner
+            mixin sublink( "page", name, area, "dashboard" )
+            mixin sublink( "page", name, area, "guidelines" )
+            mixin sublink( "page", name, area, "reference" )
+          .bg
+          mixin sublink-shadow
+        {{/if}}
+
+        {{#if sublink "account" "messages"}}
+        area = "messages"
+        ul.sublinks(class="#{name}_#{area}")
+          .inner
+            mixin sublink( "page", name, area, "inbox" )
+            mixin sublink( "page", name, area, "feedback" )
+          .bg
+          mixin sublink-shadow
+        {{/if}}
+
+      when "admin"
+        mixin shift-block({direction: "left", area: "account"})
+        ul.links.row.clr-bg.light
+          mixin link({label: "sorts", href: "/admin/sorts", glyph: "cog-2" })
+          mixin link({label: "tags", href: "/admin/tags", glyph: "cog-2" })
+          mixin link({label: "users", href: "/admin/users", glyph: "cog-2" })
+          mixin link({label: "offers", href: "/admin/offers", glyph: "cog-2" })
+        ul.sublinks
 
 
 head
@@ -165,12 +180,13 @@ template(name="ceiling")
     .toggler-group.right
       {{#if currentUser}}
       {{#isolate}}
-      .logout
-        span.badge {{dropDecimal currentUser.karma}} 
+      div(data-signed-in="true")
         span {{currentUser.username}}
+        span.badge {{dropDecimal currentUser.karma}} karma 
+        span.badge.logout logout
       {{/isolate}}
       {{else}}
-      a.login(data-toggle-mode="sign-in")
+      a.login(data-signed-in="false", data-toggle-mode="sign-in")
         span#login login
     {{/if}}
 
@@ -186,6 +202,8 @@ template(name="content")
       mixin topnav("account") {{/if}}
       {{#if sessionEquals 'shift_current' 'about'}}
       mixin topnav("about") {{/if}}
+      {{#if sessionEquals 'shift_current' 'admin'}}
+      mixin topnav("admin") {{/if}}
 
       .container
         {{renderThemeColors currentUser}}
@@ -200,6 +218,8 @@ template(name="content")
       mixin topnav("account") {{/if}}
       {{#if sessionEquals 'shift_area' 'about'}}
       mixin topnav("about") {{/if}}
+      {{#if sessionEquals 'shift_area' 'admin'}}
+      mixin topnav("admin") {{/if}}
 
       .container
         {{{next_page}}}

@@ -50,8 +50,6 @@ Offer =
         s: 0.399
         l: 0.901
 
-
-
   description:
     type: String
     default: "This is a description of the offer. Since the offer name must be very brief, this is the place to put any details you want to include."
@@ -64,7 +62,7 @@ Offer =
   name:
     type: String
     default: "Offer"
-    maxLength: 10
+    maxLength: 15
 
   price:
     type: Number

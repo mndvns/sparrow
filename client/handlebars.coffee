@@ -140,3 +140,11 @@ Handlebars.registerHelper "textareaRows", (id)->
 
 Handlebars.registerHelper "numberWithCommas", (number)->
   return numberWithCommas(number)
+
+Handlebars.registerHelper "json", (context) ->
+  clean = _.omit(context, "_id")
+  JSON.stringify(clean, null, '\t')
+
+Handlebars.registerHelper "key_count", (context, add) ->
+  Object.keys(context).length + add
+

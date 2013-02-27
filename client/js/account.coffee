@@ -230,7 +230,7 @@ Template.account_offer_tags.events
             Meteor.flush()
 
 
-  "click span[data-group='tags'], click li[data-group='tagset']": (event, tmpl) ->
+  "click li[data-group='tags'], click li[data-group='tagset']": (event, tmpl) ->
     group = $(event.currentTarget).attr "data-group"
     store = Store.get("tag_selection") or {}
     self = @

@@ -82,10 +82,6 @@ HeroList = (opt) ->
 
   return false  if opt.skipList
 
-  current_tagset        = opt.current.tagset?.toString()
-  current_noun          = opt.current.noun?.toString()
-  current_sort_selector = opt.current.sort_selector
-
   limbo = false
 
   list = d3.select("ul." + opt.name + "-list")
@@ -116,20 +112,9 @@ HeroList = (opt) ->
         child = "<span class='badge #{d.status}'>#{d.count}</span>"
       d[opt.selector] + child
 
-  item.order (a,b)->
-      s = current_sort_selector
-      return unless opt.name is "tag"
-      return unless a[s] and b[s]
-
-      console.log(current_sort_selector, opt.name)
-
-      a[s]
-
-
   item
     .exit()
     .remove()
-
 
   active = list.selectAll("li.active")
     .transition()
@@ -161,18 +146,14 @@ Template.hero.events
   "click .list li": (event, tmpl) ->
     watchOffer.click()
 
-    if checkHelpMode() then return
-
     tmpl.handle.stop()
 
     story = d3.select(event.currentTarget).data()[0]
-    Session.set "current_changed", story.collection
 
-    selector = "current_" + story.collection
+    current  = Store.get("current_#{story.collection}")
+    active   = $(event.currentTarget).is ".active"
+    output   = undefined
 
-    current = Store.get(selector)
-    active = $(event.currentTarget).is ".active"
-    output = undefined
     # console.log(story)
 
     if active
@@ -181,26 +162,31 @@ Template.hero.events
         nouns = Store.get("current_nouns")
         Store.set "current_nouns", _.without(nouns, story.noun)
     else
-      if story.collection is "tags"
-        output = current.concat(story.name) 
-        # console.log(output)
-      if story.collection is "tagsets"
-        output = [story.name]
-        Store.set "current_nouns", [story.noun]
-        Store.set "current_tags", []
-      if story.collection is "sorts"
-        output = [story.name]
-        Store.set "current_sorts_selector", story.selector
-        # Session.set "modifyy_query_type", "sort"
-        # Meteor.Isotope.sort(story.selector)
+      switch story.collection
+        when "tags"
+          output = current.concat(story.name) 
+          # console.log(output)
+        when "tagsets"
+          output = [story.name]
+          Store.set "current_nouns", [story.noun]
+          Store.set "current_tags", []
+        when "sorts"
 
+          output = [story.name]
+          switch story.selector
+            when "random"
+              output = []
+              story.order = _.random(1, 100)
+            when "$near"
+              loc = Store.get("user_loc")
+              story.order = [loc.lat, loc.long]
 
-        order = story.order
-        # if story.name is "nearest"
-        #   loc = Store.get("user_loc")
-        #   order = [loc.lat, loc.long]
-        Store.set "current_sorts_order", order
-    Store.set selector, output
+          Store.set "current_sorts_specifier", story.specifier
+          Store.set "current_sorts_selector", story.selector
+          Store.set "current_sorts_order", story.order
+
+    Session.set "current_changed", story.collection
+    Store.set "current_#{story.collection}", output
 
   "click .headline .tag span": (event, tmpl) ->
     selector = event.target.textContent
@@ -227,8 +213,8 @@ Template.hero.created = ->
       uloc = Store.get('user_loc')
 
       tagsets = Tagsets.find().fetch()
-      sorts = Sorts.find().fetch()
-      tags = Tags.find().map (d)->
+      sorts   = Sorts.find().fetch()
+      tags    = Tags.find().map (d)->
 
         count = d.involves.length
         if not count then return false
@@ -259,6 +245,7 @@ Template.hero.created = ->
           Store.set "current_tagsets", ["eat"]
           Store.set "current_tags", []
           Store.set "current_sorts", ["latest"]
+          Store.set "current_sorts_specifier", "sort"
           Store.set "current_sorts_selector", "updatedAt"
           Store.set "current_sorts_order", "-1"
           Store.set "current_nouns", ["food"]
@@ -318,7 +305,6 @@ Template.hero.created = ->
             name: "sort"
             selector: "name"
             leader: false
-            prepend: "the"
             current: current
             collection: collection.sort
 

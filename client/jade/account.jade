@@ -177,21 +177,20 @@ template(name="account_offer_tags")
       li.header
         span tags
       li.sub-header.span12
-        span.span5 name
+        span.span8 name
         span.span2 ratio
-        span.span3 rate
-        span.span2 toggle
+        span.span2 rate
       hr.shadow.bottom.thin
       {{#each this.tags}}
       li(data-active="{{active}}", data-group="tags", data-name="{{name}}").clr-bg.span12
-        span.span5 {{name}}
+        span.span8 {{name}}
         span.span2 {{ratio}}
-        span.span3 {{rate}}
+        span.span2 {{rate}}
 
-        .actions.span2
-          {{#if active}}
-          span(data-group="tags"): i.glyph-minus-2 {{else}}
-          span(data-group="tags"): i.glyph-plus {{/if}}
+      // .actions.span2
+      //   {{#if active}}
+      //   span(data-group="tags"): i.glyph-minus-2 {{else}}
+      //   span(data-group="tags"): i.glyph-plus {{/if}}
 
       {{/each}}
 
@@ -201,16 +200,17 @@ template(name="account_offer_tags")
       li.footer.span12
         span create tag
       li.sub-footer.span12
-        span.span5 name
-        span.span2 ratio
-        span.span3 rate
         span.span2 add
+        span.span6 name
+        span.span2 ratio
+        span.span2 rate
       hr.shadow.bottom.thin.white
       li.create-tag(data-tagset="{{this.name}}").span12
-        input(type="text", tabindex=1).text.span5
-        span.span2 {{this.ratio}}
-        span.span3 10
         span.span2.insert: i.glyph-plus-2
+        span.span6
+          input(type="text", tabindex=1).text.input-block-level
+        span.span2 {{this.ratio}}
+        span.span2 10
 
     {{/each_with_key}}
   {{/with}}

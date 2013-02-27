@@ -19,8 +19,10 @@ statCurrent = ->
       tagset : Store.get("current_tagsets")
       tag    : Store.get("current_tags")
       sort:
-        selector : Store.get("current_sorts_selector")
-        order    : Store.get("current_sorts_order")
+        verbose   : Store.get("current_sorts")
+        specifier : Store.get("current_sorts_specifier")
+        selector  : Store.get("current_sorts_selector")
+        order     : Store.get("current_sorts_order")
 
     verbose:
       tagset        : Store.get("current_tagsets")
@@ -370,7 +372,7 @@ Template.content.rendered = ->
 
         if @page_sublinks is page_sublinks.toString() then return
         @page_sublinks = page_sublinks.toString()
-        console.log("RANG IT")
+        # console.log("activated links and sublinks")
 
         $(@findAll("[data-validate]")).jqBootstrapValidation()
 
@@ -522,12 +524,19 @@ colorFill = (el, selector, value) ->
 
 class Conf
   constructor: (current)->
+
     @sort = {}
-    @sort.sort = {}
-    @sort.sort[current.sort.selector] = current.sort.order
+    if current.sort.verbose?.length
+      @sort[current.sort.specifier] = {}
+      @sort[current.sort.specifier][current.sort.selector] = current.sort.order
+    else
+      @sort_empty = true
+
     @query = {}
-    @query.tagset = current.tagset?.toString() if current.tagset?.length
-    @query.tags = $in: current.tag if current.tag?.length and current.tagset?.length
+    if current.tagset?.length
+      @query.tagset = current.tagset.toString()
+      if current.tag?.length
+        @query.tags = $in: current.tag
 
 Template.home.helpers
   getOffers: ->
@@ -536,6 +545,8 @@ Template.home.helpers
     myLoc = Store.get "user_loc"
 
     conf = new Conf(current)
+
+    # console.log("QUERY SORT", conf)
 
     ranges =
       updatedAt   : []
@@ -546,6 +557,10 @@ Template.home.helpers
     notes =
       count: 0
       votes: 0
+
+    # result = Offers.find(
+    #   conf.query
+    # ).map (d) ->
 
     result = Offers.find(
       conf.query,
@@ -558,6 +573,10 @@ Template.home.helpers
 
         notes.count +=1
         notes.votes += d.votes_count
+
+        if conf.sort_empty and d.rand
+          d.shuffle = current.sort.order * d.rand
+          d.shuffle = parseInt( d.shuffle.toString().slice(1,4) )
 
         d
 
@@ -576,7 +595,12 @@ Template.home.helpers
 
       Store.set "notes", notes
 
-      result
+      if conf.sort_empty
+        return result = _.sortBy(result, "shuffle")
+      else
+        return result
+
+      # result
 
   styleDate: (date) ->
     moment(date).fromNow()

@@ -194,10 +194,12 @@ body
   left 0
   width 200%
   position absolute
+  .transitioning.from_admin.to_account &
   .transitioning.from_account &
   .transitioning.to_about &
     trans(left)
     left 100%
+  .transitioning.to_admin &
   .transitioning.to_account &
   .transitioning.from_about &
     trans(left)
@@ -237,13 +239,15 @@ body
 
 .next
   display none
-  .transitioning.to_account &
-  .transitioning.from_about &
-    left 50%
-    display block
+  .transitioning.from_admin.to_account &
   .transitioning.from_account &
   .transitioning.to_about &
     left -50%
+    display block
+  .transitioning.to_admin &
+  .transitioning.to_account &
+  .transitioning.from_about &
+    left 50%
     display block
 
 .next
@@ -386,15 +390,14 @@ nav.ceiling
   i
     padding-right 10px
 
-  .logout
-  .login
+  [data-signed-in]
     relative right
     span
       relative right
     .badge
       background transparent
       border 1px solid
-      margin-right 10px
+      margin-left 10px
 
   .toggler-group
     trans(opacity)
@@ -422,10 +425,9 @@ nav.ceiling
     &.right
       right $padding
 
-    &:hover
-      a
-      span
-        color white
+      .badge
+        &:hover
+          color white
     span
     a
       color rgba(white, .9)
@@ -906,10 +908,12 @@ Spanner( 940px )
   padding-bottom 30px
 
   ul
+    relative top
     margin-bottom 0
     height auto
     background #fafafa
     box-shadow 0 1px 3px rgba(black, .3)
+    overflow hidden
 
   i
     relative top 3px
@@ -937,12 +941,13 @@ Spanner( 940px )
         span
           color black
 
-    &.footer
-    &.sub-footer
-    &.header
-    &.sub-header
-    &.create-tag
-      background white
+    // &.footer
+    // &.sub-footer
+    // &.header
+    // &.sub-header
+    // &.create-tag
+    //   background white
+
 
     &.footer
     &.header
@@ -961,25 +966,23 @@ Spanner( 940px )
       span
         relative bottom -1px
         font-weight 600
-        background url("/shadow-line.png")
+        display inline-block
+        background-color transparent
+        background-image url("/shadow-line.png")
         background-repeat no-repeat
         background-position right
         background-size contain
         z-index 10
         opacity .2
+        text-indent -7px
+        &:last-child
+          background none
 
     input
-    div
-    span
-      margin 0 .7%
-      &:last-child
-        background none
-
-    input
-      relative top 10%
-      height 80%
-      display inline-block
-      float left
+      relative top
+      height 100%
+      left -4.5%
+      width 104%
 
   hr
     &.bottom
@@ -1285,10 +1288,32 @@ Spanner( 940px )
   ul
     float left
 
-.editor
-  h1
-    text-align center
-    padding 20px 0
+.admin
+  relative top
+  *
+    font-family monospace!important
+  pre
+  input
+  textarea
+  button
+    width 100%
+    box-sizing border-box
+    font-size 12px
+    line-height 12px
+  button.btn
+    margin-bottom 10px
+    border 1px solid #ccc
+  .name
+    font-weight normal
+    text-align right
+  .status
+    margin-top 0
+    &.error
+      color red
+      &:before
+        content "in"
+
+
 
 .help-unit
   .intro

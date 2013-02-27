@@ -1,63 +1,88 @@
 #////////////////////////////////////////////
 #  $$ helpers
 
-Handlebars.registerHelper "grab", (a, z) ->
-  m = undefined
-  if a is "Users"
-    m = Meteor.users.find().fetch()
-  else if a is "User"
-    m = [Meteor.user()]
-  else
-    m = window[a].find().fetch()
-  out =
-    name: a
-    collection: m
-    keys: ->
-      self = this
-      if self.collection and self.collection[0] then Object.keys(self.collection[0])
+Handlebars.registerHelper "nab", () ->
+  nab       = Store.get("nab")
+  nab_query = Store.get("nab_query")
+  nab_sort  = Store.get("nab_sort")
+  nab_pick1  = Store.get("nab_pick1")
+  nab_pick2  = Store.get("nab_pick2")
 
-  z.fn out
+  result = window[ nab ]?.find(
+    nab_query,
+    nab_sort
+  ).map (d)->
+    if d[nab_pick1] or d[nab_pick2]
+      pick = _.pick(d, nab_pick1, nab_pick2)
+      id   = _.pick(d, '_id')
+      d    = _.extend(pick, id)
+    # d.shuffle = Store.get("current_sorts_order") * d.rand
+    # d.shuffle = parseInt( d.shuffle.toString().slice(1,4) )
+    d
 
-Handlebars.registerHelper "first", (a, options) ->
-  that = _.first(a)
-  options.fn that
+  result
 
-
-#////////////////////////////////////////////
-#  $$ editor
 Template.editor.events
-  "click tbody tr": (event, tmpl) ->
-    selector = event.currentTarget.id
-    chosen = _.find(tmpl.data.collection, (d) ->
-      d._id is selector
-    )
-    for key of chosen
-      $(tmpl.find("input#" + key)).val chosen[key]
+  'click .save': (event, tmpl) ->
+    event.preventDefault()
 
-  "click .save": (event, tmpl) ->
-    selector = tmpl.find("input#_id").value
-    collection = tmpl.find(".editor").id
-    inputs = tmpl.findAll("input")
-    
-    # user_.rest so we igore the #_id input
-    keys = _.rest(_.pluck(inputs, "id"))
-    values = _.rest(_.pluck(inputs, "value"))
-    updated = _.object(keys, values)
-    console.log keys, values
-    if event.target.id is "update"
-      window[collection].update
-        _id: selector
-      , updated
-    else window[collection].insert updated  if event.target.id is "add"
+    save_type = event.currentTarget.getAttribute "data-save-type"
+    collection = Store.get("nab").toProperCase()
+    text = JSON.parse $(tmpl.find( "[data-text-type*=#{save_type}]" )).val()
 
-  "click .remove": (event, tmpl) ->
-    selector = tmpl.find("input#_id").value
-    collection = tmpl.find(".editor").id
-    window[collection].remove _id: selector
-    console.log "REMOVE"
+    switch save_type
+      when "update"
+        window[collection].update _id: @_id,
+          $set: text
 
-Template.editor.rendered = ->
-  
-  #  temporary... hide id elements. they're annoying
-  $(@findAll(".control-group#_id")).hide()
-  $(@findAll("th#_id, tr td#_id")).hide()
+      when "insert"
+        window[collection].insert text
+
+      when "unset"
+        window[collection].update _id: @_id,
+          $unset: text
+
+      when "unset-all"
+        window[collection].update {},
+          $unset: text
+        ,
+          multi: true
+
+      when "set"
+        window[collection].update _id: @_id,
+          $set: text
+
+      when "set-all"
+        window[collection].update {},
+          $set: text
+        ,
+          multi: true
+
+Template.admin_section.events
+  'keyup .selector': (event, tmpl) ->
+    target   = $(event.currentTarget)
+    text     = target.val()
+    selector = target.attr("id")
+    type     = target.attr("data-selector-type")
+    status   = target.siblings()
+
+    switch type
+      when "mongo"
+        unless text
+          out = {}
+        else
+          try
+            out = JSON.parse(text)
+          catch error
+            status.addClass("error")
+            return false
+      when "underscore"
+        unless text
+          out = false
+        else
+          console.log(text)
+          out = text
+
+    status.removeClass "error"
+    Store.set( "nab_#{selector}", out )
+

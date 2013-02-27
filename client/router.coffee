@@ -23,7 +23,6 @@ Meteor.Router.add
     Meteor.call "stripeOauth", urlParams.code, ->
       window.close()
 
-
   "/:area": (area) ->
     Session.set "shift_current", area
     store_page = Store.get("page_" + area)
@@ -34,9 +33,16 @@ Meteor.Router.add
 
   "/:area/:link": (area, link) ->
     Session.set "shift_current", area
+
+    if area is "admin"
+      Store.set("nab", link.toProperCase())
+      Store.set("nab_query", {})
+      Store.set("nab_sort", {})
+
     store_page = Store.get("page_" + area + "_" + link)
     if store_page
       return store_page
+
     area + "_" + link
 
   "/:area/:link/:sublink": (area, link, sublink) ->

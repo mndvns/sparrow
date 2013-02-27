@@ -1,58 +1,59 @@
-template(name='editor')
-  div.editor(id="{{name}}").row
-    h1.capitalize {{name}}
 
-    table.table.table-hover.span4.offset1
-      thead: tr
-        {{#each keys}}
-        th(id="{{this}}") {{this}}
-        {{/each}}
-      tbody
-        {{#each collection}}
-        tr(id="{{this._id}}")
-          {{#key_value this}}
-          td(id="{{key}}") {{value}}
-          {{/key_value}}
-        {{/each}}
+template(name="editor")
+  .doc-editor
+    .row-fluid
+      .span10
+        textarea(data-text-type="update insert", rows="{{key_count this 2}}") {{{json this}}}
+      .span2
+        button.btn.save(data-save-type="update") update
+        button.btn.save(data-save-type="insert") insert
 
-    form(action='').span4.offset1
-      {{#each keys}}
-      .control-group(id="{{this}}")
-        label.control-label.capitalize {{this}}
-        .controls
-          input.text(type="text", id="{{this}}")
-      {{/each}}
-      .btn-group
-        button.btn.save(type='button')#update Update
-        button.btn.save(type='button')#add Add
-        button.btn.btn-warning.remove(type='button')#remove Remove
+    .row-fluid
+      .span10
+        pre {"actual": ""}
+
+    .row-fluid
+      .span10
+        input.text(data-text-type="set set-all", type="text").input-block-level
+      .span2
+        button.btn.save(data-save-type="set") set
+        button.btn.save(data-save-type="set-all") set all
+
+    .row-fluid
+      .span10
+        input.text(data-text-type="unset unset-all", type="text").input-block-level
+      .span2
+        button.btn.save(data-save-type="unset") unset
+        button.btn.save(data-save-type="unset-all") unset all
+  hr
 
 
+template(name="admin_section")
+  .container.admin
+    - var selectors = [{name: "query", type: "mongo", holder: "{}" }, {name: "sort", type: "mongo", holder: "{}" }, {name: "pick1", type: "underscore", holder: "{{getStore 'nab_pick1'}}" }, {name: "pick2", type: "underscore", holder: "{{getStore 'nab_pick2'}}" } ]
+    for s in selectors
+      .row-fluid
+        .span2
+          .name= s.name
+        .span8
+          input.selector.text(data-selector-type=s.type, type="text", placeholder=s.holder, id= s.name ).input-block-level
+        .span2
+          h6.status valid
+    hr
+    {{#each nab}}
+    {{> editor }}
+    {{/each}}
 
-template(name='admin_users')
-  {{#grab "Users"}}
-  {{> editor }}
-  {{/grab}}
 
-template(name='admin_tags')
-  {{#grab "Tagsets"}}
-  {{> editor }}
-  {{/grab}}
-
-  {{#grab "Tags"}}
-  {{> editor }}
-  {{/grab}}
+template(name="admin")
+  {{> admin_sorts }}
 
 template(name="admin_sorts")
-  {{#grab "Sorts"}}
-  {{> editor }}
-  {{/grab}}
+  {{> admin_section }}
+
+template(name="admin_tags")
+  {{> admin_section }}
 
 template(name="admin_offers")
-  {{#grab "Offers"}}
-  {{> editor }}
-  {{/grab}}
-
-template(name="admin_metrics")
-  h1 DERP
+  {{> admin_section }}
 
