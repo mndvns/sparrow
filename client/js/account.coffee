@@ -197,7 +197,7 @@ Template.account_offer_tags.events
 
   'click .create-tag .insert': (event, tmpl) ->
     target = $(event.currentTarget)
-    text = target.siblings("input").val()
+    text = target.next("span").children("input").val()
 
     if not text
       Meteor.Alert.set
