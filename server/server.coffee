@@ -156,6 +156,7 @@ Meteor.methods
         user: @userId
         exp: Date.now() * 10
       out.votes_count = 1
+      out.rand = _.random(100, 999)
       Offers.insert out
     else
       Offers.update
