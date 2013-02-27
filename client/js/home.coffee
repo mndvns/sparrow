@@ -331,6 +331,10 @@ Template.ceiling.events
       Store.clear()
     )
 
+Template.ceiling.rendered = ->
+  console.log "RAN BY"
+  $(@findAll("[data-toggle='tooltip']")).tooltip()
+
 #////////////////////////////////////////////
 #  $$ content
 
@@ -348,8 +352,10 @@ Template.content.rendered = ->
             '[href="/' + link.join('/') + '"]'
 
         page          = Meteor.Router.page()
-        page_links    = page.split("_").splice(0, 2)
-        page_sublinks = page.split("_")
+        page_split    = page.split("_")
+        page_area     = page_split.splice(0, 1)
+        page_links    = page_split.splice(0, 2)
+        page_sublinks = page_split
         show_sublinks = Store.get("show_#{page}")?.split("_")
 
         hrefs = [
@@ -368,13 +374,14 @@ Template.content.rendered = ->
           .removeClass("inactive")
           .addClass("active")
 
-        if $(@find("[data-validate]")).is(":focus") then return
+        if page_area isnt "account"
+          if not $(@find("[data-validate]")).is(":focus")
+            if not @page_sublinks is page_sublinks.toString()
+              @page_sublinks = page_sublinks.toString()
+              # console.log("activated links and sublinks")
 
-        if @page_sublinks is page_sublinks.toString() then return
-        @page_sublinks = page_sublinks.toString()
-        # console.log("activated links and sublinks")
+              $(@findAll("[data-validate]")).jqBootstrapValidation()
 
-        $(@findAll("[data-validate]")).jqBootstrapValidation()
 
   @activateLinks()
 

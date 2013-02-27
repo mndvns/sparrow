@@ -182,7 +182,7 @@ template(name="ceiling")
       {{#isolate}}
       div(data-signed-in="true")
         span {{currentUser.username}}
-        span.badge {{dropDecimal currentUser.karma}} karma 
+        span.badge(data-toggle="tooltip", title='The number next to your name is your "karma." It represents how much good you&#8216;ve done for the Connected community, and can be spent in a variety of ways. You&#8216;ll figure it out as you go along.', data-placement="bottom") {{dropDecimal currentUser.karma}} karma 
         span.badge.logout logout
       {{/isolate}}
       {{else}}
