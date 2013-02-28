@@ -9,9 +9,26 @@
 #                                                    //
 
 Meteor.publish "offers", (storeLoc) ->
+
+  miles = 1000
+  radius = (miles / 69)
+
   if storeLoc
-    Offers.find loc:
-      $near: [ storeLoc.lat, storeLoc.long ]
+    # Offers.runCommand(
+    #   geoNear: "offers"
+    # ,
+    #   near: [ -94, 40 ]
+    # )
+    Offers.find( loc:
+      $near: [ storeLoc.lat, storeLoc.long ],
+      $maxDistance: radius
+    )
+
+# if storeLoc
+#   Offers.find loc:
+#     $near: [ storeLoc.lat, storeLoc.long ]
+
+
 #   Offers.find {}
 
 Meteor.publish "tagsets", ->
@@ -42,3 +59,9 @@ Meteor.publish "images", ->
 
 Meteor.publish "alerts", ->
   Alerts.find owner: @userId
+
+
+
+
+Meteor.publish "stickers", ->
+  Sticker.all()

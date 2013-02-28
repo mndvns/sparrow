@@ -67,4 +67,22 @@ Meteor.startup ->
     throw result[1]  unless result[0]
     result[1]
 
+  # Offers.runCommand = (pipeline) ->
+  #   self = this
+  #   future = new Future()
+  #   self.find()._mongo.db.createCollection self._name, (err, collection) ->
+  #     if err
+  #       future.throw err
+  #       return
+
+  #     collection.runCommand pipeline, (err, results) ->
+  #       if err
+  #         future.throw err
+  #         return
+  #       future.ret [true, result]
+
+  #   result = future.wait()
+  #   throw result[1] unless result[0]
+  #   result[1]
+
 

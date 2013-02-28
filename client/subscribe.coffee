@@ -9,3 +9,5 @@ Meteor.subscribe "userData"
 Meteor.subscribe "messages"
 Meteor.subscribe "alerts"
 
+
+Meteor.subscribe "stickers"
