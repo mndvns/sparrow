@@ -35,3 +35,6 @@ imgur
 logger
 canvas-image-manipulation
 jqbootstrapvalidation
+publish-with-relations
+moxy
+mocha-web

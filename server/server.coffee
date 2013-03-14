@@ -16,7 +16,6 @@ Future   = require "fibers/future"
 
 console.log(Meteor.settings)
 
-
 #                                                        //
 #         ___                               __           //
 #        /   | ______________  __  ______  / /______     //
@@ -27,6 +26,12 @@ console.log(Meteor.settings)
 #                                                        //
 
 Accounts.onCreateUser (options, user) ->
+
+  # offer = Offer.new().setDefaults()
+  # offer.save()
+
+  # console.log(offer)
+
   user.type = "basic"
   user.karma = 50
   user.logins = 0
@@ -58,6 +63,52 @@ Meteor.users.allow
       false
 
 
+# Tags = new Meteor.Collection 'tags'
+
+# Tags.deny
+#   insert: (userId, doc) ->
+#     console.log(doc)
+#     return true
+
+
+
+App.Collection.Offers.allow
+  insert: (userId, doc) ->
+    userId and userId is doc.ownerId
+  update: (userId, docs) ->
+    _.all docs, (doc)->
+      doc.ownerId is userId
+  remove: (userId, docs) ->
+    _.all docs, (doc)->
+      doc.ownerId is userId
+  fetch: ['ownerId']
+
+# App.Collection.Tests?.allow
+#   insert: (userId, doc) ->
+#     userId and userId is doc.ownerId
+#   update: (userId, docs) ->
+#     _.all docs, (doc)->
+#       doc.ownerId is userId
+#   remove: (userId, docs) ->
+#     _.all docs, (doc)->
+#       doc.ownerId is userId
+#   fetch: ['ownerId']
+
+
+
+# if Stickers?
+App.Collection.Locations.allow
+  insert: (userId, doc) ->
+    userId and userId is doc.ownerId
+  update: (userId, docs) ->
+    _.all docs, (doc)->
+      doc.ownerId is userId
+  remove: (userId, docs) ->
+    _.all docs, (doc)->
+      doc.ownerId is userId
+  fetch: ['ownerId']
+
+
 #                                                         //
 #           __  ___     __  __              __            //
 #          /  |/  /__  / /_/ /_  ____  ____/ /____        //
@@ -78,7 +129,7 @@ mapper = (a) ->
 Meteor.methods
 
   aggregateOffers: ->
-    tags = Offers.aggregate
+    tags = App.Collection.Offers.aggregate
       $project:
         tags: 1
 
@@ -143,7 +194,7 @@ Meteor.methods
     if opts.name.length < 5
       throw new Meteor.Error(400, "Offer name is too short")  
 
-    for key of Offer
+    for key of Offer._schema
       out[key] = opts[key]
 
     out.owner       = Meteor.userId()
@@ -157,48 +208,48 @@ Meteor.methods
         exp: Date.now() * 10
       out.votes_count = 1
       out.rand = _.random(100, 999)
-      Offers.insert out
+      App.Collection.Offers.insert out
     else
-      Offers.update
+      App.Collection.Offers.update
         owner: @userId
       ,
         $set: out
 
 
-    tagName = _.pluck(opts.tags_meta, "name")
-    existTags = []
-    Tags.find().forEach (m) ->
-      _.filter m.involves, (f)->
-        unless _.find(existTags, (ex)->
-          ex._id is m._id)
-          existTags.push m
+    # tagName = _.pluck(opts.tags_meta, "name")
+    # existTags = []
+    # Tags.find().forEach (m) ->
+    #   _.filter m.involves, (f)->
+    #     unless _.find(existTags, (ex)->
+    #       ex._id is m._id)
+    #       existTags.push m
 
-    for exist in existTags
+    # for exist in existTags
 
-      Tags.update
-          _id: exist._id
-          "involves.user": Meteor.userId()
-        ,
-          $unset: "involves.$": 1
-      Tags.update
-          _id: exist._id
-        ,
-          $pull: "involves": null
+    #   Tags.update
+    #       _id: exist._id
+    #       "involves.user": Meteor.userId()
+    #     ,
+    #       $unset: "involves.$": 1
+    #   Tags.update
+    #       _id: exist._id
+    #     ,
+    #       $pull: "involves": null
 
-    Tags.update
-        name: $in: tagName
-      ,
-        $push:
-          involves:
-            user: out.owner
-            loc:
-              lat: out.loc.lat
-              long: out.loc.long
-            price: out.price
-            updatedAt: out.updatedAt
-            votes_count: out.votes_count
-      ,
-        multi: true
+    # Tags.update
+    #     name: $in: tagName
+    #   ,
+    #     $push:
+    #       involves:
+    #         user: out.owner
+    #         loc:
+    #           lat: out.loc.lat
+    #           long: out.loc.long
+    #         price: out.price
+    #         updatedAt: out.updatedAt
+    #         votes_count: out.votes_count
+    #   ,
+    #     multi: true
 
 
   updateUserColor: (color) ->

@@ -39,12 +39,15 @@ li
 
 gap = 2px
 fontSize = 16px
-bg-color = #fcfcfc
 Duration = 600ms
 
 ceiling-height = 50px
 topnav-height = 55px
 topnav-padding = 15px
+
+size(args)
+  height args
+  width args
 
 
 .tooltip
@@ -157,19 +160,20 @@ html
   overflow-x hidden
   // transform scale(0.7)
 
+body > .bg
+  fixed top left
+  size 100%
+  background linear-gradient( top, #fff, #eaeaea )
+
 html
 body
 .content
 .container
 .current
 .next
+.wrapper
   height 100%!important
 
-html
-body
-  background linear-gradient(top, rgba(white, 0.3), rgba(white, 0))
-  background-color #e8ebee
-  // background-image url("http://i.imgur.com/b4kh2dT.png")
 
 body
 input
@@ -180,13 +184,11 @@ button
 
 body
   cursor default
-  background-color bg-color
   font-size fontSize
   line-height 1.5
   position relative
   overflow-x hidden
   overflow-y scroll
-  background linear-gradient(top, rgba(white, 0.3), rgba(white, 0))
   background-color rgba(1,0,0,0)
   &.transitioning
     background-color rgba(0,0,0,0)
@@ -1786,6 +1788,8 @@ speed = 400ms
       p
         margin 0
         padding 10px 0
+        &:first-letter
+          text-transform capitalize
 
 @keyframes rally-in
   from
@@ -1796,7 +1800,7 @@ speed = 400ms
     transform translateY( 0 )
 
 #dimmer
-  fixed top
+  fixed top left
   width 100%
   height 100%
   z-index 200
@@ -1890,4 +1894,204 @@ clr-bg(a)
 
 
 
+
+@charset "utf-8";
+
+
+.mocha-form
+  label
+    em
+      font-size 1em - 20%
+
+#mocha
+  ul
+  li
+    margin: 0
+    padding: 0
+
+  ul
+    list-style: none
+
+  h1
+  h2
+    margin: 0
+
+  h1
+    margin-top: 15px
+    font-size: 1em
+    font-weight: 200
+
+    a
+      text-decoration: none
+      color: inherit
+
+      &:hover
+        text-decoration: underline
+
+  .suite
+    .suite h1
+      margin-top 0
+      font-size .8em
+      line-height 1.5
+
+  .hidden
+    display: none
+
+  h2
+    font-size: 12px
+    font-weight: normal
+    cursor: pointer
+
+  .suite
+    margin-left: 15px
+
+  .test
+    margin-left: 15px
+    overflow: hidden
+
+    &.pending:hover h2::after
+      content: '(pending)'
+      font-family: arial
+
+    &.pass.medium .duration
+      background: #C09853
+
+    &.pass.slow .duration
+      background: #B94A48
+
+    &.pass::before
+      content: '✓'
+      font-size: 12px
+      display: block
+      float: left
+      margin-right: 5px
+      color: #00d6b2
+
+    &.pass .duration
+      font-size: 9px
+      margin-left: 5px
+      padding: 2px 5px
+      color: white
+      box-shadow: inset 0 1px 1px rgba(0,0,0,.2)
+      border-radius: 5px
+
+    &.pass.fast .duration
+      display: none
+
+    &.pending
+      color: #0b97c4
+
+    &.pending::before
+      content: '◦'
+      color: #0b97c4
+
+    &.fail
+      color: #c00
+
+    &.fail pre
+      color: black
+
+    &.fail::before
+      content: '✖'
+      font-size: 12px
+      display: block
+      float: left
+      margin-right: 5px
+      color: #c00
+
+    pre
+      display: block
+      float: left
+      clear: left
+      font: 12px/1.5 monaco, monospace
+      margin: 5px
+      padding: 15px
+      border: 1px solid #eee
+      border-bottom-color: #ddd
+
+      &.error
+        color: #c00
+        max-height: 300px
+        overflow: auto
+
+    h1
+    h2
+      position: relative
+      line-height 20px
+
+    a.replay
+      position: absolute
+      top: 3px
+      right: 0
+      text-decoration: none
+      vertical-align: middle
+      display: block
+      width: 15px
+      height: 15px
+      line-height: 15px
+      text-align: center
+      background: #eee
+      font-size: 15px
+      border-radius: 15px
+      transition: opacity 200ms
+      opacity: 0.3
+      color: #888
+
+    &:hover a.replay
+      opacity: 1
+
+#mocha-report.pass .test.fail
+  display: none
+
+#mocha-report.fail .test.pass
+  display: none
+
+#mocha-error
+  color: #c00
+  font-size: 1.5  em
+  font-weight: 100
+  letter-spacing: 1px
+
+#mocha-stats
+  position: fixed
+  top: 15px
+  right: 10px
+  font-size: 12px
+  margin: 0
+  color: #888
+
+#mocha-stats .progress
+  float: right
+  padding-top: 0
+
+#mocha-stats em
+  color: black
+
+#mocha-stats a
+  text-decoration: none
+  color: inherit
+
+#mocha-stats a:hover
+  border-bottom: 1px solid #eee
+
+#mocha-stats li
+  display: inline-block
+  margin: 0 5px
+  list-style: none
+  padding-top: 11px
+
+code .comment
+  color: #ddd
+
+code .init
+  color: #2F6FAD
+
+code .string
+  color: #5890AD
+
+code .keyword
+  color: #8A6343
+
+code .number
+  color: #2F6FAD
 

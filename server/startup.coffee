@@ -18,7 +18,9 @@ Meteor.startup ->
     console.log "         ", j[i]
     i += 1
 
-  Offers._ensureIndex loc: "2d"
+  # App.Collection.Offers._ensureIndex loc: "2d"
+
+  App.Collection.Locations._ensureIndex geo: "2d"
 
   Meteor.Future= {}
   Meteor.Future.create = (target, apply, pipeline, cb) ->
@@ -48,7 +50,7 @@ Meteor.startup ->
     )
     future.wait()
 
-  Tags.aggregate = (pipline) ->
+  App.Collection.Tags.aggregate = (pipline) ->
     self = this
     future = new Future()
     self.find()._mongo.db.createCollection self._name, (err, collection) ->
@@ -67,7 +69,7 @@ Meteor.startup ->
     throw result[1]  unless result[0]
     result[1]
 
-  # Offers.runCommand = (pipeline) ->
+  # App.Collection.Offers.runCommand = (pipeline) ->
   #   self = this
   #   future = new Future()
   #   self.find()._mongo.db.createCollection self._name, (err, collection) ->

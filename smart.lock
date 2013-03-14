@@ -20,7 +20,9 @@
       "imgur": {},
       "logger": {},
       "canvas-image-manipulation": {},
-      "jqbootstrapvalidation": {}
+      "jqbootstrapvalidation": {},
+      "publish-with-relations": {},
+      "mocha-web": {}
     },
     "packages": {
       "moment": {
@@ -45,8 +47,8 @@
       },
       "router": {
         "git": "https://github.com/tmeasday/meteor-router.git",
-        "tag": "v0.3.5",
-        "commit": "e8e63db2411204f0a6589b74dd591babbfb2da1a"
+        "tag": "v0.4.2",
+        "commit": "82d2895847502b4025370523dba60d597cff4772"
       },
       "jade-handlebars": {
         "git": "https://github.com/SimonDegraeve/meteor-jade-handlebars.git",
@@ -98,14 +100,20 @@
         "tag": "v0.1.0",
         "commit": "2af4625d41a9b24311544a53790f14fa38c27b10"
       },
-      "page-js": {
-        "git": "https://github.com/tmeasday/meteor-page-js.git",
-        "tag": "v1.3.5",
-        "commit": "c652f795a86498aa4609ab637a694710421cb218"
+      "publish-with-relations": {
+        "git": "https://github.com/erundook/meteor-publish-with-relations.git",
+        "tag": "v0.1.3",
+        "commit": "ab53930b4934e8b25330fd1fa3ac6d7d365eb201"
       },
-      "transitioner": {
-        "git": "https://github.com/mvanasse/meteor-transitioner.git",
-        "commit": "0dc708e955ad675ba52cf1d668f337167557e88f"
+      "mocha-web": {
+        "git": "https://github.com/mad-eye/meteor-mocha-web.git",
+        "tag": "v0.0.2",
+        "commit": "c534e901f9e5423240ab9c2de121890999d68bbb"
+      },
+      "page-js-ie-support": {
+        "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
+        "tag": "v1.3.5",
+        "commit": "b99ed8380aefd10b2afc8f18d9eed4dd0d8ea9cb"
       }
     }
   }

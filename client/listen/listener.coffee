@@ -21,16 +21,6 @@ class Listener
     @$king      = $("#{@king}")
 
   trigger: =>
-
-    switch Store.get("test_log_listener")
-      when undefined, "normal"
-        break
-      when "console"
-        console.log("LOG_LISTENER", @_text)
-        return false
-      when "none"
-        return false
-
     @toggle?.el.removeClass("off")
       .addClass("on")
       .on("click", =>

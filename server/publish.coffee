@@ -1,6 +1,6 @@
 
-#                                                    //
 #           ____        __    ___      __            //
+#                                                    //
 #          / __ \__  __/ /_  / (_)____/ /_           //
 #         / /_/ / / / / __ \/ / / ___/ __ \          //
 #        / ____/ /_/ / /_/ / / (__  ) / / /          //
@@ -8,60 +8,95 @@
 #                                                    //
 #                                                    //
 
-Meteor.publish "offers", (storeLoc) ->
+# Meteor.publish "offers", (storeLoc) ->
+# 
+#   miles = 1000
+#   radius = (miles / 69)
+# 
+# 
+#   return App.Collection.Offers.find()
+# 
+#   # if storeLoc
+#   #   App.Collection.Offers.find( loc:
+#   #     $near: [ storeLoc.lat, storeLoc.long ],
+#   #     $maxDistance: radius
+#   #   )
 
-  miles = 1000
+
+# Meteor.publish "stickers", ->
+#   return Stickers.find()
+
+# Meteor.publish "stickers", ->
+#   Sticker.all()
+
+Meteor.publish "derps", (user_loc)->
+  miles = 2000
   radius = (miles / 69)
 
-  if storeLoc
-    # Offers.runCommand(
-    #   geoNear: "offers"
-    # ,
-    #   near: [ -94, 40 ]
-    # )
-    Offers.find( loc:
-      $near: [ storeLoc.lat, storeLoc.long ],
-      $maxDistance: radius
-    )
+  Meteor.publishWithRelations(
+    handle: this
+    collection: App.Collection.Locations
+    filter:
+      geo:
+        $near: [ user_loc.lat, user_loc.long ],
+        $maxDistance: radius
+    mappings: [
+      key: 'offerId'
+      collection: App.Collection.Offers
+      filter: {}
+      mappings: [
+        reverse: true
+        key: 'offerId'
+        collection: App.Collection.Tags
+        filter: {}
+      ]
+    ]
+  )
+  @ready()
 
-# if storeLoc
-#   Offers.find loc:
-#     $near: [ storeLoc.lat, storeLoc.long ]
+# Meteor.publish "tags", (userLoc) ->
+#   Tags.find {}
 
+# Meteor.publish "user_offer", ->
+#   App.Collection.Offers.find(
+#     $or:[
+#       owner   : @userId
+#     ,
+#       ownerId : @userId
+#     ]
+#   )
 
-#   Offers.find {}
+# Meteor.publish "all_offers", ->
+#   App.Collection.Offers.find()
 
-Meteor.publish "tagsets", ->
-  Tagsets.find {}
-
-Meteor.publish "tags", (userLoc) ->
-  Tags.find {}
-
-Meteor.publish "sorts", ->
-  Sorts.find {},
-    sort:
-      list_order: 1
 
 Meteor.publish "userData", ->
   Meteor.users.find {},
     type: 1
 
 
-Meteor.publish "messages", ->
-  Messages.find involve:
-    $in: [@userId]
-
-Meteor.publish "images", ->
-  Images.find
-    owner: @userId
-    status:
-      $nin: ["deactivated"]
+# Meteor.publish "tagsets", ->
+#   App.Collection.Tagsets.find {}
+# 
+# Meteor.publish "sorts", ->
+#   App.Collection.Sorts.find {},
+#     sort:
+#       list_order: 1
+# 
+# Meteor.publish "messages", ->
+#   App.Collection.Messages.find involve:
+#     $in: [@userId]
+# 
+# Meteor.publish "images", ->
+#   App.Collection.Images.find
+#     owner: @userId
+#     status:
+#       $nin: ["deactivated"]
 
 Meteor.publish "alerts", ->
-  Alerts.find owner: @userId
+  App.Collection.Alerts.find owner: @userId
 
 
 
-
-Meteor.publish "stickers", ->
-  Sticker.all()
+# Meteor.publish "tests", ->
+#   Tests.find()

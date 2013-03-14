@@ -1,4 +1,7 @@
 {
+  "meteor": {
+    "branch": "master"
+  },
   "packages": {
     "moment": {},
     "bootstrap-updated": {},
@@ -14,6 +17,8 @@
     "imgur": {},
     "logger": {},
     "canvas-image-manipulation": {},
-    "jqbootstrapvalidation": {}
+    "jqbootstrapvalidation": {},
+    "publish-with-relations": {},
+    "mocha-web": {}
   }
 }
