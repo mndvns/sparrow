@@ -22,7 +22,6 @@ accounts-base
 email
 showdown
 router
-transitioner
 jquery-waypoints
 bafa
 handlebar-helpers
@@ -37,4 +36,5 @@ canvas-image-manipulation
 jqbootstrapvalidation
 publish-with-relations
 moxy
+transitioner
 mocha-web

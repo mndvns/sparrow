@@ -345,9 +345,10 @@ Template.content.rendered = ->
 
   unless @activateLinks
     @activateLinks = =>
-      context = new Meteor.deps.Context()
-      context.onInvalidate @activateLinks
-      context.run =>
+      # context = new Deps.Context()
+      # context.onInvalidate @activateLinks
+      # context.run =>
+      Deps.autorun =>
 
         href = (link) ->
           if link

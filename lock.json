@@ -1,0 +1,25 @@
+
+
+    "derp": {
+
+      "transitioner": {
+        "git": "https://github.com/mvanasse/meteor-transitioner.git",
+        "tag": "v0.2.2",
+        "commit": "c93883efffc23a1eb29f91732bb938bc3f38b274"
+      },
+      "browser-store": {
+        "git": "https://github.com/mvanasse/meteor-browser-store.git",
+        "tag": "v0.1.0",
+        "commit": "3f2062b1ae2fb20878226f6a8d7c1e86f28dde64"
+      }
+    }
+      "transitioner": {
+        "git": "https://github.com/mvanasse/meteor-transitioner.git",
+        "tag": "v0.2.2",
+        "commit": "c93883efffc23a1eb29f91732bb938bc3f38b274"
+      },
+      "browser-store": {
+        "git": "https://github.com/mvanasse/meteor-browser-store.git",
+        "tag": "v0.1.0",
+        "commit": "3f2062b1ae2fb20878226f6a8d7c1e86f28dde64"
+      }

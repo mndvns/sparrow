@@ -9,7 +9,9 @@ Meteor.methods
 
   instance_save: ( model, ctx, cb )->
 
-    attributes = ctx.mongoize ctx.attributes
+    # console.log("CTX!!!", ctx)
+
+    attributes = App.Model[ model ].new().mongoize ctx.attributes
     collection = App.Collection[ model + "s" ]
 
     if ctx.id
@@ -19,4 +21,7 @@ Meteor.methods
 
     cb?(null, ctx)
     return ctx
+
+  instance_destroy_mine: ( collection ) ->
+    App.Collection[ collection ].remove ownerId: My.userId()
 

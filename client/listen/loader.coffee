@@ -16,8 +16,10 @@ Meteor.startup ->
     Meteor.Alert = new Alert()
     Meteor.Alert.rally()
 
-    App.Collection.Alerts.remove owner: Meteor.userId(),
-      multi: true
+    alert = My.alert()
+
+    if alert?
+      App.Collection.Alerts.remove alert
 
     Meteor.autorun ->
       newServerPane = App.Collection.Alerts.findOne()

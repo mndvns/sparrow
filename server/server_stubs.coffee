@@ -45,4 +45,5 @@ Meteor.methods
 
     return i
 
-
+  instance_destroy_mine: ( collection ) ->
+    App.Collection[ collection ].remove ownerId: My.userId()

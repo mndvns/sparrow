@@ -1,13 +1,11 @@
 
 class Listener
   rally: =>
-    context = new Meteor.deps.Context()
-    context.onInvalidate(@rally)
-    context.run =>
-      newPane = Session.get(@rallyPoint)
-      if not newPane then return
-      @_ready newPane
-      @ready?()
+    # Deps.autorun =>
+    #   newPane = Session.get(@rallyPoint)
+    #   if not newPane then return
+    #   @_ready newPane
+    #   @ready?()
 
   constructor: ->
     @_init()

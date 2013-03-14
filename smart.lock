@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/meteor/meteor.git",
     "branch": "master",
-    "commit": "2d8b41a87cec884489ead138b5dfea31487363f3"
+    "commit": "471f661c5b32bf66746077defbbac8b2b26046c6"
   },
   "dependencies": {
     "basePackages": {
@@ -13,8 +13,6 @@
       "router": {},
       "jade-handlebars": {},
       "handlebar-helpers": {},
-      "dhtmlx-message": {},
-      "browser-store": {},
       "stripe": {},
       "collectionFS": {},
       "imgur": {},
@@ -47,8 +45,8 @@
       },
       "router": {
         "git": "https://github.com/tmeasday/meteor-router.git",
-        "tag": "v0.4.2",
-        "commit": "82d2895847502b4025370523dba60d597cff4772"
+        "tag": "v0.4.3",
+        "commit": "0691a6e2c4c249ce7d00cd6dc7ad27e1c7330a31"
       },
       "jade-handlebars": {
         "git": "https://github.com/SimonDegraeve/meteor-jade-handlebars.git",
@@ -59,16 +57,6 @@
         "git": "https://github.com/raix/Meteor-handlebar-helpers.git",
         "tag": "v0.0.5",
         "commit": "bedecf71d04097773b359ccbf6e5bd97fcb53f8e"
-      },
-      "dhtmlx-message": {
-        "git": "https://github.com/DHTMLX/meteor-message.git",
-        "tag": "v1.0.0",
-        "commit": "cf09fabadcf5e099778e4b52f5ed78e4cc1bc18b"
-      },
-      "browser-store": {
-        "git": "https://github.com/awwx/meteor-browser-store.git",
-        "tag": "v0.1.0",
-        "commit": "ab31f1ced57a686f04547f0c7bfc04cae4c96ac9"
       },
       "stripe": {
         "git": "https://github.com/appleifreak/stripe-meteor.git",
@@ -107,13 +95,25 @@
       },
       "mocha-web": {
         "git": "https://github.com/mad-eye/meteor-mocha-web.git",
-        "tag": "v0.0.2",
-        "commit": "c534e901f9e5423240ab9c2de121890999d68bbb"
+        "tag": "v0.0.3",
+        "commit": "aa37d9be6dd90d4abeba6de0b693e2e0297dfe54"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
         "tag": "v1.3.5",
         "commit": "b99ed8380aefd10b2afc8f18d9eed4dd0d8ea9cb"
+      },
+
+
+      "transitioner": {
+        "git": "https://github.com/mvanasse/meteor-transitioner.git",
+        "tag": "v0.2.2",
+        "commit": "c93883efffc23a1eb29f91732bb938bc3f38b274"
+      },
+      "browser-store": {
+        "git": "https://github.com/mvanasse/meteor-browser-store.git",
+        "tag": "v0.1.0",
+        "commit": "3f2062b1ae2fb20878226f6a8d7c1e86f28dde64"
       }
     }
   }

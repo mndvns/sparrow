@@ -96,6 +96,12 @@ My =
     if Meteor.isClient
       return Store.get("user_loc")
 
+  alert: ->
+    App.Collection.Alerts.findOne(
+      ownerId: @userId()
+    )?._id
+
+
 Meteor.methods
 
   getRandomOffer: (cb) ->
