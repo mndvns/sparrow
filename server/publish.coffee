@@ -54,8 +54,13 @@ Meteor.publish "derps", (user_loc)->
   )
   @ready()
 
-# Meteor.publish "tags", (userLoc) ->
-#   Tags.find {}
+
+# TEMP
+Meteor.publish "tags", (userLoc) ->
+  App.Collection.Tags.find {}
+
+Meteor.publish "locations", ->
+  App.Collection.Locations.find {}
 
 # Meteor.publish "user_offer", ->
 #   App.Collection.Offers.find(
@@ -98,5 +103,5 @@ Meteor.publish "alerts", ->
 
 
 
-# Meteor.publish "tests", ->
-#   Tests.find()
+Meteor.publish "tests", ->
+  App.Collection.Tests.find()

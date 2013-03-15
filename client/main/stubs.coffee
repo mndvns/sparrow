@@ -8,8 +8,7 @@ Meteor.methods
         votes_count: 1
 
   instance_save: ( model, ctx, cb )->
-
-    # console.log("CTX!!!", ctx)
+    console.log "MODEL", model, ctx
 
     attributes = App.Model[ model ].new().mongoize ctx.attributes
     collection = App.Collection[ model + "s" ]

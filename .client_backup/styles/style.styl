@@ -1,0 +1,2097 @@
+// @import 'index'
+@import 'nib'
+@import 'mixins'
+@import 'jscrollpane'
+@import 'icons.css'
+
+li
+  list-style none
+
+
+.wf-loading
+  visibility hidden
+
+.wf-active
+  visibility visible
+
+
+.capitalize
+  text-transform capitalize
+
+@keyframes fade-in-quick
+  0%
+    opacity 0
+  80%
+    opacity 1
+
+@keyframes fade-in-full
+  from
+    opacity 0
+  to
+    opacity 1
+
+@keyframes fade-in-half
+  from
+    opacity 0
+  to
+    opacity .5
+
+
+gap = 2px
+fontSize = 16px
+Duration = 600ms
+
+ceiling-height = 50px
+topnav-height = 55px
+topnav-padding = 15px
+
+size(args)
+  height args
+  width args
+
+
+.tooltip
+.tooltip.bottom
+  bg = white
+  &.in
+    opacity 1
+  .tooltip-arrow
+    border-bottom-color bg
+  .tooltip-inner
+    background bg
+    color black
+    box-shadow 0 1px 2px rgba(black, .7)
+
+
+.badge
+  .characters
+    font-weight 500
+    margin-right 5px
+    letter-spacing 1px
+
+.gap-top
+  margin-top gap!important
+
+.alert .close
+a
+  color #777
+  &:hover
+    cursor default!important
+    text-decoration none
+    color #444
+  &:active
+    background none!important
+    color #333
+
+.centered
+  text-align center
+
+.tall
+  height 100%
+
+.full
+  width 100%
+
+.accord
+  h4
+  p
+    margin-top 0
+    margin-bottom 0
+    padding 10px 0
+  a.active:hover
+    opacity 0.6
+  .body
+    display none
+
+hr
+  border-top-color #ddd
+  &.shadow
+    degree = .1
+    height = 20px
+    thinHeight = 10px
+    &.top
+      &.thin
+        radial-gradient black degree thinHeight bottom
+      radial-gradient black degree height bottom
+    &.bottom
+      &.thin
+        radial-gradient black degree thinHeight top
+      radial-gradient black .15 height top
+
+
+span-style()
+  text-transform uppercase
+  font-size 12px
+  letter-spacing 1px
+  font-weight 500
+
+
+trans(a)
+  transition-property a
+  transition-duration Duration
+  transition-timing-function ease-out
+  transition-delay 0
+
+anim(a)
+  animation-name a
+  animation-duration Duration
+  animation-timing-function ease
+
+
+h(a)
+  font-size (fontSize * a)
+
+h1
+  h( 2.2 )
+h2
+  h( 1.8 )
+h3
+  h( 1.5 )
+
+h1, h2, h3
+  line-height fontSize * 2.5
+  &.smashed
+    line-height 1.15
+
+
+
+
+html
+  overflow-x hidden
+  // transform scale(0.7)
+
+body > .bg
+  fixed top left
+  size 100%
+  background linear-gradient( top, #fff, #eaeaea )
+
+html
+body
+.content
+.container
+.current
+.next
+.wrapper
+  height 100%!important
+
+
+body
+input
+textarea
+button
+  font-family "proxima-nova"
+  color #111
+
+body
+  cursor default
+  font-size fontSize
+  line-height 1.5
+  position relative
+  overflow-x hidden
+  overflow-y scroll
+  background-color rgba(1,0,0,0)
+  &.transitioning
+    background-color rgba(0,0,0,0)
+    trans(background-color)
+
+
+.greeting
+  padding-top 20px
+  padding-bottom 25px
+  margin-top 0
+  margin-bottom 0
+  h2
+  p
+  .btn
+    margin-bottom 25px
+    display block
+
+.content
+  left 0
+  width 200%
+  position absolute
+  .transitioning.from_admin.to_account &
+  .transitioning.from_account &
+  .transitioning.to_about &
+    trans(left)
+    left 100%
+  .transitioning.to_admin &
+  .transitioning.to_account &
+  .transitioning.from_about &
+    trans(left)
+    left -100%
+  .transitioning.to_home &
+    ul.links
+      anim(hideLinks)
+    ul.sublinks
+      anim(hideSublinks)
+  .transitioning.from_home &
+    ul.links
+      anim(hideLinks)
+      animation-direction reverse
+    ul.sublinks
+      anim(hideSublinks)
+      animation-direction reverse
+
+@keyframes hideSublinks
+  0%
+    opacity 1
+  100%
+    opacity 0
+
+@keyframes hideLinks
+  0%
+    height topnav-height + topnav-padding
+  100%
+    height 0
+
+
+.current
+.next
+  width 50%
+  height 100%
+  position absolute
+  background transparent
+
+.next
+  display none
+  .transitioning.from_admin.to_account &
+  .transitioning.from_account &
+  .transitioning.to_about &
+    left -50%
+    display block
+  .transitioning.to_admin &
+  .transitioning.to_account &
+  .transitioning.from_about &
+    left 50%
+    display block
+
+.next
+  .transitioning &
+    .container
+      anim(fade-in-quick)
+
+.current
+  .transitioning &
+    .container
+      anim(fade-in-quick)
+      animation-direction reverse
+
+.current
+  .topnav.home
+    ul.links
+      height 0
+
+.account_offer
+  .offer
+    margin-top 0px
+    margin-bottom 10px
+
+
+textarea
+input[type="text"]
+input[type="password"]
+input[type="datetime"]
+input[type="datetime-local"]
+input[type="date"]
+input[type="month"]
+input[type="time"]
+input[type="week"]
+input[type="number"]
+input[type="email"]
+input[type="url"]
+input[type="search"]
+input[type="tel"]
+input[type="color"]
+.uneditable-input
+.btn
+  border-radius 0!important
+  padding round(fontSize / 2)!important
+  text-shadow none
+  color black
+
+  background rgba(white, .8)
+  border-color rgba(black, .2)
+  box-shadow none
+  font-size fontSize
+  line-height 1.25
+  &[disabled]
+    background rgba(white, .5)
+    opacity .5
+
+  &.btn
+    text-transform uppercase
+    border-color transparent
+    cursor default
+    margin 0 auto
+    &.centered
+      display block
+    .input-append &
+      margin-left -1px
+
+
+.payment-form
+  text-align center
+  margin 0
+  padding-top 20px
+  .control-group
+    display inline-block
+
+.control-group
+.control-group.success
+  label
+  input
+  textarea
+    color inherit!important
+    &:focus
+      border-color rgba(black, .7)!important
+      box-shadow 0 0 20px -5px rgba(black, .5)!important
+
+.control-group.warning
+.control-group.error
+  color = #FF6600
+  dark = #CC3300
+
+  label
+  input
+  textarea
+  li
+    color dark!important
+    &:focus
+      border-color rgba(dark, .7)!important
+      box-shadow 0 0 20px -5px rgba(color, .5)!important
+
+.control-group
+
+  label
+    span-style()
+    font-weight bold
+
+  margin-bottom 30px
+  .help-block
+    margin-bottom 0
+    ul
+      margin-left 0
+      margin-bottom 10px
+      li
+        font-size 14px
+
+
+textarea
+  height auto
+
+label
+  cursor default
+  i
+    text-indent 10px
+    opacity 0.4
+    &:hover
+      opacity 0.9
+
+nav.ceiling
+  $padding = 30px
+  fixed top right
+  trans(height background)
+  min-height ceiling-height
+  width 100%
+  z-index 200
+  padding 0 $padding
+  box-sizing border-box
+  box-shadow 0 -10px 5px 10px rgba(black, .4), inset 0 20px 70px -20px rgba(white, .1)
+  border-bottom 1px solid rgba(black, .9)
+  &[data-rally=alert]
+    .toggler-group
+      opacity 0
+
+  i
+    padding-right 10px
+
+  [data-signed-in]
+    relative right
+    span
+      relative right
+    .badge
+      background transparent
+      border 1px solid
+      margin-left 10px
+
+  .toggler-group
+    trans(opacity)
+    absolute top
+    opacity 1
+    z-index 100
+    vertical-align middle
+    line-height ceiling-height
+
+    .brand
+      height 50px
+      width 200px
+
+      background url("/connected-logo.png")
+      background-size 60%
+      background-position 0 50%
+      background-repeat no-repeat
+      opacity 1
+
+      // font-size 20px
+      // font-weight bold
+
+    &.left
+      left $padding
+    &.right
+      right $padding
+
+      .badge
+        &:hover
+          color white
+    span
+    a
+      color rgba(white, .9)
+      text-shadow 0 -1px 0 rgba(black, .6)
+    a
+      &.active
+        span
+          color white
+      relative top
+      span
+        line-height ceiling-height
+        vertical-align middle
+
+  a
+    &:hover
+      color rgba(white, .7)
+  .btn.clr-bg
+    &:hover
+      background rgba(white, .4)
+  .terrace > div
+    display none
+  .terrace
+    relative top
+    z-index 50
+    width 100%
+    // display none
+    // opacity 0
+    overflow hidden
+    padding fontSize 0 (fontSize / 2)
+    .inputs
+    .controls
+      float none
+      display inline-block
+      text-align center
+      margin 0 auto
+      width 100%
+      button
+        padding-left 3px!important
+        padding-right 3px!important
+        box-sizing content-box
+
+    input
+    button
+    .alert.in
+    .navigation
+      margin-bottom (fontSize / 2)
+      text-align center
+      float none
+      border none
+
+    .navigation
+      text-align center
+      color rgba(white, .1)
+
+    [data-slip-show='false']
+      display none
+      opacity 0
+
+    p
+    .alert
+    buttons.active
+    a.active
+      color rgba(white, .7)!important
+
+
+@keyframes ceiling-expand
+  from
+    height 0%
+  to
+    height 100%
+
+
+.navbar
+  .navbar-inner
+    border-radius 0
+
+.navbar.topnav
+  height = topnav-height
+  relative top
+  margin-top ceiling-height
+  background none
+  width 100%
+  z-index 100
+  opacity 1
+  .container
+    relative top
+    padding-top 0
+  .navbar-inner
+    background none!important
+    border none
+    box-shadow none
+
+  a.shift
+  .links a
+    margin-top topnav-padding
+    opacity 0.7
+    text-shadow 0 1px 0 rgba(white, .2)
+    &.active
+    &:hover
+      opacity 1
+      text-shadow 0 -1px 0 rgba(black, .2)
+
+  ul.links
+    absolute top
+    // box-shadow 0 0 30px white
+    border-bottom 1px solid rgba(white, .9)
+    box-shadow inset 0 20px 120px -20px rgba(white, .2), inset 0 -15px 35px -15px rgba(black, .1), inset 0 -5px 3px -5px rgba(black, .2)
+    overflow hidden
+    margin 0 auto
+    text-align center
+    width 100%
+    z-index 2
+    a
+      height topnav-height
+      box-sizing border-box
+      border-bottom 2px solid
+      display inline-block
+      line-height 35px
+      padding 0 20px 0
+      cursor default
+      trans(color border-width)
+      transition-duration 50ms
+      background-image url("/link_shadow.png")
+      background-size cover
+      background-repeat no-repeat
+      background-position 50% 50px
+      &.active
+      &.inactive:hover
+      &:hover
+        color white
+      &.active
+        background-position 50% 0px
+      &.inactive
+        filter grayscale(50%)
+      span
+        span-style()
+        display block
+        line-height 20px
+      i
+        height = height * 0.4
+        height height
+        line-height height
+        font-size height
+        margin-top 5px
+
+  ul.sublinks
+    relative top left
+    padding-top (ceiling-height + topnav-padding + 5px)
+    text-align center
+    width 80%
+    left 10%
+    margin-left 0
+    .separator
+      position relative
+      z-index 3
+      border-left 1px solid #eee
+      color transparent
+      display inline-block
+      margin = 20px
+      margin-left margin
+      padding 0 margin 0 0
+      top 2px
+      height 15px
+    .inner
+      absolute relative top
+      margin-bottom -10px
+    .bg
+      absolute top
+      opacity = 1
+      background linear-gradient(left, 0% rgba(white, 0), 10% rgba(white, opacity), 90% rgba(white, opacity), 100% rgba(white, 0))
+      height 100%
+      width 100%
+    a
+      relative top
+      display inline-block
+      padding 10px
+      z-index 2
+      li
+        color #ccc
+      &.inactive:hover
+        li
+          color #777
+      &.active
+        li
+          color inherit
+      span
+        span-style()
+
+    hr
+      relative bottom -10px
+      margin-top 0
+
+
+  .shift-block
+    &.left
+      left fontSize
+    &.right
+      right fontSize
+
+  .shift-block
+  a.shift
+    position absolute
+    display inline-block
+    height height
+    line-height height - 5
+    font-size (height / 2)
+    z-index 100
+    width (fontSize * 3)
+
+  a.shift
+    text-align center
+    &[disabled]
+      opacity 0.3
+      color rgba(black, .3)
+      text-shadow 0 0 20px gray
+    &:hover
+      color rgba(black, 0.5)
+
+
+
+
+.navbar.account-offer
+  padding-top 20px
+  .navbar-inner
+    padding 0 0
+    background none
+    border none
+    box-shadow none
+  ul
+    width 100%
+  li
+    height = 40px
+    font-size round(fontSize * .75)
+    line-height height
+    height height
+    text-transform uppercase
+    text-align center
+    color rgba(white, 0.7)
+    letter-spacing 1px
+    text-shadow none
+    font-weight 300
+    opacity .6
+    *
+      vertical-align middle
+    &.active
+      opacity 1
+    &:hover
+      opacity 0.9
+    i
+      font-size 15px
+      padding-right 5px
+      line-height height
+
+.content > div > .container
+  position relative
+  // margin-top 150px
+
+spanner(a, b)
+  if odd(b)
+    width floor(a * b)
+  if even(b)
+    width ceil(a * b)
+  margin-left 0
+  &.margin
+    if odd(b)
+      width floor((a * b) - gap)
+    if even(b)
+      width floor((a * b) - gap)
+    &.left
+      margin-left gap
+    &.right
+      margin-right gap
+    &.left.right
+      if odd(b)
+        width floor((a * b) - (gap * 2))
+      if even(b)
+        width ceil((a * b) - (gap * 2))
+
+Spanner(a)
+  u = (a / 12)
+  .container
+  .navbar-static-top .container
+  .navbar-fixed-top .container
+  .navbar-fixed-bottom.container
+    width a
+  .long
+    .span12
+    &.span12
+      spanner(u, 12)
+    .span11 
+    &.span11 
+      spanner(u, 11)
+    .span10 
+    &.span10 
+      spanner(u, 10)
+    .span9 
+    &.span9 
+      spanner(u, 9)
+    .span8 
+    &.span8 
+      spanner(u, 8)
+    .span7 
+    &.span7 
+      spanner(u, 7)
+    .span6 
+    &.span6 
+      spanner(u, 6)
+    .span5 
+    &.span5 
+      spanner(u, 5)
+    .span4 
+    &.span4 
+      spanner(u, 4)
+    .span3 
+    &.span3 
+      spanner(u, 3)
+    .span2 
+    &.span2 
+      spanner(u, 2)
+    .span1 
+    &.span1 
+      spanner(u, 1)
+
+
+Spanner( 940px )
+
+.extend
+  padding-right (gap * .5)
+
+@media (min-width: 1200px)
+  Spanner( 1170px )
+  .extend
+    padding-right gap
+
+@media (min-width: 768px) and (max-width: 979px)
+  Spanner( 724px )
+
+@media (min-width: 481px) and (max-width: 767px)
+  Spanner( 480px )
+
+@media (max-width: 480px)
+  .container
+    width auto
+  .long
+    [class*="span"]
+      width 100%!important
+      margin-left 0!important
+  .extend
+    padding-right 0
+
+.long
+  textarea
+  input
+    box-sizing border-box
+  input
+    height round(fontSize * 2.5)
+  [class*="span"]
+    float left
+
+
+
+.hero
+  // display none
+  relative top
+  padding-top 100px
+  margin-top -40px
+  .transitioning.to_home &
+    li
+    span
+    p
+      visibility hidden
+
+#offer-tag-list
+.hero
+  itemHeight = 40px
+  listHeight = (itemHeight * 5)
+  heroHeight = listHeight
+  radius = 4px
+  min-height heroHeight
+  color white
+  user-select none
+
+  .list
+    overflow hidden
+    display block
+
+    .contents
+      relative top
+      height 100%
+
+      .notes
+        relative top
+        filter grayscale(80%)
+        filter contrast(50%)
+        z-index 2
+        font-size 12px
+
+      .items
+        relative top
+        height listHeight
+        z-index 3
+
+
+
+  .headline
+    absolute top 60px left 15%
+    z-index 100
+    width 70%
+    text-align center
+    background none
+    font-weight 500
+    line-height 40px
+    // font-family "ff-tisa-web-pro"
+    text-shadow none
+    // span
+    //   color rgba( white, .8 )!important
+
+    div
+      // &.tagset span
+      //   &:after
+      //     content "\00a0 the "
+      &.tag span
+        &:nth-child(n+2)
+          &:before
+            content ",\00a0"
+    div
+      display inline
+    span
+      display inline-block
+      opacity 0
+      font-size 0px
+  ul
+    font-weight 500
+    height 100%
+    overflow-y auto
+    overflow-x hidden
+    letter-spacing 1px
+    text-align center
+    height listHeight
+    &[data-active]
+      display none
+      &[data-active=true]
+        display block
+    &.tag-list
+      text-align right
+    li
+      trans(opacity)
+      height itemHeight
+      line-height itemHeight
+      transition-duration 100ms
+      vertical-align middle
+      opacity 1
+      overflow hidden
+      background "transparent"
+      font-weight 600
+      &[data-active]
+      &.inactive
+        opacity .5
+        &:hover
+          opacity .8
+      &[data-active=true]
+      &.active
+        opacity .95
+        &:hover
+          opacity .9
+      .badge
+        vertical-align top
+        border 1px solid
+        background none
+        color inherit
+        margin-left 10px
+        margin-right 20px
+        margin-top 10px
+
+
+#offer-tag-list
+  user-select none
+  padding-bottom 30px
+
+  ul
+    relative top
+    margin-bottom 0
+    height auto
+    background #fafafa
+    box-shadow 0 1px 3px rgba(black, .3)
+    overflow hidden
+
+  i
+    relative top 3px
+
+  li
+    relative top
+    margin-left 0
+    display inline-block
+    float none
+    background none
+    color #666
+    span
+      font-weight 500
+
+    &[data-active]
+      filter grayscale(100%)
+      span
+        color rgba(black, .3)
+
+      &[data-active=true]
+        filter grayscale(0%)
+        opacity 1
+        box-shadow 0 0 2px rgba(black, .4)
+        background white
+        span
+          color black
+
+    // &.footer
+    // &.sub-footer
+    // &.header
+    // &.sub-header
+    // &.create-tag
+    //   background white
+
+
+    &.footer
+    &.header
+      span-style()
+      font-size 16px
+      padding-top 5px
+      color black
+      display block
+      span
+        font-weight 600
+
+    &.sub-footer
+    &.sub-header
+      span-style()
+      color black
+      span
+        relative bottom -1px
+        font-weight 600
+        display inline-block
+        background-color transparent
+        background-image url("/shadow-line.png")
+        background-repeat no-repeat
+        background-position right
+        background-size contain
+        z-index 10
+        opacity .2
+        text-indent -7px
+        &:last-child
+          background none
+
+    input
+      relative top
+      height 100%
+      left -4.5%
+      width 104%
+
+  hr
+    &.bottom
+      relative top -1px
+      margin-top 0
+      z-index 1
+
+    &.top
+      margin-bottom 0
+
+    &.white
+      background white
+      height 1px
+
+
+[data-gray]
+  speed = 850ms
+  grayness = 90%
+  filter grayscale(grayness)
+  opacity .7
+  transition-property filter opacity
+  transition-duration speed
+  &[data-gray=true]
+    transition-property filter opacity
+    transition-duration speed
+    filter grayscale(0%)
+    opacity 1
+  .transitioning &
+  &[data-gray=false]
+    transition-property filter opacity
+    transition-duration speed
+    filter grayscale(grayness)
+    opacity .7
+
+.offers
+  height 100%
+  display block
+
+.offer
+  height = 170px
+  bumper = 1px
+  action(a, b)
+    text-align right
+    line-height ((height / a) - (gap / 2))
+    margin-bottom (gap * b)
+    padding-right 20px
+    box-sizing border-box
+    position relative
+    overflow hidden!important
+    border-left 1px solid #ccc
+    background-image url("/shadow-line-horizontal.png")
+    background-position bottom right
+    background-repeat no-repeat
+    &:last-child
+      background-image none
+    &[data-status=inactive]
+      filter grayscale(90%)
+      opacity .7
+    &:hover
+      filter grayscale(0%)
+      opacity 1
+    &[disabled]
+      color lightGray
+
+  relative top
+  background white
+  font-weight normal
+  width 100%
+  float left
+  min-height height
+  margin 5px 0
+  border-top 1px solid rgba(white, .5)
+  box-shadow 0px 1px 4px -1px rgba(black, .3), 0 0px 1px rgba(black, .3)
+
+  .bumper
+    display none
+    width bumper
+    height 100%
+    absolute top
+    z-index 2
+    &.left
+      absolute left
+    &.right
+      absolute right
+  section
+    span, p, li, i, div
+      color rgba(0,0,0, 0.9)
+      // text-shadow 0 1px 0 white
+  section
+    float left
+  &.voted
+    background #eee
+  .image
+    user-select none
+    height height
+    div
+      box-shadow 0px 1px 2px rgba(black, 0.5) inset
+      font-size 4em
+      line-height 122px
+      height 100px
+      width 100px
+      text-align center
+      margin 35px auto
+      background-size cover
+      background-position 50%
+      backgound-repeat no-repeat
+      border-radius 100px
+      .transitioning &
+        display none
+  .field
+    &[data-field=name]
+      font-weight 300
+      font-size 32px
+      display block
+      text-transform lowercase
+      // @media (min-width: 1200px)
+      //   margin 20px 0 8px
+      // @media (min-width: 769px) and (max-width: 1199px)
+      //   margin 15px 0 8px
+      // @media (min-width: 768px) and (max-width: 979px)
+      //   margin 12px 0 8px
+      // @media (min-width: 481px) and (max-width: 767px)
+      //   margin 10px 0 8px
+      // @media (max-width: 480px)
+      //   margin 20px 0 15px
+
+    &[data-field=business]
+      font-weight 900
+      text-transform uppercase
+      font-size 11px
+      letter-spacing 1px
+    &[data-field=description]
+      size = round(fontSize * .9)
+      font-size size
+      line-height fontSize
+      text-transform none
+      letter-spacing 0px
+      margin-bottom 5px
+
+  section.main
+    height height
+    box-sizing border-box
+    *
+      padding-right 20px
+
+  section.actions
+    height height
+    user-select none
+    ul
+      display block
+      height 100%
+      width 100%
+      margin 0
+      padding 0
+      li
+        action(4, 1)
+        relative right -1px
+
+
+
+  section.data
+    relative right -2px
+    padding 0 0 0 0
+    height height
+    overflow hidden
+    after = 10px
+    actual = 20px
+    mix-after()
+      font-size after
+      line-height after
+    mix-actual()
+      font-size actual
+      line-height actual
+      padding-top 10px
+      font-weight 300
+    div
+      float left
+      height 100%
+      position relative
+      span
+        relative left 10%
+        width 80%
+        display block
+        &.actual
+          mix-actual()
+        &.after
+          mix-after()
+      &.price
+        span:first-letter
+          font-size after
+          line-height after
+          vertical-align top
+          font-weight normal
+      &.updatedAt
+        span
+          font-size s = round((actual + after) * 0.4)
+          line-height (s * 0.8)
+      .metric
+        absolute bottom
+        width 100%
+        padding-bottom 85px
+        z-index 3
+        height 100%
+        max-height 85px
+        box-shadow inset 0 -50px 50px rgba(#e0d7d9, .1) inset
+        span
+          color white
+      .bg
+        absolute bottom 100%
+        display none
+        width 100%
+        height 100%
+        z-index 2
+        margin-bottom gap
+
+
+    i.glyph
+      absolute bottom left
+      font-size 25px
+      width 100%
+      z-index 10
+      color rgba(black, .1)
+
+  .extension
+    relative top
+    margin-top gap
+    width 100%
+    display none
+    box-shadow 0 -1px 0px rgba(black, .15)
+    border-top 1px solid rgba(white, .6)
+    header
+      text-align center
+      padding 10px
+      font-size 20px
+      margin gap 0
+
+    &[data-extension=map]
+      .inner
+        height height
+      .address-container
+        absolute top right
+        .time
+        .address
+          background rgba(white, .9)
+          padding 10px
+          margin 10px
+          box-shadow 0 0px 2px rgba(black, .4)
+          font-weight 500
+          text-shadow 0 1px 1px white
+          text-align center
+          text-transform capitalize
+          font-size 12px
+          text-transform uppercase
+          letter-spacing 1px
+          .value
+            font-weight 600
+
+    &[data-extension=message]
+      .inner
+        position relative
+        height (height / 2)
+      .message-area
+        action(2, 0)
+        width 100%
+        height 100%
+        absolute top left
+        font-size 16px
+        opacity 1
+        text-align center
+      textarea
+        width 100%
+        height 100%
+        absolute top left
+        z-index 1
+        font-size 16px
+        line-height 24px
+        padding 15px
+        padding-left 25px
+        border none
+        box-sizing border-box
+        &:focus
+          box-shadow none
+      .send
+        action(2, 0)
+        position absolute
+        right 0
+    &[data-extension=reserve]
+      // display block
+      .reserve
+        action(2,0)
+        span
+          display block
+
+
+
+#Tagsets
+  ul
+    li
+      margin-right 20px
+      font-size 20px
+      display inline
+#tags
+  ul
+    float left
+
+.admin
+  relative top
+  *
+    font-family monospace!important
+  pre
+  input
+  textarea
+  button
+    width 100%
+    box-sizing border-box
+    font-size 12px
+    line-height 12px
+  button.btn
+    margin-bottom 10px
+    border 1px solid #ccc
+  .name
+    font-weight normal
+    text-align right
+  .status
+    margin-top 0
+    &.error
+      color red
+      &:before
+        content "in"
+
+
+
+.help-unit
+  .intro
+  h3
+    text-align center
+  div
+    padding-bottom 2em
+
+.file-table
+  .file-input
+    input[type=file]
+      opacity 0
+      display none
+    .proxy
+      relative top
+      border 5px dashed black
+      box-sizing border-box
+      color black
+      margin 0 auto 30px
+      opacity .3
+      height 100%
+      width 100%
+      trans(opacity)
+      &:hover
+        opacity .8
+      span
+        absolute top
+        width 80%
+        left 10%
+        font-size 24px
+        font-weight bold
+        vertical-align middle
+        text-align center
+        display inline-block
+
+  .file
+  .file-input
+    transform scale(0.9)
+
+  .file
+    float left
+    padding 1px
+    box-sizing border-box
+    text-align center
+    div.image
+      width 100%
+      min-height 100px
+      background-size contain
+      .transitioning &
+        opacity 0
+    img
+      trans(opacity)
+      opacity 1
+      .transitioning.from_home &
+        anim(fade-in-full)
+      .transitioning.to_home &
+        anim(fade-in-full)
+        animation-direction reverse
+    span
+      font = fontSize * 2
+      size = fontSize * 3
+      font-size font
+      height size
+      line-height size
+      display inline-block
+      padding (fontSize / 2) 0
+      margin 0 (fontSize / 2)
+      box-sizing border-box
+      color white
+      opacity .7
+      &[data-active=true]
+      &:hover
+        opacity 1
+      i
+        display inline
+        height size
+        line-height size
+
+
+.glyphs-list
+  .inner
+    margin 0 auto
+    float none
+    position relative
+  .glyph
+    float left
+    text-align center
+    background #eee
+    height 100px
+    line-height 100px
+    margin-top gap
+    div
+      font-size 35px
+
+.color-bucket
+  relative top
+  height 250px
+  width 250px
+  margin 0 auto
+  border-radius 3px
+  box-shadow 0 1px 3px rgba(black, .3)
+
+  border 1px solid rgba(black, .3)
+  border-top-color rgba(white, .2)
+  border-bottom-color rgba(black, .4)
+
+.data
+  padding-bottom 15px
+  text-align center
+
+input.color
+  color white
+  text-align center
+
+.icon
+  opacity 0.7
+  display inline
+  text-align center
+  &:hover
+    opacity 1
+    span
+      opacity 1
+  i
+    font-size 2em
+    padding 20px
+  span
+    display inline
+    opacity .5
+
+.accounts-dialog
+  .additional-link
+    text-transform none
+    letter-spacing 0
+    font-weight normal
+    text-decoration none!important
+    padding 3px 3px 0
+
+.alert
+  border-radius 0
+  text-shadow none
+  .clr-bg &
+    color white
+  &:first-letter
+    text-transform capitalize
+  &.alert-blend-in
+    background none
+    border none
+    line-height 0
+    padding 0 (fontSize * 2) 0 fontSize
+    margin 0
+    opacity 0
+    &.in
+      trans(opacity padding line-height)
+      opacity 1
+      line-height 1.5
+      margin-bottom (fontSize / 2) 0
+
+
+// .dhtmlx_message_area
+//   fixed right 5px
+//   top 83px!important
+//   width 250px
+//   z-index 1000
+//   *
+//     font-family "proxima-nova"
+//   .dhtmlx-info
+//     transition all .5s ease
+//     z-index 10000
+//     display block
+//     min-width 120px
+//     height height
+//     line-height height
+//     padding 5px 15px
+//     box-shadow 0 1px 5px rgba(black, 0.1)
+//     border none
+//     border-radius 0
+//     font-weight 600
+//     margin 5px
+//     margin-bottom 10px
+//     opacity 1
+//     overflow hidden
+//     i
+//       padding 2px 15px 2px 0
+//       vertical-align middle
+//       font-size 30px
+//       line-height height
+//       height 100%
+//       margin 0
+//       float left
+//       position relative
+//     div
+//       border-radius 0
+//       border none
+//       background none
+//       padding 0
+//       margin 0
+//       height height
+//       line-height height
+//     &.hidden
+//       height 0
+//       overflow hidden
+//       padding 0
+//       opacity 0
+//       margin 0
+//     status(col)
+//       desat = desaturate(darken(col, 30%), 80%)
+//       background desaturate(lighten(col, 90%), 40%)
+//       color desat
+//       border-bottom 1px solid rgba(desat, 0.7)
+//       border-left 1px solid rgba(desat, 0.4)
+//       border-right 1px solid rgba(desat, 0.4)
+//       border-top 1px solid rgba(desaturate(col, 60%), 0.5)
+//     &[class*="success"]
+//       status(#89dd7c)
+//     &[class*="warning"]
+//       status(#db7d7d)
+//     &[class*="neutral"]
+//       status(#9696aa)
+
+.message-container
+  color = rgba(white, .3)
+  background color
+  margin-bottom 20px
+  footer
+  article > *
+    padding 20px
+  article
+    border-bottom 1px solid rgba(black, .15 )
+    relative top
+    overflow hidden
+    *
+      box-sizing border-box
+    .from
+      font-weight bold
+    .inner
+    textarea
+      border none
+      border-left 2px solid rgba(black, 0.3)
+      padding-left 10px
+      box-sizing border-box
+    .sent
+      absolute right
+      height 100%
+      text-align center
+    &.compose
+      light = rgba(white, .8)
+      color light
+      textarea
+        width 100%
+        box-shadow none
+        border-color rgba(black, .5)
+        color light
+      .sent
+        background rgba(white, .01)
+        font-weight bold
+        &:hover
+          background rgba(white, .1)
+
+
+.modal
+  &.fade
+    top -35%
+  border-radius 0
+  .alert
+    &.fade
+      display none
+      &.in
+        display block
+  button.clr-bg
+    color rgba(white, 1)
+    text-shadow 0 -1px 0 rgba(black, 0.7)
+    &:hover
+      color rgba(white, 1)
+  textarea
+  button
+  input
+    width 100%
+    height 32px
+
+#intro
+  position absolute
+  text-align center
+  shadow = inset 0 100px 500px -51px rgba(255,255,255, 0.3)
+  width 100%
+  .body
+    margin-bottom 50px
+    div
+      width 500px
+      height 124px
+      background-image url("/connected-logo-big.png")
+      background-size contain
+      background-repeat no-repeat
+      background-position 0 50%
+      margin 0 auto
+    h3
+      max-width 700px
+      display block
+      margin 0 auto
+  footer
+    width 100%
+    text-align center
+    display block
+    margin 0 auto
+    float none
+
+    button
+    h4
+    div
+      display inline-block
+      margin-bottom 0
+      margin-top 0
+      height 38px
+    h4
+      margin 0 20px
+    button
+      height 100%
+      box-shadow shadow
+
+// #prologue
+//   h1,h2,h3,h4,h5,h6
+//     text-align center
+
+////////////////////////////////////////////////
+//$$ dynamic stylesheet
+
+.clr-text
+  transition color 100ms ease 0
+
+.clr-bg
+  &.help-mode
+    transition background 500ms ease 0
+  transition background 200ms ease 0
+  &:hover
+    transition background 200ms ease 0
+
+Duration = 2000ms
+
+easing(args...)
+  transition-easing-function linear
+  if args
+    transition-duration args!important
+  else
+    transition-duration 500ms!important
+
+[data-help-block]
+  outline = 3px
+  // box-shadow none
+  trans(all)
+  &[data-help-block=true]
+    outline outline solid transparent
+    outline outline solid rgba(black, 0.2)
+    overflow visible
+    opacity .9!important
+    &.offer
+      opacity 0
+      display none
+      &:first-child
+        display block
+    &:hover
+      opacity 1!important
+      easing( 200ms )
+    transform scale( .75)
+    background rgba(white, 0.4)
+    box-shadow 0 1px 2px rgba(black, .3)
+    *
+      trans(all)
+      easing()
+      opacity 0
+    [data-help-block]
+      background rgba(white, 0.4)
+      opacity 1
+      li
+        opacity 0!important
+    &.help-active
+    &[help-active=true]
+    &[help-active=false]
+      transition-duration 200ms
+    &.help-active
+    &[help-active=true]
+    &:hover
+      transform scale( .8 )
+      box-shadow 0 0 60px rgba(white, .25 )
+      background rgba(white, .6)
+      outline 3px solid rgba(black, .1 )
+      [data-help-block]
+        background rgba(black, 0)
+        outline 3px solid rgba(black, .3 )
+        box-shadow 0 1px 2px rgba(black, .2)
+
+//////////////////////////////////////////////
+//  $$ help-mode
+
+
+.clr-bg.dark
+  &.help-mode
+  .help-mode &
+    trans(background-color)
+    easing()
+
+// body
+//   trans(all)
+
+.current
+  top 0
+  trans(transform top)
+  .help-mode &
+    transform scale( .9 )
+    top 50px
+
+.ceiling
+  trans(background)
+  easing()
+  user-select none
+  .help-mode &
+    overflow visible!important
+    background transparent!important
+
+.terrace
+  display none
+  opacity 0
+  [data-rally=help] &
+  [data-rally=alert] &
+    display block
+    opacity 1
+
+#terrace-help
+  relative top
+  wdith 70%
+  margin 0 0 0 15%
+  padding-bottom 0
+  trans(opacity max-height)
+  [data-rally=help] &
+    opacity 1!important
+    display block
+    overflow visible!important
+    height 100%
+
+speed = 400ms
+
+#terrace-alert
+  font-weight 300
+  font-family "proxima-nova"
+  color rgba(white, .8)
+  [data-rally=alert] &
+    .terrace-alert-pane
+      overflow hidden
+      &.rally-in
+        anim(rally-in)
+        animation-duration speed
+      &.rally-out
+        anim(rally-in)
+        animation-duration speed
+        animation-direction reverse
+        opacity 0
+        display none
+      p
+        margin 0
+        padding 10px 0
+        &:first-letter
+          text-transform capitalize
+
+@keyframes rally-in
+  from
+    opacity 0
+    transform translateY( -5px )
+  to
+    opacity 1
+    transform translateY( 0 )
+
+#dimmer
+  fixed top left
+  width 100%
+  height 100%
+  z-index 200
+  background white
+  display none
+  opacity 0
+  trans(opacity)
+  &.on
+    trans(opacity)
+    anim(fade-in-half)
+    animation-duration speed
+    display block
+    opacity .5
+  &.off
+    anim(fade-in-half)
+    animation-duration speed
+    animation-direction reverse
+    opacity 0
+    display none
+
+.wrapper
+  absolute top left
+  display block
+  width 100%
+  height 100%
+  overflow visible
+  trans(all)
+
+.wrapper
+.wrapper.clr-bg.dark
+  transition-duration 2000ms!important
+
+
+s = 90%
+l = 40%
+variation = 130
+
+prime = hsla(200, s, l, 1)
+comp = hsla((hue(prime) + variation), s, l, 1)
+triad  = hsla((hue(prime) - variation), s, l, 1)
+
+.clr-gradient
+  background linear-gradient(top right, lighten(saturate(prime, 100%), 10%), prime)
+  color white
+  padding-bottom 20px
+
+a
+  color prime
+  &:hover
+    color darken(prime, 20%)
+
+.clr-text
+  color prime
+  &.hvr
+    &:hover
+      color darken(prime, 20%)
+  &.clr-bg
+    &.hvr
+      :hover
+        white
+
+clr-bg(a)
+  background a
+  &.dark
+    background darken(a, 50%)
+  &.light
+    background lighten(a, 50%)
+  &.btn
+    color white
+    &.active
+    &:hover
+      background darken(a, 20%)
+
+.clr-bg
+  clr-bg(prime)
+  &.prime
+    clr-bg(prime)
+  &.comp
+    clr-bg(comp)
+  &.triad
+    clr-bg(triad)
+
+
+
+
+
+.tag-list.isotope
+  height 200px!important
+  overflow visible!important
+
+
+
+
+
+@charset "utf-8";
+
+
+.mocha-form
+  label
+    em
+      font-size 1em - 20%
+
+#mocha
+  ul
+  li
+    margin: 0
+    padding: 0
+
+  ul
+    list-style: none
+
+  h1
+  h2
+    margin: 0
+
+  h1
+    margin-top: 15px
+    font-size: 1em
+    font-weight: 200
+
+    a
+      text-decoration: none
+      color: inherit
+
+      &:hover
+        text-decoration: underline
+
+  .suite
+    .suite h1
+      margin-top 0
+      font-size .8em
+      line-height 1.5
+
+  .hidden
+    display: none
+
+  h2
+    font-size: 12px
+    font-weight: normal
+    cursor: pointer
+
+  .suite
+    margin-left: 15px
+
+  .test
+    margin-left: 15px
+    overflow: hidden
+
+    &.pending:hover h2::after
+      content: '(pending)'
+      font-family: arial
+
+    &.pass.medium .duration
+      background: #C09853
+
+    &.pass.slow .duration
+      background: #B94A48
+
+    &.pass::before
+      content: '✓'
+      font-size: 12px
+      display: block
+      float: left
+      margin-right: 5px
+      color: #00d6b2
+
+    &.pass .duration
+      font-size: 9px
+      margin-left: 5px
+      padding: 2px 5px
+      color: white
+      box-shadow: inset 0 1px 1px rgba(0,0,0,.2)
+      border-radius: 5px
+
+    &.pass.fast .duration
+      display: none
+
+    &.pending
+      color: #0b97c4
+
+    &.pending::before
+      content: '◦'
+      color: #0b97c4
+
+    &.fail
+      color: #c00
+
+    &.fail pre
+      color: black
+
+    &.fail::before
+      content: '✖'
+      font-size: 12px
+      display: block
+      float: left
+      margin-right: 5px
+      color: #c00
+
+    pre
+      display: block
+      float: left
+      clear: left
+      font: 12px/1.5 monaco, monospace
+      margin: 5px
+      padding: 15px
+      border: 1px solid #eee
+      border-bottom-color: #ddd
+
+      &.error
+        color: #c00
+        max-height: 300px
+        overflow: auto
+
+    h1
+    h2
+      position: relative
+      line-height 20px
+
+    a.replay
+      position: absolute
+      top: 3px
+      right: 0
+      text-decoration: none
+      vertical-align: middle
+      display: block
+      width: 15px
+      height: 15px
+      line-height: 15px
+      text-align: center
+      background: #eee
+      font-size: 15px
+      border-radius: 15px
+      transition: opacity 200ms
+      opacity: 0.3
+      color: #888
+
+    &:hover a.replay
+      opacity: 1
+
+#mocha-report.pass .test.fail
+  display: none
+
+#mocha-report.fail .test.pass
+  display: none
+
+#mocha-error
+  color: #c00
+  font-size: 1.5  em
+  font-weight: 100
+  letter-spacing: 1px
+
+#mocha-stats
+  position: fixed
+  top: 15px
+  right: 10px
+  font-size: 12px
+  margin: 0
+  color: #888
+
+#mocha-stats .progress
+  float: right
+  padding-top: 0
+
+#mocha-stats em
+  color: black
+
+#mocha-stats a
+  text-decoration: none
+  color: inherit
+
+#mocha-stats a:hover
+  border-bottom: 1px solid #eee
+
+#mocha-stats li
+  display: inline-block
+  margin: 0 5px
+  list-style: none
+  padding-top: 11px
+
+code .comment
+  color: #ddd
+
+code .init
+  color: #2F6FAD
+
+code .string
+  color: #5890AD
+
+code .keyword
+  color: #8A6343
+
+code .number
+  color: #2F6FAD
+

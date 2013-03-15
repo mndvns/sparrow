@@ -17,6 +17,7 @@
     "canvas-image-manipulation": {},
     "jqbootstrapvalidation": {},
     "publish-with-relations": {},
-    "mocha-web": {}
+    "mocha-web": {},
+    "livescript-complete": {}
   }
 }

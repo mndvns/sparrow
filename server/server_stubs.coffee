@@ -22,28 +22,29 @@ Meteor.methods
   instance_save: ( model, ctx, cb ) ->
     @unblock()
 
-    m = App.Model[ model ]
+    m = App.Model[ model ].new ctx.attributes
     c = App.Collection[ model + "s" ]
 
-    # console.log("MODEL", m )
-
-    i    = m.new ctx.attributes
-    i.id = ctx.id
-
     try
-      i.validate()
+      m.validate()
 
     catch error
       console.log("ERROR", error)
       throw new Meteor.Error( "400", error.message )
 
-    if ctx.id
-      c.update ctx.id,
-        $set: i.attributes
-    else
-      i.id = c.insert i.attributes
+    finish = (err, res) ->
+      if res
+        console.log "SUCCESS"
+        m
+      else
+        console.log "BAD STUFF"
+        m
 
-    return i
+    if ctx.id
+      c.update ctx.id, $set: m.attributes, finish
+    else
+      m.id = c.insert m.attributes, finish
+
 
   instance_destroy_mine: ( collection ) ->
     App.Collection[ collection ].remove ownerId: My.userId()

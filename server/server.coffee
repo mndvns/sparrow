@@ -63,51 +63,24 @@ Meteor.users.allow
       false
 
 
-# Tags = new Meteor.Collection 'tags'
-
-# Tags.deny
-#   insert: (userId, doc) ->
-#     console.log(doc)
-#     return true
-
-
-
-App.Collection.Offers.allow
-  insert: (userId, doc) ->
-    userId and userId is doc.ownerId
-  update: (userId, docs) ->
-    _.all docs, (doc)->
-      doc.ownerId is userId
-  remove: (userId, docs) ->
-    _.all docs, (doc)->
-      doc.ownerId is userId
-  fetch: ['ownerId']
-
-# App.Collection.Tests?.allow
-#   insert: (userId, doc) ->
-#     userId and userId is doc.ownerId
-#   update: (userId, docs) ->
-#     _.all docs, (doc)->
-#       doc.ownerId is userId
-#   remove: (userId, docs) ->
-#     _.all docs, (doc)->
-#       doc.ownerId is userId
-#   fetch: ['ownerId']
+allowUser = ( collections ) ->
+  for c in collections
+    c.allow
+      insert: (userId, doc) ->
+        userId is doc.ownerId
+      update: (userId, doc) ->
+        userId is doc.ownerId
+      remove: (userId, doc) ->
+        userId is doc.ownerId
+      fetch: ['ownerId']
 
 
-
-# if Stickers?
-App.Collection.Locations.allow
-  insert: (userId, doc) ->
-    userId and userId is doc.ownerId
-  update: (userId, docs) ->
-    _.all docs, (doc)->
-      doc.ownerId is userId
-  remove: (userId, docs) ->
-    _.all docs, (doc)->
-      doc.ownerId is userId
-  fetch: ['ownerId']
-
+allowUser([
+  App.Collection.Offers
+  App.Collection.Tests
+  App.Collection.Tags
+  App.Collection.Locations
+])
 
 #                                                         //
 #           __  ___     __  __              __            //
@@ -188,6 +161,9 @@ Meteor.methods
 
 
   editOffer: (type, opts) ->
+    console.log("GOT INSIDE")
+    return
+
     opts ?= {}
     out = {}
 

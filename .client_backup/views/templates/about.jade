@@ -1,0 +1,93 @@
+
+template(name="about")
+  .row.centered
+    .span8.offset2
+      h2.smashed.clr-text.prime.
+        Connected is a real-time web application that finds physical things near you and presents
+        them in an interchangeable format.
+    .clearfix
+    .span10.offset1
+      h4.clr-text.prime What's the beef
+      p.
+        It works with simple words -- verbs, adjectives, and nouns -- and combines them in the same
+        ways you do. The result is a complete sentence that describes what you want, so that you're seeing
+        what you want in seconds and holding it in minutes.
+      h4.clr-text.prime "What do I want?"
+      p.
+        We've rethought how people help each other, from gas stations to search engines, and created
+        a system with a different (but not new) perspective: the perspective of your mom-and-pop shop;
+        of your pharmacist; of your barista; of your mother. It's the perspective of someone who believes that
+        what you want is important and wants to help you get it.
+      p: strong.
+        Our goal is to physically unite people with what they're after by helping them discover what it is.
+      h4.clr-text.prime Here and now only
+      p.
+        It's a little ridiculous how much shipping is done these days. We won't list every single thing that
+        shouldn't have to travel, but the list is long.
+        Why shouldn't things be close to you? Why shouldn't you get something next door instead of Siberia?
+      p.
+        We believe closer is better, so we made system that feels the same way. It shuts out anything that isn't
+        available right now and right next to you.
+      p.
+        Good for you, good for your neighbors, good for your
+        city, bad for Siberians. :..(
+
+template(name="about_faq")
+  .row.centered
+    .span8.offset2
+      .accord
+        header: h4: a(href="#") So... what is Connected?
+        .body
+          p.
+            Connected is a beta application where people sell things to other people, whether that's
+            spaghetti or a space shuttle.
+            Sellers give a brief description, price, and location of their offer, then they pick adjectives
+            they think sum it up best.
+            The adjectives are how we categorize the offers and ensure that buyers
+            only see things they are interested in.
+            Once an offer is published, it's immediately visible on homepage.
+          p.
+            The homepage appears differently to everyone. It calculates where you are and what you're looking for
+            all the time, as it hides, shows, rearranges, and adjusts offers to match you. It will change even
+            without interaction to reflect the offers in real time.
+      .accord
+        header: h4: a(href="#") What does 'real time' mean?
+        .body
+          p.
+            Connected has been built from the ground up to work in the present. When things change on Connected, they
+            change for immediately and universally -- no page refreshes are ever necessary.
+            This creates an amazing environment
+            for buyers and sellers.
+          p.
+            For just one example, when someone clicks 'upvote' on an offer, that upvote is immediately
+            visible to any and everyone who sees it, and it may even change the order of everything a buyer is
+            viewing.
+      .accord
+        header: h4: a(href="#") Why can't I sell anything?
+        .body
+          p.
+            Connected is still in its beta, so lots of features and improvement are forthcoming. We'll unlock
+            the reserving and selling features when we think their ready. If you want to learn more, check
+            out our <a href="/about/roadmap">roadmap</a>.
+      .accord
+        header: h4: a(href="#") How do I create an offer?
+        .body
+          p.
+            You must be logged in to vote or create an offer. To get started, just return to 
+            the <a class="shift" href="/" data-shift-direction="right" data-shift-area="home" >homepage</a>
+            and click 'login' in the upper-right corner.
+      .accord
+        header: h4: a(href="#") What the #!*@?
+        .body
+          p.
+            Whatever you're what-the-#!*@ing about, <a href="/about/feedback">let us know</a>.
+
+template(name="about_roadmap")
+  h1 some docs
+
+template(name="about_blog")
+  h4.clr-text.prime.centered Ha! Just kidding. Aint nobody got time for that.
+
+template(name="about_feedback")
+  {{> feedback }}
+

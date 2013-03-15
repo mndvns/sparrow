@@ -2,7 +2,7 @@
   "meteor": {
     "git": "https://github.com/meteor/meteor.git",
     "branch": "master",
-    "commit": "471f661c5b32bf66746077defbbac8b2b26046c6"
+    "commit": "f07715dc70de16a7aab84e56ab0c6cbd9c1f9dc6"
   },
   "dependencies": {
     "basePackages": {
@@ -20,7 +20,8 @@
       "canvas-image-manipulation": {},
       "jqbootstrapvalidation": {},
       "publish-with-relations": {},
-      "mocha-web": {}
+      "mocha-web": {},
+      "livescript-complete": {}
     },
     "packages": {
       "moment": {
@@ -65,8 +66,8 @@
       },
       "collectionFS": {
         "git": "https://github.com/raix/Meteor-CollectionFS.git",
-        "tag": "v0.1.6",
-        "commit": "bb1bdb208a1c9da536d99f1cdcb709f551a1b3da"
+        "tag": "v0.1.7",
+        "commit": "56bd223feaeac28063888d90dad36bd53885d1e7"
       },
       "imgur": {
         "git": "https://github.com/grmlin/meteor-imgur.git",
@@ -98,12 +99,16 @@
         "tag": "v0.0.3",
         "commit": "aa37d9be6dd90d4abeba6de0b693e2e0297dfe54"
       },
+      "livescript-complete": {
+        "git": "https://github.com/quarterto/meteor-livescript.git",
+        "tag": "v0.0.1",
+        "commit": "bc8bf76adc0b8de8e2e1c3546ecabc03b4958b62"
+      },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",
         "tag": "v1.3.5",
         "commit": "b99ed8380aefd10b2afc8f18d9eed4dd0d8ea9cb"
       },
-
 
       "transitioner": {
         "git": "https://github.com/mvanasse/meteor-transitioner.git",

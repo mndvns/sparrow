@@ -1,0 +1,303 @@
+
+@font-face {
+	font-family: 'icomoon';
+	src:url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.eot');
+	src:url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.eot?#iefix') format('embedded-opentype'),
+		url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.woff') format('woff'),
+		url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.ttf') format('truetype'),
+		url('http://s3.amazonaws.com/icomoonfonts/3772/2138/f.svg#icomoon') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+/* Use the following CSS code if you want to use data attributes for inserting your icons */
+[data-icon]:before {
+	font-family: 'icomoon';
+	content: attr(data-icon);
+	speak: none;
+	font-weight: normal;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+}
+
+/* Use the following CSS code if you want to have a class per icon */
+/*
+Instead of a list of all class selectors,
+you can use the generic selector below, but it's slower:
+[class*="glyph-"]:before {
+*/
+.glyph-drink:before, .glyph-microphone:before, .glyph-drink-2:before, .glyph-drink-3:before, .glyph-coffee:before, .glyph-ice-cream:before, .glyph-cake:before, .glyph-pacman:before, .glyph-cassette:before, .glyph-wallet:before, .glyph-gamepad:before, .glyph-bowling:before, .glyph-space-invaders:before, .glyph-batman:before, .glyph-lamp:before, .glyph-lamp-2:before, .glyph-paper-plane:before, .glyph-tag:before, .glyph-cog:before, .glyph-checkmark:before, .glyph-checkmark-2:before, .glyph-cancel:before, .glyph-cancel-2:before, .glyph-plus:before, .glyph-plus-2:before, .glyph-minus:before, .glyph-minus-2:before, .glyph-notice:before, .glyph-notice-2:before, .glyph-chart:before, .glyph-transformers:before, .glyph-pig:before, .glyph-envelope:before, .glyph-presentation:before, .glyph-open:before, .glyph-sale:before, .glyph-ampersand:before, .glyph-atom:before, .glyph-credit-card:before, .glyph-ticket:before, .glyph-rocket:before, .glyph-box:before, .glyph-diamond:before, .glyph-3d-glasses:before, .glyph-refrigerator:before, .glyph-microwave:before, .glyph-oven:before, .glyph-washing-machine:before, .glyph-eight-ball:before, .glyph-picture:before, .glyph-ipod:before, .glyph-drink-4:before, .glyph-usb:before, .glyph-switch:before, .glyph-palette:before, .glyph-moon:before, .glyph-cone:before, .glyph-hourglass:before, .glyph-gauge:before, .glyph-key:before, .glyph-book:before, .glyph-list:before, .glyph-history:before, .glyph-info:before, .glyph-question:before, .glyph-help:before, .glyph-arrow-left:before, .glyph-arrow-right:before, .glyph-arrow-up:before, .glyph-arrow-down:before, .glyph-disk:before, .glyph-pie:before, .glyph-keyboard:before, .glyph-bell:before, .glyph-cog-2:before, .glyph-bucket:before, .glyph-map:before, .glyph-book-2:before, .glyph-vote:before, .glyph-cord:before, .glyph-list-2:before, .glyph-clipboard:before, .glyph-tag-2:before, .glyph-qrcode:before, .glyph-feather:before, .glyph-pencil:before, .glyph-location:before, .glyph-map-2:before, .glyph-info-2:before {
+	font-family: 'icomoon';
+	speak: none;
+	font-style: normal;
+	font-weight: normal;
+	line-height: 1;
+	-webkit-font-smoothing: antialiased;
+}
+.glyph-drink:before {
+	content: "\e000";
+}
+.glyph-microphone:before {
+	content: "\e001";
+}
+.glyph-drink-2:before {
+	content: "\e002";
+}
+.glyph-drink-3:before {
+	content: "\e004";
+}
+.glyph-coffee:before {
+	content: "\e005";
+}
+.glyph-ice-cream:before {
+	content: "\e003";
+}
+.glyph-cake:before {
+	content: "\e006";
+}
+.glyph-pacman:before {
+	content: "\e007";
+}
+.glyph-cassette:before {
+	content: "\e008";
+}
+.glyph-wallet:before {
+	content: "\e009";
+}
+.glyph-gamepad:before {
+	content: "\e00a";
+}
+.glyph-bowling:before {
+	content: "\e00b";
+}
+.glyph-space-invaders:before {
+	content: "\e00c";
+}
+.glyph-batman:before {
+	content: "\e00d";
+}
+.glyph-lamp:before {
+	content: "\e00e";
+}
+.glyph-lamp-2:before {
+	content: "\e00f";
+}
+.glyph-paper-plane:before {
+	content: "\e010";
+}
+.glyph-tag:before {
+	content: "\e011";
+}
+.glyph-cog:before {
+	content: "\e012";
+}
+.glyph-checkmark:before {
+	content: "\e013";
+}
+.glyph-checkmark-2:before {
+	content: "\e014";
+}
+.glyph-cancel:before {
+	content: "\e015";
+}
+.glyph-cancel-2:before {
+	content: "\e016";
+}
+.glyph-plus:before {
+	content: "\e017";
+}
+.glyph-plus-2:before {
+	content: "\e018";
+}
+.glyph-minus:before {
+	content: "\e019";
+}
+.glyph-minus-2:before {
+	content: "\e01a";
+}
+.glyph-notice:before {
+	content: "\e01b";
+}
+.glyph-notice-2:before {
+	content: "\e01c";
+}
+.glyph-chart:before {
+	content: "\e01d";
+}
+.glyph-transformers:before {
+	content: "\e01e";
+}
+.glyph-pig:before {
+	content: "\e01f";
+}
+.glyph-envelope:before {
+	content: "\e020";
+}
+.glyph-presentation:before {
+	content: "\e021";
+}
+.glyph-open:before {
+	content: "\e022";
+}
+.glyph-sale:before {
+	content: "\e023";
+}
+.glyph-ampersand:before {
+	content: "\e024";
+}
+.glyph-atom:before {
+	content: "\e025";
+}
+.glyph-credit-card:before {
+	content: "\e026";
+}
+.glyph-ticket:before {
+	content: "\e027";
+}
+.glyph-rocket:before {
+	content: "\e028";
+}
+.glyph-box:before {
+	content: "\e029";
+}
+.glyph-diamond:before {
+	content: "\e02a";
+}
+.glyph-3d-glasses:before {
+	content: "\e02b";
+}
+.glyph-refrigerator:before {
+	content: "\e02c";
+}
+.glyph-microwave:before {
+	content: "\e02d";
+}
+.glyph-oven:before {
+	content: "\e02e";
+}
+.glyph-washing-machine:before {
+	content: "\e02f";
+}
+.glyph-eight-ball:before {
+	content: "\e030";
+}
+.glyph-picture:before {
+	content: "\e031";
+}
+.glyph-ipod:before {
+	content: "\e032";
+}
+.glyph-drink-4:before {
+	content: "\e033";
+}
+.glyph-usb:before {
+	content: "\e034";
+}
+.glyph-switch:before {
+	content: "\e035";
+}
+.glyph-palette:before {
+	content: "\e036";
+}
+.glyph-moon:before {
+	content: "\e037";
+}
+.glyph-cone:before {
+	content: "\e038";
+}
+.glyph-hourglass:before {
+	content: "\e039";
+}
+.glyph-gauge:before {
+	content: "\e03a";
+}
+.glyph-key:before {
+	content: "\e03b";
+}
+.glyph-book:before {
+	content: "\e03c";
+}
+.glyph-list:before {
+	content: "\e03d";
+}
+.glyph-history:before {
+	content: "\e03e";
+}
+.glyph-info:before {
+	content: "\e03f";
+}
+.glyph-question:before {
+	content: "\e040";
+}
+.glyph-help:before {
+	content: "\e041";
+}
+.glyph-arrow-left:before {
+	content: "\e042";
+}
+.glyph-arrow-right:before {
+	content: "\e043";
+}
+.glyph-arrow-up:before {
+	content: "\e044";
+}
+.glyph-arrow-down:before {
+	content: "\e045";
+}
+.glyph-disk:before {
+	content: "\e046";
+}
+.glyph-pie:before {
+	content: "\e047";
+}
+.glyph-keyboard:before {
+	content: "\e048";
+}
+.glyph-bell:before {
+	content: "\e049";
+}
+.glyph-cog-2:before {
+	content: "\e04a";
+}
+.glyph-bucket:before {
+	content: "\e04b";
+}
+.glyph-map:before {
+	content: "\e04c";
+}
+.glyph-book-2:before {
+	content: "\e04d";
+}
+.glyph-vote:before {
+	content: "\e04e";
+}
+.glyph-cord:before {
+	content: "\e04f";
+}
+.glyph-list-2:before {
+	content: "\e050";
+}
+.glyph-clipboard:before {
+	content: "\e051";
+}
+.glyph-tag-2:before {
+	content: "\f02b";
+}
+.glyph-qrcode:before {
+	content: "\f029";
+}
+.glyph-feather:before {
+	content: "\e053";
+}
+.glyph-pencil:before {
+	content: "\e052";
+}
+.glyph-location:before {
+	content: "\e054";
+}
+.glyph-map-2:before {
+	content: "\e055";
+}
+.glyph-info-2:before {
+	content: "\e056";
+}

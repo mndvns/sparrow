@@ -1,0 +1,104 @@
+
+template(name="editor")
+  .doc-editor
+    .row-fluid
+      .span10
+        textarea(data-text-type="update insert", rows="{{key_count this 2}}") {{{json this}}}
+      .span2
+        button.btn.save(data-save-type="update") update
+        button.btn.save(data-save-type="insert") insert
+        button.btn.save(data-save-type="remove") remove
+
+    .row-fluid
+      .span10
+        pre {"actual": ""}
+
+    .row-fluid
+      .span10
+        input.text(data-text-type="set set-all", type="text").input-block-level
+      .span2
+        button.btn.save(data-save-type="set") set
+        button.btn.save(data-save-type="set-all") set all
+
+    .row-fluid
+      .span10
+        input.text(data-text-type="unset unset-all", type="text").input-block-level
+      .span2
+        button.btn.save(data-save-type="unset") unset
+        button.btn.save(data-save-type="unset-all") unset all
+  hr
+
+
+template(name="admin_section")
+  .container.admin
+    - var selectors = [{name: "query", type: "mongo", holder: "{}" }, {name: "sort", type: "mongo", holder: "{}" }, {name: "pick1", type: "underscore", holder: "{{getStore 'nab_pick1'}}" }, {name: "pick2", type: "underscore", holder: "{{getStore 'nab_pick2'}}" } ]
+    for s in selectors
+      .row-fluid
+        .span2
+          .name= s.name
+        .span8
+          input.selector.text(data-selector-type=s.type, type="text", placeholder=s.holder, id= s.name ).input-block-level
+        .span2
+          h6.status valid
+    hr
+    {{#each nab}}
+    {{> editor }}
+    {{/each}}
+
+
+template(name="admin")
+  {{> admin_collections_sorts }}
+
+template(name="admin_collections_sorts")
+  {{> admin_section }}
+
+template(name="admin_collections_tags")
+  {{> admin_section }}
+
+template(name="admin_collections_locations")
+  {{> admin_section }}
+
+template(name="admin_collections_offers")
+  {{> admin_section }}
+
+template(name="admin_tests")
+  {{> admin_tests_offers }}
+
+template(name="admin_tests_sorts")
+  {{> mocha }}
+
+template(name="admin_tests_tags")
+  {{> mocha }}
+
+template(name="admin_tests_users")
+  {{> mocha }}
+
+template(name="admin_tests_offers")
+  {{> mocha }}
+
+template(name="mocha")
+  form.mocha-form.row
+
+    // .span4.offset2
+    //   label
+    //     strong log listener 
+    //     em (console, log, or none)
+    //   input.text(type="text", data-type="log_listener", value="{{ store 'get' 'test_log_listener' }}")
+    //   .clearfix
+
+    // .span4
+    //   label
+    //     strong log object 
+    //     em (true or false)
+    //   input.text(type="text", data-type="log_object", value="{{ store 'get' 'test_log_object' }}")
+
+    // .clearfix
+
+    // .span4.offset2
+    //   label
+    //     strong clear db 
+    //     em (true or false)
+    //   input.text(type="text", data-type="db_clear", value="{{ store 'get' 'test_db_clear' }}")
+    //   .clearfix
+
+  #mocha

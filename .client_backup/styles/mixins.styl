@@ -1,0 +1,38 @@
+
+
+// filter(args)
+//   -webkit-filter args
+//   -mox-filter args
+//   -ms-filter args
+//   -o-filter args
+//   filter args
+
+filter()
+  vendor('filter', arguments, only: webkit moz o ms official)
+
+
+radial-gradient(color, degree, height, args)
+
+  background -webkit-radial-gradient(center, ellipse cover, rgba(color, (1 * degree)) 0%, rgba(color, (.5 * degree)) 20%, rgba(color, 0) 70%)
+  background -moz-radial-gradient(center, ellipse cover, rgba(color, (1 * degree)) 0%, rgba(color, (.5 * degree)) 20%, rgba(color, 0) 70%)
+  background -ms-radial-gradient(center, ellipse cover, rgba(color, (1 * degree)) 0%, rgba(color, (.5 * degree)) 20%, rgba(color, 0) 70%)
+  background -o-radial-gradient(center, ellipse cover, rgba(color, (1 * degree)) 0%, rgba(color, (.5 * degree)) 20%, rgba(color, 0) 70%)
+
+  background-repeat no-repeat
+
+  border-width 0
+
+  if args is "top"
+    background-position 0 (-(height / 2))
+    box-shadow 0 1px 0 rgba(color, degree + (degree * .3)) inset
+    reversal = "bottom"
+  if args is "bottom"
+    background-position 0 (height / 2)
+    box-shadow 0 -1px 0 rgba(color, degree + (degree * .3)) inset
+    reversal = "top"
+
+  border-{args} 1px solid rgba(white, .9)
+  margin-{reversal} 0
+  height height
+
+

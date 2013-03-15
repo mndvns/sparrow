@@ -18,6 +18,12 @@ Meteor.startup ->
     console.log "         ", j[i]
     i += 1
 
+  # path = require 'path'
+  # base = path.resolve '.'
+  # isBundle = path.existsSync( base + '/bundle' )
+  # modulePath = base + (isBundle ? '/bundle/static' : '/public') + '/node_modules'
+
+
   # App.Collection.Offers._ensureIndex loc: "2d"
 
   App.Collection.Locations._ensureIndex geo: "2d"

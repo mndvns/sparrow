@@ -8,25 +8,32 @@
 #   replaceHost: true
 #   rootUrl: "http://deffenbaugh.herokuapp.com"
 
-App.Collection =
 
-  Tests    : new Meteor.Collection "tests"
-
-  Images   : new Meteor.Collection "images"
-  Users    : new Meteor.Collection "userData"
-
-  Tagsets  : new Meteor.Collection "tagsets"
-  Sorts    : new Meteor.Collection "sorts"
-
-  Messages : new Meteor.Collection "messages"
-  Alerts   : new Meteor.Collection "alerts"
 
 String::toProperCase = ->
   @replace /\w\S*/g, (txt) ->
     txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
 
+String::repeat = (num)->
+  out = new Array( num + 1 ).join ""
+  out
+
+arrayRepeat = (value, len) ->
+  len +=1
+  out = []
+  out.push(value) while len -=1
+  out
+
+
+
+
 numberWithCommas = (x)->
   x?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+
+
+
+
+
 
 Color = net.brehaut.Color
 
@@ -77,18 +84,18 @@ My =
       return Meteor.userId()
 
   offer: ->
-    App.Collection.Offers.findOne(
+    Offers?.findOne(
       ownerId: Meteor.userId() or @userId
     )
 
   offerId: ->
     if Meteor.isServer
-      return App.Collection.Offers.findOne(
+      return Offers?.findOne(
         ownerId: @userId
       )?._id
 
     if Meteor.isClient
-      return App.Collection.Offers.findOne(
+      return Offers?.findOne(
         ownerId: Meteor.userId()
       )?._id
 
@@ -105,7 +112,7 @@ My =
 Meteor.methods
 
   getRandomOffer: (cb) ->
-    offers = App.Collection.Offers.find({}).fetch()
+    offers = Offers?.find({}).fetch()
     offer = offers[_.random(0, offers?.length)]
 
   insertTag: (obj) ->
@@ -187,13 +194,13 @@ distance = (lat1, lon1, lat2, lon2, unit) ->
   dist = dist * 0.8684  if unit is "N"
   dist
 
-type = (obj) ->
-  if obj == undefined or obj == null
-    return String obj
-  classToType = new Object
-  for name in "Boolean Number String Function Array Date RegExp".split(" ")
-    classToType["[object " + name + "]"] = name.toLowerCase()
-  myClass = Object.prototype.toString.call obj
-  if myClass of classToType
-    return classToType[myClass]
-  return "object"
+# type = (obj) ->
+#   if obj == undefined or obj == null
+#     return String obj
+#   classToType = new Object
+#   for name in "Boolean Number String Function Array Date RegExp".split(" ")
+#     classToType["[object " + name + "]"] = name.toLowerCase()
+#   myClass = Object.prototype.toString.call obj
+#   if myClass of classToType
+#     return classToType[myClass]
+#   return "object"

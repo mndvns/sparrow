@@ -1,0 +1,298 @@
+
+
+mixin Field( opt )
+  .control-group
+    label.control-label #{opt.label}
+
+    if opt.charMax
+      validate_maxlength = "maxlength=" + opt.charMax
+    if opt.type == "email"
+      validate_email_message = "data-validation-email-message='Invalid email'"
+    if opt.type == "number"
+      validate_number = "data-validation-number-message='Please enter a number'"
+
+    if opt.max
+      validate_max = "max=" + opt.max
+      validate_max_message = "data-validation-max-message='Too high'"
+    if opt.min
+      validate_min = "min=" + opt.min
+      validate_min_message = "data-validation-min-message='Too low'"
+
+
+
+    if validate_maxlength || validate_email_message || validate_number
+      validate = 'data-validate'
+
+    .controls
+      | <#{opt.el}
+      |   class="#{opt.type} #{opt.class}"
+      |   id="#{opt.id}"
+      |   type="#{opt.type}"
+      |   tabindex="#{opt.tabindex}"
+      |   value="#{opt.value}"
+      |   rows="#{opt.rows}"
+      |   placeholder="#{opt.placeholder}"
+
+      |   #{ validate_maxlength }
+      |   #{ validate_email_message }
+      |   #{ validate_number }
+      |   #{ validate_max }
+      |   #{ validate_max_message }
+      |   #{ validate_min }
+      |   #{ validate_min_message }
+      |   #{ validate }
+
+      |   #{ opt.disabled }
+      |   #{ opt.attributes }
+
+      |   >#{opt.text}</#{opt.el}>
+
+    if opt.charLeft
+      span.badge <span class="characters">characters</span> #{opt.charLeft} / #{opt.charMax}
+
+
+mixin field(i, a, z, b, m, c, ch)
+  .control-group
+    {{#constant}}
+    label.control-label #{a}
+    {{/constant}}
+    d = ch == "disabled" ? "disabled" : null
+      .controls
+        if b == "textarea"
+          | <#{i} class="#{b} #{m}" id="#{a}" type="#{b}" tabindex="#{c}" value="#{z}" #{d} rows=4 > #{z} </#{i}>
+        else
+          | <#{i} class="#{b} #{m}" id="#{a}" type="#{b}" tabindex="#{c}" value="#{z}" #{d}>
+
+    if ch !== "disabled"
+      span.badge #{ch}
+
+template(name="account")
+  {{> account_profile }}
+
+template(name='account_profile')
+  {{> account_profile_edit }}
+
+template(name='account_profile_edit')
+
+  {{#grab "User"}}
+  {{#first this.collection}}
+
+  form.account_profile_edit.span5.offset4
+    mixin field("input", "username", "{{this.username}}", "text", "span4 limited", 1 )
+    mixin Field({ el: "input", id: "email", label: "email", value: "{{getEmail.address}}", type: "email", class: "span4", tabindex: 2, attributes: "required" })
+    mixin field("input", "password", "123456", "password", "span4 limited", 2, "disabled" )
+
+  {{/first}}
+  {{/grab}}
+
+
+template(name="account_profile_colors")
+  {{#with store 'get' 'instance_offer'}}
+  {{renderColors}}
+  .area.row
+    .span12.inner
+      {{#constant}}
+      input.text.color(type='text').span10
+      .color-bucket(style='background: {{this.colors.hex}}')
+      {{/constant}}
+  {{/with}}
+
+template(name="account_profile_settings")
+  form.account_profile_settings.span5.offset4
+    {{#if equal currentUser.type "admin"}}
+    mixin Field({ el: "input", id: "admin", label: "activate admin", type: "password", class: "span4", tabindex:1, placeholder: "••••••", attributes: "disabled" })
+    {{else}}
+    mixin Field({ el: "input", id: "admin", label: "activate admin", type: "password", class: "span4", tabindex:1, placeholder: "Enter activation code" })
+    {{/if}}
+
+
+
+template(name="change_password")
+  mixin field("input", "new password", "", "password", "span4 limited", 1 )
+  mixin field("input", "new password (again)", "", "password", "span4 limited", 1 )
+
+
+template(name='account_offer')
+
+
+  .account_offer
+    {{#with store "get" "instance_offer"}}
+    {{> offer}}
+    {{/with}}
+
+    .clearfix
+    hr
+    .clearfix
+    {{{show_block "account_offer"}}}
+
+template(name='account_metrics')
+  {{#with getUser}}
+  ul
+    li
+      strong Offers: 
+      {{offers}}
+    li
+      strong Votes: 
+      {{votes.length}}{{/with}}
+
+
+template(name="account_offer_info")
+  {{#with store 'get' 'instance_offer'}}
+  .area.offer-bind-fields
+    form
+      .span5.offset1
+        mixin Field({ el: "input", label: "name", id: "name", value: "{{this.name}}", type: "text", class: "span4", tabindex: 1, charLeft: "{{charLeft 'name'}}", charMax: "{{charMax 'name'}}"})
+        mixin Field({ el: "textarea", label: "description", id: "description", text: "{{this.description}}", type: "textarea", class: "span4 limited", tabindex: 2, charLeft: "{{charLeft 'description'}}", charMax: "{{charMax 'description'}}", rows: 6 })
+      .span5
+        mixin Field({ el:"input", label: "business", id: "business", value: "{{this.business}}", type: "text", class: "span4", tabindex: 3, charLeft: "{{charLeft 'business'}}", charMax: "{{charMax 'business'}}" })
+        mixin Field({ el: "input", label: "price", id: "price", value: "{{this.price}}", type: "number", class: "span2", tabindex: 4, max: 2000, min: 5})
+        // mixin field("input", "price", "{{this.price}}", "text", "span2", 4 )
+    .clearfix
+  {{/with}}
+
+template(name="account_offer_tags")
+
+  {{aggregateStintTags}}
+
+  {{#with getStore "stint_tags"}}
+  #offer-tag-list.row-fluid
+
+
+    ul.tagsets.span4
+      li.header
+        span tagsets
+      li.sub-header.span12
+        span.span6 name
+        span.span4 count
+      hr.shadow.bottom.thin
+      {{#each_with_key this}}
+      li(data-active="{{active}}", data-group="tagset").clr-bg.span12
+        span.span6 {{this.name}}
+        span.span4 {{this.tags.length}}
+        span.span2: i.glyph-arrow-right
+      {{/each_with_key}}
+
+    {{#each_with_key this}}
+    ul(data-active="{{active}}").tags.span8
+      li.header
+        span tags
+      li.sub-header.span12
+        span.span8 name
+        span.span2 ratio
+        span.span2 rate
+      hr.shadow.bottom.thin
+      {{#each this.tags}}
+      li(data-active="{{active}}", data-group="tags", data-name="{{name}}").clr-bg.span12
+        span.span8 {{name}}
+        span.span2 {{ratio}}
+        span.span2 {{rate}}
+      {{/each}}
+
+      .clearfix
+
+      hr.shadow.top.thin
+      li.footer.span12
+        span create tag
+      li.sub-footer.span12
+        span.span2 add
+        span.span6 name
+        span.span2 ratio
+        span.span2 rate
+      hr.shadow.bottom.thin.white
+      li.create-tag(data-tagset="{{this.name}}").span12
+        span.span2.insert: i.glyph-plus-2
+        span.span6
+          input(type="text", tabindex=1).text.input-block-level
+        span.span2 {{this.ratio}}
+        span.span2 10
+
+    {{/each_with_key}}
+  {{/with}}
+
+
+template(name="account_offer_images")
+  {{#with getStore 'instance_offer'}}
+  .area
+    .file-table.row
+      .file-input.span3
+        input(name="files", type="file", multiple).file-uploader
+        .proxy
+          span click to upload a new image
+      {{#each find 'Images' '{}'}}
+      .file.span3.clr-bg
+        img(src="{{this.src}}", class="{{this.status}}")
+        {{#if this.imgur}}
+        span.select-file(data-url="{{this.src}}", data-active="{{storeEquals 'offer_active_image' this.src}}"): i.glyph-checkmark
+        {{else}}
+        span.save-file: i.glyph-disk
+        {{/if}}
+        span.delete-file: i.glyph-cancel
+        .clearfix
+      {{/each}}
+  {{/with}}
+
+
+template(name="account_offer_location")
+  {{#with store 'get' 'instance_offer'}}
+  .area.offer-bind-fields
+    form#location
+      .span5.offset3
+        mixin Field({ el: "input", label: "street", id: "street", value: "{{this.street}}", type: "text", class: "span5", tabindex: 1 , attributes: "data-validate"})
+        mixin Field({ el: "input", label: "city", id: "city", value: "{{this.city}}", type: "text", class: "span4", tabindex: 2 , attributes: "data-validate"})
+        mixin Field({ el: "input", label: "state", id: "state", value: "{{this.state}}", type: "text", class: "span2", tabindex: 3 , attributes: "data-validate"})
+        mixin Field({ el: "input", label: "zip", id: "zip", value: "{{this.zip}}", type: "text", class: "span2", tabindex: 4, attributes: "data-validate" })
+  {{/with}}
+
+template(name="account_messages")
+  {{> account_messages_inbox }}
+
+template(name="account_messages_inbox")
+  .greeting.row
+
+  {{#if findOne 'Messages' '{}'}}
+  {{#each find 'Messages' '{}' '{"sort": {"lastSent": -1}}' }}
+  {{> account_message }}
+  {{/each}}
+  {{else}}
+  h3.centered :(
+  h5.centered You don't have any messages in your inbox.
+  {{/if}}
+
+template(name="account_message")
+
+  .message-container.long.span12
+    {{#each this.content}}
+    article.clearfix
+      .from.span2 {{#first this.from}}{{this.username}}{{/first}}:
+      .message.span7: .inner {{this.message}}
+      .sent.span3 {{styleDate this.sent}}
+    {{/each}}
+    article.clearfix.compose.clr-bg
+      .from.span2 {{currentUser.username}}
+      .message.span7
+        textarea(rows=1, placeholder="...")
+      .sent.span3.send send
+
+template(name="account_messages_feedback")
+  {{> feedback }}
+
+
+template(name="account_earnings")
+  {{> account_earnings_dashboard }}
+
+template(name="account_earnings_dashboard")
+  .area.centered.span5.offset3
+    {{#if currentUser.stripe.access_token}}
+    h3 Woohoo!
+    p.
+      You've successfully connected to your Stripe account. We can now sell on your behalf!
+      Please familiarize yourself with our <a href="/account/earnings/guidelines">guidelines</a> to take
+      full advantage of Connected's system.
+    {{else}}
+    a(href="#").stripe-connect.light-blue: span Connect with Stripe
+    {{/if}}
+
+template(name="account_earnings_guidelines")
+  .row.centered
+    .span8.offset2
+      h3 guidelines
