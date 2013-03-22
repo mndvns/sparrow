@@ -23,12 +23,6 @@
 #   #   )
 
 
-# Meteor.publish "stickers", ->
-#   return Stickers.find()
-
-# Meteor.publish "stickers", ->
-#   Sticker.all()
-
 Meteor.publish "derps", (user_loc)->
   miles = 2000
   radius = (miles / 69)
@@ -56,23 +50,23 @@ Meteor.publish "derps", (user_loc)->
 
 
 # TEMP
-Meteor.publish "tags", (userLoc) ->
-  App.Collection.Tags.find {}
+# Meteor.publish "tags", (userLoc) ->
+#   App.Collection.Tags.find {}
 
-Meteor.publish "locations", ->
-  App.Collection.Locations.find {}
+# Meteor.publish "locations", ->
+#   App.Collection.Locations.find {}
 
-# Meteor.publish "user_offer", ->
-#   App.Collection.Offers.find(
-#     $or:[
-#       owner   : @userId
-#     ,
-#       ownerId : @userId
-#     ]
-#   )
+Meteor.publish "user_offer", ->
+  App.Collection.Offers.find(
+    $or:[
+      owner   : @userId
+    ,
+      ownerId : @userId
+    ]
+  )
 
-# Meteor.publish "all_offers", ->
-#   App.Collection.Offers.find()
+Meteor.publish "all_offers", ->
+  App.Collection.Offers.find()
 
 
 Meteor.publish "userData", ->
@@ -80,23 +74,23 @@ Meteor.publish "userData", ->
     type: 1
 
 
-# Meteor.publish "tagsets", ->
-#   App.Collection.Tagsets.find {}
-# 
-# Meteor.publish "sorts", ->
-#   App.Collection.Sorts.find {},
-#     sort:
-#       list_order: 1
-# 
-# Meteor.publish "messages", ->
-#   App.Collection.Messages.find involve:
-#     $in: [@userId]
-# 
-# Meteor.publish "images", ->
-#   App.Collection.Images.find
-#     owner: @userId
-#     status:
-#       $nin: ["deactivated"]
+Meteor.publish "tagsets", ->
+  App.Collection.Tagsets.find {}
+
+Meteor.publish "sorts", ->
+  App.Collection.Sorts.find {},
+    sort:
+      list_order: 1
+
+Meteor.publish "messages", ->
+  App.Collection.Messages.find involve:
+    $in: [@userId]
+
+Meteor.publish "images", ->
+  App.Collection.Images.find
+    owner: @userId
+    status:
+      $nin: ["deactivated"]
 
 Meteor.publish "alerts", ->
   App.Collection.Alerts.find owner: @userId

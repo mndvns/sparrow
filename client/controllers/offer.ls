@@ -17,7 +17,7 @@ handleActions = (event, tmpl, cb) ->
     targetEl.slideUp "fast"
     false
 
-Template.offer.helpers
+Template.offer.helpers {}=
   getDistance: (loc) ->
     myLoc = Store.get("user_loc")
     if myLoc and loc
@@ -32,7 +32,7 @@ Template.offer.helpers
     return false  unless user
     true  if _.contains(user.votes, selection)
 
-Template.offer.events
+Template.offer.events {}=
   'click .help-mode .offer': ->
     return false
 
@@ -59,7 +59,7 @@ Template.offer.events
       gorigin = new google.maps.LatLng(origin.lat, origin.long)
       dest = tmpl.data.loc
       gdest = new google.maps.LatLng(dest.lat, dest.long)
-      directionsService.route
+      directionsService.route {}=
         origin: gorigin
         destination: gdest
         travelMode: google.maps.DirectionsTravelMode.DRIVING
@@ -95,7 +95,7 @@ Template.offer.events
     form = $(tmpl.find("form"))
     form.find("button").prop 'disabled', true
 
-    Stripe.createToken
+    Stripe.createToken {}=
       number    : $(".card-number").val()
       cvc       : $(".card-cvc").val()
       exp_month : $(".card-expiry-month").val()
@@ -103,8 +103,7 @@ Template.offer.events
     , "sk_test_AAKXLw2R4kozgEqCoMFu9ufH", (status, response) ->
         if response.error
           form.find("button").prop "disabled", false
-          Meteor.Alert.set
-            text: response.error.message
+          Meteor.Alert.set text: response.error.message
         else
           console.log(response.id)
           token = response.id
@@ -164,11 +163,11 @@ adjustOfferElements = (main) ->
 
   bottom = kids[kids.length - 1].offsetTop
 
-  padding_top = (170 - bottom) * .3
+  padding_top = (170 - bottom) * 0.3
 
   return padding_top
 
-setPadding = (section_main)=>
+setPadding = (section_main) ~>
   padding_top = adjustOfferElements(section_main)
   $(section_main).css("padding-top", padding_top)
 

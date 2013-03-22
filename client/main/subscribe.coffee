@@ -4,6 +4,8 @@
 
 Meteor.subscribe "derps", Store.get("user_loc"), ->
   console.log "SUBSCRIBE READY"
+  # console.log "RISDADSASDSADASDSADSADAS", @
+
   Session.set "subscribe_ready", true
 
 Meteor.subscribe "tagsets"
@@ -20,6 +22,8 @@ Meteor.subscribe "locations"
 
 Meteor.subscribe "user_offer"
 Meteor.subscribe "all_offers"
+
+
 
 
 Meteor.subscribe "tests"

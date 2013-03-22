@@ -14,7 +14,7 @@ MongoDB  = require "mongodb"
 Future   = require "fibers/future"
 # fs       = require "fs"
 
-console.log(Meteor.settings)
+# console.log(Meteor.settings)
 
 #                                                        //
 #         ___                               __           //
@@ -67,11 +67,11 @@ allowUser = ( collections ) ->
   for c in collections
     c.allow
       insert: (userId, doc) ->
-        userId is doc.ownerId
+        My.userId() is doc.ownerId
       update: (userId, doc) ->
-        userId is doc.ownerId
+        My.userId() is doc.ownerId
       remove: (userId, doc) ->
-        userId is doc.ownerId
+        My.userId() is doc.ownerId
       fetch: ['ownerId']
 
 

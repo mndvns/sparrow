@@ -1,33 +1,104 @@
-derp =
-  asd: 123
-  qwe: 9897
 
-console.log keys derp
-console.log "ASD"
+
 
 do ->
 
-  class Model
-    attributes : {}
-    id : void
+  App.{}Util.characterize = ->
+    if not it? then return false
+    switch it
+    | "string" => "letters"
+    | "array"  => "items"
+    | "number" => "number"
+    | "object" => "values"
+    | "boolean" => "true or false"
 
-    (attributes = {}) ->
+  Storer =
+    store-method  : -> Store?[&0] "instance_#{@@@_type?.toLowerCase!}", &1
+    store-set     : -> @store-method "set", _.extend( @attr, if @id then {_id: @id} )
+    store-clear   : -> @store-method "set", null
+    store-get     : -> @store-method "get", null
 
-      if attributes._id
-        @attributes = @demongoize(attributes)
-        @id = attributes._id
+  Point =
+    point-recall  : --> App.Collection[it.toProperCase!]find "ownerId": @attr."ownerId" .fetch!
+    point-compact : ( list ) --> _.compact unique list
+    point-strip   : ( field , list ) --> map (.[field]), list
+    point-get : ( field, list ) -->
+      | field isnt list => @point-compact @point-strip field, @point-recall list
+      | _               => @point-compact @point-recall list
+    point-set : ( field, list, attr = list ) --> @set attr, @point-get field, list
+    point-jam : -> for p in @@@_points then @point-set p.field, p.list, p.attr
+
+  Lock =
+    lock-get    : -> @@@_locks[it]
+    lock-set    : -> for k, v of @@@_locks then @set k, v!
+    lock-check  : -> for l of @@@_locks then unless @get(l)?
+      @throw "An error occured during the #{l} verification process"
+
+  Default =
+    default-set   : -> for k, v of @@@_schema => @set k, v.default
+    default-null  : -> for k of @@@_schema    => @set k, null
+
+  Check =
+    check-field: ( f ) ->
+      e = ~> @throw "#{@@@name}'s #{f} property " + it
+
+      a = @attr[f]
+      s = @@@_schema[f]
+
+      switch
+      | not s? => e "does not exist"
+      | not a? => e "has not been set"
+
+      at = type a
+      st = type s.default
+      c = -> App.Util.characterize it
+
+      switch at
+      | "boolean" => return
+      | "number" =>
+        aval = a
+        verb = "be"
+        char = numberWithCommas s.max
+      | otherwise =>
+        aval = length a
+        verb = "have"
+        char = s.max + " " + c st
+
+      switch
+      | at isnt st                      => e "must have #{c st}, not #{c at}"
+      | s.min is s.max isnt aval        => e "must #{verb} exactly #{char}"
+      | s.max < aval or aval < s.min    => e "must #{verb} between #{s.min} and #{char}"
+
+      return "#{f} checked"
+
+    check-lock  : -> @lock-check!
+    check-list  : -> for i in it then @check-field i
+    check-all   : ->
+
+      @lock-set!
+      @lock-check!
+
+      @check-limit!
+      @check-list keys filter (.required), @@@_schema
+
+    check-limit : ->
+      if (not @is-persisted!) and (@@@_limit - @@@mine!count! <= 0) then @throw "Collection at limit"
+
+
+
+  class Model implements Point, Storer, Lock, Check, Default
+    attr : {}
+    id   : void
+
+    (attr = {}) ->
+
+      if attr._id
+        @attr = @demongoize attr
+        @id   = attr._id
+
       else
-        defaults = {}
-
-        for key in @_keys
-          defaults[key] = null
-
-        for lock of @@_locks
-          defaults[lock] = @@_locks[lock]()
-
-        @attributes = _.defaults attributes, defaults
-
-      console.log "ATTR", @attributes
+        @default-null!
+        @lock-set!
 
     alert: (text) ->
       if Meteor.isServer
@@ -38,311 +109,258 @@ do ->
         Meteor.Alert.set text: text
 
 
-    isPersisted: -> @id?
+    is-persisted: -> @id?
 
-    setDefaults: ->
-      for key of @@_keys
-        @attributes[key] ?= @@@_schema[key].default
-      this
+    set : ( key, val ) ->
+      @attr[key] = val
+      @
 
-    authorize: ->
-      if @attributes.ownerId isnt My.userId()
-        throw Error "User not authorized"
+    unset     : -> @attr = _.omit @attr, it
+    get       : -> @attr[it]
 
-    validate: ->
-      attr = @attributes
+    save: -->
+      try @check-all!
+      catch
+        @alert e.message
+        switch
+        | it? => it e.message
+        | _   => return
 
-      if attr.ownerId and ( attr.ownerId isnt My.userId() )
-        throw Error "User identification error"
+      @alert "Successfully saved #{@@@name}"
 
+      switch
+      | @is-persisted!  => @@@_collection.update @id, $set: @attr
+      | _               => @id = @@@_collection.insert @attr
 
-      if not @isPersisted()
-        if (@@@_limit - @@@mine().count() <= 0)
-          throw Error "Collection at limit"
+      switch
+      | it?   => it null, @attr
+      | _     => return @attr
 
-      for key in @@_keys
-
-        err  = [ "#{@@@name}'s", key, "field" ]
-
-        sk  = @@@_schema[key]
-        ak  = attr[key]
-
-        sk_type = type sk.default
-        ak_type = type ak
-
-        max   = sk.max
-        min   = sk.min
-
-        if not ak and sk.required
-          err.push "have only"
-
-        else if sk_type isnt ak_type
-          err.push "contain only"
-
-        else if (min or max)
-
-          size  = _.size(ak)
-
-          switch max is min
-            when true
-              if min isnt size
-                err.push "have exactly #{min}"
-              else
-                continue
-
-            when false
-              if max < size
-                err.push "have less than #{max}"
-              else if min >= size
-                err.push "have more than #{min}"
-              else
-                continue
-
-        else
-          continue
-
-        switch sk_type
-          when "string"
-            err.push "letters"
-          when "object"
-            err.push "properties"
-          when "boolean"
-            err.push "true or false"
-          when "array"
-            err.push "array items"
-
-        throw Error err.join(" ")
-
-    set: ( first, rest )->
-      @attributes[first] = rest
-
-    unset: (attributes)->
-      @attributes = _.omit(@attributes, attributes)
-
-    save: (cb) ->
-
-      # if Store?.get("test_log_object") is "true"
-      #   console.log("LOG_OBJECT", @attributes)
-
-      Meteor.call "instance_save", @@name, @, (err, res) ~>
-        if err
-          @alert err.reason
-          cb?(err.reason)
-        else
-          @alert "Save successful"
-          @id = res.id
-          cb?(null, res)
-
-
-    destroy: (cb)->
-      try
-        @authorize()
-      catch error
-        @alert error.message
-        cb?(error.message)
-        return this
-
-      if @isPersisted()
+    destroy: ->
+      if @is-persisted!
         @@@_collection.remove @id
         @id = null
 
-      @storeClear()
+      @store-clear!
 
-      cb?(null, this)
-      return this
+      switch
+      | it?   => it null, @
+      | _     => return @
 
-    storeSet: ->
-      extend = _.extend( @attributes, {_id: @id} )
-      Store?.set "instance_#{@@@_type?.toLowerCase()}", extend
+    mongoize: (attr = @attr) ->
+      attr._id = @id
+      @attr
 
-    storeClear: ->
-      Store?.set "instance_#{@@_type?.toLowerCase()}", null
-
-    mongoize: (attributes) ->
+    demongoize: (attr = @attr) ->
       taken = {}
-      for name, value of attributes
+      for name, value of attr
         if name.match(/^_/) then continue
         taken[name] = value
       taken
 
-    demongoize: (attributes) ->
-      taken = {}
-      for name, value of attributes
-        if name.match(/^_/) then continue
-        taken[name] = value
-      taken
+    throw : -> throw new Error it
 
-    @_schema     = {}
-    @_collection = void
-    @_type       = void
-    @_limit      = void
 
-    @new = (attributes) ->
-      out = new @(attributes)
-      # console.log "OUT", out
-      out
+    @new    = -> new @ it
+    @create = -> @new it .save()
 
-    @storeGet = ->
-      Store?.get "instance_#{ @name }"
+    @where  = (sel = {}, opt = {}) -> @_collection?.find sel, opt
+    @all    = (sel = {}, opt = {}) -> @_collection?.find sel, opt
+    @mine   = (sel = {}, opt = {}) -> @where _.extend sel, ownerId: My.userId!, opt
 
-    @create = (attributes) ->
-      @new(attributes).save()
-
-    @where = (selector = {}, options = {}) ->
-      @_collection?.find(selector, options)
-
-    @mine = (selector = {}, options = {}) ->
-      @where( _.extend(selector, ownerId: Meteor.userId()), options)
-
-    @all = (selector = {}, options = {}) ->
-      @_collection?.find(selector, options)
-
-    @toArray = (selector = {}, options = {}) ->
-      for attributes in @where(selector, options).fetch()
-        # eval is ok, because _type is never entered by user
-        new(eval(attributes._type) ? @)(attributes)
-
-    @destroyMine = ->
-      Meteor.call "instance_destroy_mine", @_collection._name.toProperCase()
-
+    @destroy-mine = -> Meteor.call "instance_destroy_mine", @_collection._name.to-proper-case!
+    @store-get    = -> Store.get "instance_#{@_type.to-lower-case!}"
 
 
   Locations = new Meteor.Collection 'locations',
-    transform: (doc)->
-      console.log(doc)
-      doc.derp = "ASD"
-      doc
+    transform: ->
+      it = Location.new it ..set "distance", ..geo-plot!
+      it .= mongoize!
+      it
 
   class Location extends Model
-    ->
-      @_type = "Location"
-      @_collection = Locations
-      @_locks =
-        ownerId : ->
-          My.userId()
-        offerId : ->
-          My.offerId()
-      @_schema =
-        geo:
-          default: [ 47, -122 ]
-          max: 2
-          min: 2
-        city:
-          default: "Kansas City"
-          max: 50
-          min: 3
-        street:
-          default: "200 Main Street"
-          max: 50
-          min: 3
-        state:
-          default: "MO"
-          max: 2
-          min: 2
-        zip:
-          default: "64105"
-          max: 5
-          min: 5
-      @_limit = 20
-      super!
+    @_type = "Location"
+    @_collection = Locations
+    @_locks =
+      ownerId: -> My.userId!
+      offerId: -> My.offerId!
+    @_schema =
+      geo :
+        default : [ 47, -122 ]
+        required: true
+        max: 2
+        min: 2
+      city :
+        default : "Kansas City"
+        required: true
+        max: 30
+        min: 0
+      street :
+        default : "200 Main Street"
+        required: true
+        max: 30
+        min: 0
+      state :
+        default : "MO"
+        required: true
+        max: 2
+        min: 2
+      zip :
+        default : "64105"
+        required: true
+        max: 5
+        min: 5
+    @_limit = 20
 
+    geo-map : ->
+      try
+        @check-list ["city", "street", "state", "zip"]
+      catch
+        @alert e.message
+        it? e.message
+        return
 
-    gmap : ->
-      geo = new google.maps.Geocoder()
-      geo.geocode params
-
-      params =
-        address: "#{@street} #{@city} #{@state} #{@zip}"
+      new google.maps.Geocoder?()
+        .geocode address: "#{@attr.street} #{@attr.city} #{@attr.state} #{@attr.zip}",
         (results, status) ~>
           if status isnt "OK"
-            console.log "We couldn't seem to find your location. Did you enter your address correctly?"
+            message = "We couldn't seem to find your location. Did you enter your address correctly?"
+            @alert message
+            cb? @throw message
+          else
+            format = (values results[0].geometry.location)[0,1]
+            @alert format
+            @set "geo", format
+            cb? null, format
 
-    @plot = ->
-      @all().map (d)->
-        myLoc = My.loc()
-        d.distance =
-          Math.round(
-            distance(
-              myLoc.lat, myLoc.long, d.geo[0], d.geo[1], "M"
-            ) * 10
-          ) / 10
-        d
+    geo-plot: ->
+      m = My.userLoc! or {lat: 39, long: -94}
+      g = @get "geo"
+
+      Math.round distance m.lat, m.long, g[0], g[1], "M" * 10 / 10
 
 
+  Tags = new Meteor.Collection 'tags',
+    transform: (doc) ->
 
+      doc.collection = "tags"
+      doc.tagset = "eat"
 
-  Tags = new Meteor.Collection 'tags'
+      # d = Tag.new doc ..rate!
+      # d = d.demongoize!
+      # console.log "DOC", d
+
+      doc
+
   class Tag extends Model
     @_type = "Tag"
     @_collection = Tags
     @_limit = 20
     @_locks =
-      ownerId: ->
-        My.userId()
-      offerId: ->
-        My.offerId()
+      ownerId: -> My.userId!
+      offerId: -> My.offerId!
+      collection: ~> (@_type + "s").to-lower-case!
     @_schema =
       name:
         default: "tag"
+        required: true
         max: 20
         min: 2
+      tagset:
+        default: "eat"
+        required: true
+        max: 10
+        min: 2
 
-  Offers = new Meteor.Collection 'offers'
+    @rate-all = ->
+      list = @all!fetch!
+      console.log "LIST", list
+
+      out = {}
+      for n in [..name for list]
+        unless n? => continue
+        out[n] ?= 0
+        out[n] += 1
+
+      lout = []
+      for key, val of out
+        o = find (.name is key), list
+        o.rate = val
+        lout.push o
+
+      lout
+
+    rate: -> @set 'rate', (@@@where name: @attr.name .count!)
+
+
+
+  Offers = new Meteor.Collection 'offers',
+    transform: ->
+      it = Offer.new it ..point-jam! ..set-nearest!
+      it .= mongoize!
+      it
+
   class Offer extends Model
-    (attr) ->
-      _type : "Offer"
-      _collection : Offers
-      _limit : 1
-      _locks :
-        ownerId: ->
-          My.userId()
-        updatedAt: ->
-          Time.now()
-      _schema :
-        business:
-          default: "your business/vendor name"
-          required: true
-          max: 30
-          min: 3
-        description:
-          default: "This is a description of the offer. Since the offer name must be very brief, this is the place to put any details you want to include."
-          required: true
-          max: 140
-          min: 3
-        image:
-          default: "http://i.imgur.com/YhUFTyA.jpg"
-        name:
-          default: "Offer"
-          required: true
-          max: 15
-          min: 3
-        price:
-          default: "10"
-          required: true
-        tags:
-          default: ""
-        tagset:
-          default: ""
-        votes_meta:
-          default: []
-        votes_count:
-          default: 0
-        published:
-          default: false
+    @_type = "Offer"
+    @_collection = Offers
+    @_limit = 1
+    @_points =
+      * field : "name"
+        list  : "tags"
+        attr  : "tags"
+      * field : "locations"
+        list  : "locations"
+        attr  : "locations"
+    @_locks =
+      ownerId: -> My.userId!
+      updatedAt: -> Time.now!
+    @_schema =
+      business:
+        default: "your business/vendor name"
+        required: true
+        max: 30
+        min: 3
+      description:
+        default: "This is a description of the offer. Since the offer name must be very brief, this is the place to put any details you want to include."
+        required: true
+        max: 140
+        min: 3
+      image:
+        default: "http://i.imgur.com/YhUFTyA.jpg"
+      locations:
+        default: []
+      name:
+        default: "Offer"
+        required: true
+        max: 15
+        min: 3
+      price:
+        default: 10
+        required: true
+        min: 3
+        max: 2000
+      tags:
+        default: ""
+      tagset:
+        default: ""
+      votes_meta:
+        default: []
+      votes_count:
+        default: 0
+      published:
+        default: false
 
-      super attr
 
-  @loadStore = ->
-    unless @handle
-      @handle = Meteor.autorun ~>
-        # if Session.get("subscribe_ready") is true
-        #   if @storeGet()
-        #     return
-        #   else if @mine().count()
-        #     @new( My.offer() ).storeSet()
-        #   else
-        #     @new().setDefaults().storeSet()
+    nearest     : -> minimum [..distance for @get "locations"]
+    set-nearest : -> @set "nearest", @nearest!
 
+    @load-store = ->
+      @handle ?= Meteor.autorun ~>
+        if Session.get("subscribe_ready") is true
+          switch
+          | Offer.store-get()?      => return
+          | @mine!count!            => @new My.offer! ..store-set!
+          | _                       => @new! ..default-set! ..store-set!
 
   App.Model = {}
   App.Collection =
@@ -358,16 +376,16 @@ do ->
     Messages : new Meteor.Collection "messages"
     Alerts   : new Meteor.Collection "alerts"
 
+  for key, val of App.Collection
+    global[key] = val
 
-
-  grouping = [
+  hasModel = [
     "Location"
     "Offer"
     "Tag"
   ]
 
-
-  for g in grouping
+  for g in hasModel
     m = App.Model[g]            = eval(g)
     c = App.Collection[g + "s"] = eval(g + "s")
 

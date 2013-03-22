@@ -65,16 +65,24 @@ template(name="admin_tests")
   {{> admin_tests_offers }}
 
 template(name="admin_tests_sorts")
+  {{> stats }}
   {{> mocha }}
 
 template(name="admin_tests_tags")
+  {{> stats }}
   {{> mocha }}
 
 template(name="admin_tests_users")
+  {{> stats }}
   {{> mocha }}
 
 template(name="admin_tests_offers")
+  {{> stats }}
   {{> mocha }}
+
+template(name="stats")
+  h1 My offers: {{ myOffers }}
+  h1 My locations: {{ myLocations }}
 
 template(name="mocha")
   form.mocha-form.row

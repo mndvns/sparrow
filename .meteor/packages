@@ -1,10 +1,10 @@
-insecure
+
 preserve-inputs
 
 amplify
 
-accounts-ui
 accounts-password
+accounts-base
 email
 
 
@@ -17,24 +17,20 @@ d3
 moment
 jade-handlebars
 http
-code-prettify
-accounts-base
-email
+
 showdown
+
 router
 jquery-waypoints
 bafa
 handlebar-helpers
-dhtmlx-message
 coffeescript
 browser-store
 stripe
-collectionFS
 imgur
-logger
 canvas-image-manipulation
 jqbootstrapvalidation
 publish-with-relations
-moxy
 transitioner
 mocha-web
+event-horizon

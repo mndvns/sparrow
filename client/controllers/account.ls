@@ -1,5 +1,6 @@
 
 
+
 #////////////////////////////////////////////
 #  $$ globals locals
 
@@ -16,9 +17,10 @@ create_qrcode = (text, typeNumber, errorCorrectLevel, table) ->
   qr.createTableTag()
 
 update_qrcode = ->
-  $("#qr-code").html(create_qrcode(url + offerId)).find("td").css
-    width: "10px"
-    height: "10px"
+  $("#qr-code").html(create_qrcode(url + offerId)).find("td").css {
+    width   : "10px"
+    height  : "10px"
+  }
 
 permittedKeys = [8, 37, 38, 39, 40, 46, 9, 91, 93]
 # icons = ["drink", "drink-2", "drink-3", "microphone", "coffee", "ice-cream", "cake", "pacman", "wallet", "gamepad", "bowling", "space-invaders", "batman", "lamp", "lamp-2", "appbarmoon"]
@@ -36,31 +38,30 @@ Handlebars.registerHelper "getEmail", (a) ->
   user = Meteor.user()
   user?.emails and user.emails[0]
 
-Template.account.rendered = ->
-  Store.set("page_account", "account_profile")
-  Store.set("page_account_profile", "account_profile_edit")
+# Template.account.rendered = ->
+#   Store.set("page_account", "account_profile")
+#   Store.set("page_account_profile", "account_profile_edit")
 
-#////////////////////////////////////////////
+# ////////////////////////////////////////////
 # $$  account_offer
 
-Template.account_offer.events
-  "click .offer": (event, tmpl) ->
-    return false
+Template.account_offer.events {}=
+
+  "click .offer" : (event, tmpl) ->
+    false
 
   "keyup [data-validate], change [data-validate]": (event, tmpl) ->
     target = event.currentTarget
     val = target.value.toString()
     offer = Offer.storeGet()
-    offer[target.id] = val
-    # console.log(offer)
-    Offer.new( offer ).storeSet()
+    offer[target.id] =  val
+    Offer.new(offer).storeSet()
 
   'keydown [data-validate]#price': (e, t) ->
     isNumberKey = (evt) ->
       charCode = (if (evt.which) then evt.which else event.keyCode)
       return false  if charCode > 31 and (charCode < 48 or charCode > 57)
       true
-
     unless isNumberKey(e) then return false
 
   "click #qr-button": (event, tmpl) ->
@@ -90,12 +91,12 @@ Template.account_profile_colors.rendered = ->
     color: offer.color
     change: (color) ->
       Meteor.call "updateUserColor", color.toHexString()
-    move: (color) =>
+    move: (color) ~>
       $(@find(".color-bucket")).css("background", color.toHexString())
   )
 
 
-Template.account_offer_images.events
+Template.account_offer_images.events {}=
 
   'click .select-file': (e, t) ->
     target = $(e.currentTarget)
@@ -112,9 +113,10 @@ Template.account_offer_images.events
 
   "change .file-uploader": (e, t) ->
     file = e.target.files?[0]
-    Meteor.Alert.set
+    Meteor.Alert.set(
       text: "Compressing image..."
       wait: true
+    )
 
     if file
       reader = new FileReader()
@@ -140,7 +142,7 @@ Template.account_offer_images.events
     Meteor.call "imgurDelete", @, @deletehash
 
 Template.account_offer_images.rendered = ->
-  adjustFileInput = =>
+  adjustFileInput = ~>
     file_input = $(@find(".file-input"))
     width      = file_input.width()
     file_input.height(width)
@@ -159,7 +161,7 @@ Template.account_offer_images.rendered = ->
 #////////////////////////////////////////////
 #  $$ account_offer_tags
 
-Template.account_offer_tags.events
+Template.account_offer_tags.events {}=
 
   'dblclick li[data-group="tags"]': (event, tmpl) ->
     Tags.remove name: $(event.currentTarget).attr("data-name")
@@ -169,8 +171,7 @@ Template.account_offer_tags.events
     text = target.next("span").children("input").val()
 
     if not text
-      Meteor.Alert.set
-        text: "You must enter a name in order to add a tag"
+      Meteor.Alert.set text: "You must enter a name in order to add a tag"
 
     else
       tagset = target.parent("li").attr("data-tagset")
@@ -182,14 +183,13 @@ Template.account_offer_tags.events
         collection: "tags"
         , (err, res) ->
           if err
-            Meteor.Alert.set
-              text: err.reason
+            Meteor.Alert.set text: err.reason
           else
             userLoc = Store.get("user_loc")
             store = Store.get("tag_selection")
 
             store.tags ?= []
-            store.tags.push
+            store.tags.push {}=
               name: text
               tagset: tagset
               active: true
@@ -216,7 +216,7 @@ Template.account_offer_tags.events
     if existing
       store[group].splice(store[group].indexOf(existing), 1)
     else
-      store[group].push
+      store[group].push {}=
         name: self.name
         disabled: false
         active: true
@@ -226,7 +226,6 @@ Template.account_offer_tags.events
     amplify.store "tags_meta", store.tags, "name"
     amplify.store "tags", _.pluck(store.tags, "name")
     amplify.store "tagset", _.pluck(store.tagset, "name")?[0]
-
 
 # Template.account_offer_tags.rendered = ->
 #   unless @handle
@@ -244,6 +243,7 @@ Template.account_offer_tags.events
 
 #////////////////////////////////////////////
 #  $$ account_feedback
+
 Template.account_messages_feedback.events "click #feedback button": (event, tmpl) ->
   event.preventDefault()
   message = tmpl.find("textarea").value
@@ -273,9 +273,7 @@ Template.account_earnings.rendered = ->
   Store.set("page_account", "account_earnings")
   Store.set("page_account_earnings", "account_earnings_dashboard")
 
-Template.account_earnings_dashboard.events
+Template.account_earnings_dashboard.events {}=
   'click a.stripe-connect': (event, tmpl) ->
-    Meteor.Alert.set
-      text: "Connecting to Stripe..."
-      wait: true
+    Meteor.Alert.set text: "Connecting to Stripe...", wait: true
     window.open "https://connect.stripe.com/oauth/authorize?response_type=code&client_id=#{Stripe.client_id}"

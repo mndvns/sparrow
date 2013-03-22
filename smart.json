@@ -1,23 +1,24 @@
 {
-  "meteor": {
-    "branch": "master"
+  "meteor"                      : {
+    "branch"                    : "master"
   },
-  "packages": {
-    "moment": {},
-    "bootstrap-updated": {},
-    "font-awesome": {},
-    "bafa": {},
-    "router": {},
-    "jade-handlebars": {},
-    "handlebar-helpers": {},
-    "stripe": {},
-    "collectionFS": {},
-    "imgur": {},
-    "logger": {},
-    "canvas-image-manipulation": {},
-    "jqbootstrapvalidation": {},
-    "publish-with-relations": {},
-    "mocha-web": {},
-    "livescript-complete": {}
+  "packages"                    : {
+    "moment"                    : {},
+    "bootstrap-updated"         : {},
+    "font-awesome"              : {},
+    "bafa"                      : {},
+    "router"                    : {},
+    "jade-handlebars"           : {},
+    "handlebar-helpers"         : {},
+    "stripe"                    : {},
+    "collectionFS"              : {},
+    "imgur"                     : {},
+    "logger"                    : {},
+    "canvas-image-manipulation" : {},
+    "jqbootstrapvalidation"     : {},
+    "publish-with-relations"    : {},
+    "mocha-web"                 : {},
+    "event-horizon"             : {},
+    "session-extras"            : {}
   }
 }

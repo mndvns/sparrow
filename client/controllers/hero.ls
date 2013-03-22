@@ -1,19 +1,20 @@
+
 #////////////////////////////////////////////
 #  $$ globals and locals
 
-heroColor = 
+heroColor =
   shiftColor: (a) ->
 
     white     = Color("#fff")
     col       = Color(a)
 
     @normal   = col.toString()
-    @bright   = col.desaturateByAmount(.1)
-    @sat_dark = col.darkenByAmount(.5).saturateByAmount(0.3)
+    @bright   = col.desaturateByAmount 0.1
+    @sat_dark = col.darkenByAmount 0.5 .saturateByAmount 0.3
     @hue      = col.getHue()
-    @light    = col.setSaturation(.8).setLightness(.7).toString()
-    @desat    = col.desaturateByAmount(.8).darkenByAmount(0.2).toString()
-    @dark     = col.setSaturation(1).setLightness(.2).toString()
+    @light    = col.setSaturation 0.8 .setLightness 0.7 .toString()
+    @desat    = col.desaturateByAmount 0.8 .darkenByAmount 0.2 .toString()
+    @dark     = col.setSaturation 1 .setLightness 0.2 .toString()
 
 heroAdjustColors = (d)->
 
@@ -48,7 +49,7 @@ heroAdjustColors = (d)->
     heroColor.shiftColor('hsla(200, 90%, 40%, 1)')
 
 HeroList = (opt) ->
-  fontSize = undefined
+  fontSize = void
   chars = _.flatten(opt.current).toString().length
   opt.current[opt.name] ?= []
 
@@ -63,16 +64,16 @@ HeroList = (opt) ->
   hero
     .exit()
     .transition()
-    .style
+    .style {}=
       opacity: 0
       "font-size": "0px"
     .remove()
 
   hero
-    .text (d) ->
+    ..text (d) ->
       d
-    .transition()
-    .style
+    ..transition()
+    ..style {}=
       "opacity": "1"
       "color": (d) ->
         heroColor.normal
@@ -109,7 +110,7 @@ HeroList = (opt) ->
     .html (d) ->
       child = ""
       if opt.name is "tag"
-        child = "<span class='badge #{d.status}'>#{d.count}</span>"
+        child = "<span class='badge #{d.status}'>#{d.rate}</span>"
       d[opt.selector] + child
 
   item
@@ -117,16 +118,16 @@ HeroList = (opt) ->
     .remove()
 
   active = list.selectAll("li.active")
-    .transition()
-    .style
+    ..transition()
+    ..style {}=
       'color': (c) ->
         if opt.leader then heroAdjustColors(c)
         heroColor.normal
       'font-size': '18px'
 
   inactive = list.selectAll("li.inactive")
-    .transition()
-    .style
+    ..transition()
+    ..style {}=
       'color': (d) ->
         if opt.leader
           "#bbb"
@@ -142,9 +143,9 @@ HeroList = (opt) ->
 
 #////////////////////////////////////////////
 #  $$  hero
-Template.hero.events
+Template.hero.events {}=
   "click .list li": (event, tmpl) ->
-    watchOffer.click()
+    # watchOffer.click()
 
     tmpl.handle.stop()
 
@@ -152,7 +153,7 @@ Template.hero.events
 
     current  = Store.get("current_#{story.collection}")
     active   = $(event.currentTarget).is ".active"
-    output   = undefined
+    output   = void
 
     # console.log(story)
 
@@ -203,7 +204,6 @@ Template.hero.events
 
 
 Template.hero.created = ->
-  # getLocation()
   Session.set "heroRendered", false
   Session.set "current_changed", null
   self = this
@@ -214,30 +214,32 @@ Template.hero.created = ->
 
       tagsets = Tagsets.find().fetch()
       sorts   = Sorts.find().fetch()
-      tags    = Tags.find().map (d)->
+      tags = Tag.rateAll()
 
-        count = d.involves.length
-        if not count then return false
+      # tags    = Tags.find().map (d)->
 
-        ctx =
-          updatedAt   : 0
-          votes_count : 0
-          price       : 0
-          distance    : 0
+      #   count = d.involves and d.involves.length
+      #   if not count then return false
 
-        for inv in d.involves
-          for c of ctx
-            if c is "distance"
-              ctx[c] += distance(inv.loc.lat,inv.loc.long,uloc.lat,uloc.long)
-            else
-              ctx[c] += parseInt(inv[c])
+      #   ctx =
+      #     updatedAt   : 0
+      #     votes_count : 0
+      #     price       : 0
+      #     distance    : 0
 
-        for c of ctx
-          ctx[c] = (ctx[c] / count)
-          d[c] = ctx[c]
+      #   for inv in d.involves
+      #     for c of ctx
+      #       if c is "distance"
+      #         ctx[c] += distance(inv.loc.lat,inv.loc.long,uloc.lat,uloc.long)
+      #       else
+      #         ctx[c] += parseInt(inv[c])
 
-        d.count = count
-        d
+      #   for c of ctx
+      #     ctx[c] = (ctx[c] / count)
+      #     d[c] = ctx[c]
+
+      #   d.count = count
+      #   d
 
       if tags and tags.length
 
@@ -259,92 +261,81 @@ Template.hero.created = ->
 
         Session.set "heroDataReady", true
     )
-  (renderHero = ->
-    updateHero = ->
-      ctx = new Meteor.deps.Context()
-      ctx.onInvalidate updateHero
-      ctx.run ->
-        unless Session.get("heroRendered")
-          console.log "not rendered"
-          return false
-        unless Session.get("heroDataReady")
-          console.log "no data"
-          return false
 
-        current = statCurrent().verbose
-        Collection = as("collection")
+  Deps.autorun ->
+    unless Session.get("heroRendered")
+      console.log "not rendered"
+      return false
+    unless Session.get("heroDataReady")
+      console.log "no data"
+      return false
 
-        collection =
-          tagset: Collection.tagsets
-          tag   : _.filter( Collection.tags , (d) ->
-            _.contains current.tagset, d.tagset
-          )
-          sort  : Collection.sorts
-          noun  : Collection.tagsets
+    current = statCurrent().verbose
+    Collection = as("collection")
 
-        tagList = $(".tag-list")
+    collection =
+      tagset: Collection.tagsets
+      tag   : _.filter( Collection.tags , (d) ->
+        _.contains current.tagset, d.tagset
+      )
+      sort  : Collection.sorts
+      noun  : Collection.tagsets
 
-        if Session.get("current_changed") is "tagsets"
-          tagList.data("jsp")?.destroy()
+    tagList = $(".tag-list")
 
-        heroList =
-          tagset: new HeroList
-            name: "tagset"
-            selector: "name"
-            leader: true
-            current: current
-            collection: collection.tagset
+    if Session.get("current_changed") is "tagsets"
+      tagList.data("jsp")?.destroy()
 
-          article: new HeroList
-            name: "article"
-            skipItem: true
-            current: current
-            collection: collection.article
+    heroList =
+      tagset: new HeroList {}=
+        name: "tagset"
+        selector: "name"
+        leader: true
+        current: current
+        collection: collection.tagset
 
-          sort: new HeroList
-            name: "sort"
-            selector: "name"
-            leader: false
-            current: current
-            collection: collection.sort
+      article: new HeroList {}=
+        name: "article"
+        skipItem: true
+        current: current
+        collection: collection.article
 
-          tag: new HeroList
-            name: "tag"
-            selector: "name"
-            leader: false
-            current: current
-            collection: collection.tag
+      sort: new HeroList {}=
+        name: "sort"
+        selector: "name"
+        leader: false
+        current: current
+        collection: collection.sort
 
-          noun: new HeroList
-            name: "noun"
-            selector: "noun"
-            leader: true
-            current: current
-            collection: collection.noun
+      tag: new HeroList {}=
+        name: "tag"
+        selector: "name"
+        leader: false
+        current: current
+        collection: collection.tag
 
-        if Session.get("current_changed") isnt "tags"
-          tagList.jScrollPane
-            horizontalGutter: 100
-            verticalGutter: 100
-            hideFocus: true
+      noun: new HeroList {}=
+        name: "noun"
+        selector: "noun"
+        leader: true
+        current: current
+        collection: collection.noun
 
-          tagDrag = tagList.find(".jspDrag")
-          tagDrag.css('display', 'none')
-          tagList.mouseenter ->
-            tagDrag.stop(true, true).fadeIn('fast')
+    if Session.get("current_changed") isnt "tags"
+      tagList.jScrollPane {}=
+        horizontalGutter: 100
+        verticalGutter: 100
+        hideFocus: true
 
-          tagList.mouseleave ->
-            tagDrag.stop(true, true).fadeOut('fast')
+      tagDrag = tagList.find(".jspDrag")
+      tagDrag.css('display', 'none')
+      tagList.mouseenter ->
+        tagDrag.stop(true, true).fadeIn('fast')
 
-        # Meteor.Isotope = new Isotope()
+      tagList.mouseleave ->
+        tagDrag.stop(true, true).fadeOut('fast')
 
-      Session.set("heroUpdated", true)
-
-    updateHero()
-    )()
-
-
-
+  Session.set("heroUpdated", true)
 
 
 

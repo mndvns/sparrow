@@ -1,36 +1,202 @@
-
-var derp;
-derp = {
-  asd: 123,
-  qwe: 9897
-};
-console.log(keys(derp));
-console.log("ASD");
 (function(){
-  var Model, Locations, Location, Tags, Tag, Offers, Offer, grouping, i$, len$, g, m, c, results$ = [];
+  var Storer, Point, Lock, Default, Check, Model, Locations, Location, Tags, Tag, Offers, Offer, key, ref$, val, hasModel, i$, len$, g, m, c, results$ = [];
+  (App.Util || (App.Util = {})).characterize = function(it){
+    if (it == null) {
+      return false;
+    }
+    switch (it) {
+    case "string":
+      return "letters";
+    case "array":
+      return "items";
+    case "number":
+      return "number";
+    case "object":
+      return "values";
+    case "boolean":
+      return "true or false";
+    }
+  };
+  Storer = {
+    storeMethod: function(){
+      var ref$;
+      return typeof Store != 'undefined' && Store !== null ? Store[arguments[0]]("instance_" + ((ref$ = this.constructor._type) != null ? ref$.toLowerCase() : void 8), arguments[1]) : void 8;
+    },
+    storeSet: function(){
+      return this.storeMethod("set", _.extend(this.attr, this.id ? {
+        _id: this.id
+      } : void 8));
+    },
+    storeClear: function(){
+      return this.storeMethod("set", null);
+    },
+    storeGet: function(){
+      return this.storeMethod("get", null);
+    }
+  };
+  Point = {
+    pointRecall: curry$(function(it){
+      return App.Collection[it.toProperCase()].find({
+        "ownerId": this.attr["ownerId"]
+      }).fetch();
+    }),
+    pointCompact: curry$(function(list){
+      return _.compact(unique(list));
+    }),
+    pointStrip: curry$(function(field, list){
+      return map(function(it){
+        return it[field];
+      }, list);
+    }),
+    pointGet: curry$(function(field, list){
+      switch (false) {
+      case field === list:
+        return this.pointCompact(this.pointStrip(field, this.pointRecall(list)));
+      default:
+        return this.pointCompact(this.pointRecall(list));
+      }
+    }),
+    pointSet: curry$(function(field, list, attr){
+      attr == null && (attr = list);
+      return this.set(attr, this.pointGet(field, list));
+    }),
+    pointJam: function(){
+      var i$, ref$, len$, p, results$ = [];
+      for (i$ = 0, len$ = (ref$ = this.constructor._points).length; i$ < len$; ++i$) {
+        p = ref$[i$];
+        results$.push(this.pointSet(p.field, p.list, p.attr));
+      }
+      return results$;
+    }
+  };
+  Lock = {
+    lockGet: function(it){
+      return this.constructor._locks[it];
+    },
+    lockSet: function(){
+      var k, ref$, v, results$ = [];
+      for (k in ref$ = this.constructor._locks) {
+        v = ref$[k];
+        results$.push(this.set(k, v()));
+      }
+      return results$;
+    },
+    lockCheck: function(){
+      var l, results$ = [];
+      for (l in this.constructor._locks) {
+        if (this.get(l) == null) {
+          results$.push(this['throw']("An error occured during the " + l + " verification process"));
+        }
+      }
+      return results$;
+    }
+  };
+  Default = {
+    defaultSet: function(){
+      var k, ref$, v, results$ = [];
+      for (k in ref$ = this.constructor._schema) {
+        v = ref$[k];
+        results$.push(this.set(k, v['default']));
+      }
+      return results$;
+    },
+    defaultNull: function(){
+      var k, results$ = [];
+      for (k in this.constructor._schema) {
+        results$.push(this.set(k, null));
+      }
+      return results$;
+    }
+  };
+  Check = {
+    checkField: function(f){
+      var e, a, s, at, st, c, aval, verb, char, ref$, this$ = this;
+      e = function(it){
+        return this$['throw']((this$.constructor.name + "'s " + f + " property ") + it);
+      };
+      a = this.attr[f];
+      s = this.constructor._schema[f];
+      switch (false) {
+      case s != null:
+        e("does not exist");
+        break;
+      case a != null:
+        e("has not been set");
+      }
+      at = type(a);
+      st = type(s['default']);
+      c = function(it){
+        return App.Util.characterize(it);
+      };
+      switch (at) {
+      case "boolean":
+        return;
+      case "number":
+        aval = a;
+        verb = "be";
+        char = numberWithCommas(s.max);
+        break;
+      default:
+        aval = length(a);
+        verb = "have";
+        char = s.max + " " + c(st);
+      }
+      switch (false) {
+      case at === st:
+        e("must have " + c(st) + ", not " + c(at));
+        break;
+      case !(s.min === (ref$ = s.max) && ref$ !== aval):
+        e("must " + verb + " exactly " + char);
+        break;
+      case !(s.max < aval || aval < s.min):
+        e("must " + verb + " between " + s.min + " and " + char);
+      }
+      return f + " checked";
+    },
+    checkLock: function(){
+      return this.lockCheck();
+    },
+    checkList: function(it){
+      var i$, len$, i, results$ = [];
+      for (i$ = 0, len$ = it.length; i$ < len$; ++i$) {
+        i = it[i$];
+        results$.push(this.checkField(i));
+      }
+      return results$;
+    },
+    checkAll: function(){
+      this.lockSet();
+      this.lockCheck();
+      this.checkLimit();
+      return this.checkList(keys(filter(function(it){
+        return it.required;
+      }, this.constructor._schema)));
+    },
+    checkLimit: function(){
+      if (!this.isPersisted() && this.constructor._limit - this.constructor.mine().count() <= 0) {
+        return this['throw']("Collection at limit");
+      }
+    }
+  };
   Model = (function(){
     Model.displayName = 'Model';
     var prototype = Model.prototype, constructor = Model;
-    prototype.attributes = {};
+    importAll$(prototype, arguments[0]);
+    importAll$(prototype, arguments[1]);
+    importAll$(prototype, arguments[2]);
+    importAll$(prototype, arguments[3]);
+    importAll$(prototype, arguments[4]);
+    prototype.attr = {};
     prototype.id = void 8;
-    function Model(attributes){
-      var defaults, i$, ref$, len$, key, lock;
-      attributes == null && (attributes = {});
-      if (attributes._id) {
-        this.attributes = this.demongoize(attributes);
-        this.id = attributes._id;
+    function Model(attr){
+      attr == null && (attr = {});
+      if (attr._id) {
+        this.attr = this.demongoize(attr);
+        this.id = attr._id;
       } else {
-        defaults = {};
-        for (i$ = 0, len$ = (ref$ = this._keys).length; i$ < len$; ++i$) {
-          key = ref$[i$];
-          defaults[key] = null;
-        }
-        for (lock in constructor._locks) {
-          defaults[lock] = constructor._locks[lock]();
-        }
-        this.attributes = _.defaults(attributes, defaults);
+        this.defaultNull();
+        this.lockSet();
       }
-      console.log("ATTR", this.attributes);
     }
     prototype.alert = function(text){
       if (Meteor.isServer) {
@@ -48,138 +214,72 @@ console.log("ASD");
     prototype.isPersisted = function(){
       return this.id != null;
     };
-    prototype.setDefaults = function(){
-      var key, ref$;
-      for (key in constructor._keys) {
-        (ref$ = this.attributes)[key] == null && (ref$[key] = this.constructor._schema[key]['default']);
-      }
+    prototype.set = function(key, val){
+      this.attr[key] = val;
       return this;
     };
-    prototype.authorize = function(){
-      if (this.attributes.ownerId !== My.userId()) {
-        throw Error("User not authorized");
-      }
+    prototype.unset = function(it){
+      return this.attr = _.omit(this.attr, it);
     };
-    prototype.validate = function(){
-      var attr, i$, ref$, len$, key, err, sk, ak, sk_type, ak_type, max, min, size, results$ = [];
-      attr = this.attributes;
-      if (attr.ownerId && attr.ownerId !== My.userId()) {
-        throw Error("User identification error");
-      }
-      if (!this.isPersisted()) {
-        if (this.constructor._limit - this.constructor.mine().count() <= 0) {
-          throw Error("Collection at limit");
-        }
-      }
-      for (i$ = 0, len$ = (ref$ = constructor._keys).length; i$ < len$; ++i$) {
-        key = ref$[i$];
-        err = [this.constructor.name + "'s", key, "field"];
-        sk = this.constructor._schema[key];
-        ak = attr[key];
-        sk_type = type(sk['default']);
-        ak_type = type(ak);
-        max = sk.max;
-        min = sk.min;
-        if (!ak && sk.required) {
-          err.push("have only");
-        } else if (sk_type !== ak_type) {
-          err.push("contain only");
-        } else if (min || max) {
-          size = _.size(ak);
-          switch (max === min) {
-          case true:
-            if (min !== size) {
-              err.push("have exactly " + min);
-            } else {
-              continue;
-            }
-            break;
-          case false:
-            if (max < size) {
-              err.push("have less than " + max);
-            } else if (min >= size) {
-              err.push("have more than " + min);
-            } else {
-              continue;
-            }
-          }
-        } else {
-          continue;
-        }
-        switch (sk_type) {
-        case "string":
-          err.push("letters");
-          break;
-        case "object":
-          err.push("properties");
-          break;
-        case "boolean":
-          err.push("true or false");
-          break;
-        case "array":
-          err.push("array items");
-        }
-        throw Error(err.join(" "));
-      }
-      return results$;
+    prototype.get = function(it){
+      return this.attr[it];
     };
-    prototype.set = function(first, rest){
-      return this.attributes[first] = rest;
-    };
-    prototype.unset = function(attributes){
-      return this.attributes = _.omit(this.attributes, attributes);
-    };
-    prototype.save = function(cb){
-      var this$ = this;
-      return Meteor.call("instance_save", constructor.name, this, function(err, res){
-        if (err) {
-          this$.alert(err.reason);
-          return typeof cb === 'function' ? cb(err.reason) : void 8;
-        } else {
-          this$.alert("Save successful");
-          this$.id = res.id;
-          return typeof cb === 'function' ? cb(null, res) : void 8;
-        }
-      });
-    };
-    prototype.destroy = function(cb){
-      var error;
+    prototype.save = curry$(function(it){
+      var e;
       try {
-        this.authorize();
+        this.checkAll();
       } catch (e$) {
-        error = e$;
-        this.alert(error.message);
-        if (typeof cb === 'function') {
-          cb(error.message);
+        e = e$;
+        this.alert(e.message);
+        switch (false) {
+        case it == null:
+          it(e.message);
+          break;
+        default:
+          return;
         }
-        return this;
       }
+      this.alert("Successfully saved " + this.constructor.name);
+      switch (false) {
+      case !this.isPersisted():
+        this.constructor._collection.update(this.id, {
+          $set: this.attr
+        });
+        break;
+      default:
+        this.id = this.constructor._collection.insert(this.attr);
+      }
+      switch (false) {
+      case it == null:
+        return it(null, this.attr);
+      default:
+        return this.attr;
+      }
+    });
+    prototype.destroy = function(it){
       if (this.isPersisted()) {
         this.constructor._collection.remove(this.id);
         this.id = null;
       }
       this.storeClear();
-      if (typeof cb === 'function') {
-        cb(null, this);
+      switch (false) {
+      case it == null:
+        return it(null, this);
+      default:
+        return this;
       }
-      return this;
     };
-    prototype.storeSet = function(){
-      var extend, ref$;
-      extend = _.extend(this.attributes, {
-        _id: this.id
-      });
-      return typeof Store != 'undefined' && Store !== null ? Store.set("instance_" + ((ref$ = this.constructor._type) != null ? ref$.toLowerCase() : void 8), extend) : void 8;
+    prototype.mongoize = function(attr){
+      attr == null && (attr = this.attr);
+      attr._id = this.id;
+      return this.attr;
     };
-    prototype.storeClear = function(){
-      var ref$;
-      return typeof Store != 'undefined' && Store !== null ? Store.set("instance_" + ((ref$ = constructor._type) != null ? ref$.toLowerCase() : void 8), null) : void 8;
-    };
-    prototype.mongoize = function(attributes){
+    prototype.demongoize = function(attr){
       var taken, name, value;
+      attr == null && (attr = this.attr);
       taken = {};
-      for (name in attributes) {
-        value = attributes[name];
+      for (name in attr) {
+        value = attr[name];
         if (name.match(/^_/)) {
           continue;
         }
@@ -187,142 +287,144 @@ console.log("ASD");
       }
       return taken;
     };
-    prototype.demongoize = function(attributes){
-      var taken, name, value;
-      taken = {};
-      for (name in attributes) {
-        value = attributes[name];
-        if (name.match(/^_/)) {
-          continue;
-        }
-        taken[name] = value;
-      }
-      return taken;
+    prototype['throw'] = function(it){
+      throw new Error(it);
     };
-    Model._schema = {};
-    Model._collection = void 8;
-    Model._type = void 8;
-    Model._limit = void 8;
-    Model['new'] = function(attributes){
-      var out;
-      out = new this(attributes);
-      return out;
+    Model['new'] = function(it){
+      return new this(it);
     };
-    Model.storeGet = function(){
-      return typeof Store != 'undefined' && Store !== null ? Store.get("instance_" + this.name) : void 8;
+    Model.create = function(it){
+      return this['new'](it).save();
     };
-    Model.create = function(attributes){
-      return this['new'](attributes).save();
-    };
-    Model.where = function(selector, options){
+    Model.where = function(sel, opt){
       var ref$;
-      selector == null && (selector = {});
-      options == null && (options = {});
-      return (ref$ = this._collection) != null ? ref$.find(selector, options) : void 8;
+      sel == null && (sel = {});
+      opt == null && (opt = {});
+      return (ref$ = this._collection) != null ? ref$.find(sel, opt) : void 8;
     };
-    Model.mine = function(selector, options){
-      selector == null && (selector = {});
-      options == null && (options = {});
-      return this.where(_.extend(selector, {
-        ownerId: Meteor.userId()
-      }), options);
-    };
-    Model.all = function(selector, options){
+    Model.all = function(sel, opt){
       var ref$;
-      selector == null && (selector = {});
-      options == null && (options = {});
-      return (ref$ = this._collection) != null ? ref$.find(selector, options) : void 8;
+      sel == null && (sel = {});
+      opt == null && (opt = {});
+      return (ref$ = this._collection) != null ? ref$.find(sel, opt) : void 8;
     };
-    Model.toArray = function(selector, options){
-      var i$, ref$, len$, attributes, ref1$, results$ = [];
-      selector == null && (selector = {});
-      options == null && (options = {});
-      for (i$ = 0, len$ = (ref$ = this.where(selector, options).fetch()).length; i$ < len$; ++i$) {
-        attributes = ref$[i$];
-        results$.push(new ((ref1$ = eval(attributes._type)) != null ? ref1$ : this)(attributes));
-      }
-      return results$;
+    Model.mine = function(sel, opt){
+      sel == null && (sel = {});
+      opt == null && (opt = {});
+      return this.where(_.extend(sel, {
+        ownerId: My.userId()
+      }, opt));
     };
     Model.destroyMine = function(){
       return Meteor.call("instance_destroy_mine", this._collection._name.toProperCase());
     };
+    Model.storeGet = function(){
+      return Store.get("instance_" + this._type.toLowerCase());
+    };
     return Model;
-  }());
+  }(Point, Storer, Lock, Check, Default));
   Locations = new Meteor.Collection('locations', {
-    transform: function(doc){
-      console.log(doc);
-      doc.derp = "ASD";
-      return doc;
+    transform: function(it){
+      var x$;
+      it = (x$ = Location['new'](it), x$.set("distance", x$.geoPlot()), x$);
+      it = it.mongoize();
+      return it;
     }
   });
   Location = (function(superclass){
     var prototype = extend$((import$(Location, superclass).displayName = 'Location', Location), superclass).prototype, constructor = Location;
+    Location._type = "Location";
+    Location._collection = Locations;
+    Location._locks = {
+      ownerId: function(){
+        return My.userId();
+      },
+      offerId: function(){
+        return My.offerId();
+      }
+    };
+    Location._schema = {
+      geo: {
+        'default': [47, -122],
+        required: true,
+        max: 2,
+        min: 2
+      },
+      city: {
+        'default': "Kansas City",
+        required: true,
+        max: 30,
+        min: 0
+      },
+      street: {
+        'default': "200 Main Street",
+        required: true,
+        max: 30,
+        min: 0
+      },
+      state: {
+        'default': "MO",
+        required: true,
+        max: 2,
+        min: 2
+      },
+      zip: {
+        'default': "64105",
+        required: true,
+        max: 5,
+        min: 5
+      }
+    };
+    Location._limit = 20;
+    prototype.geoMap = function(it){
+      var e, ref$, this$ = this;
+      try {
+        this.checkList(["city", "street", "state", "zip"]);
+      } catch (e$) {
+        e = e$;
+        this.alert(e.message);
+        if (typeof it === 'function') {
+          it(e.message);
+        }
+        return;
+      }
+      return typeof (ref$ = google.maps).Geocoder === 'function' ? new ref$.Geocoder().geocode({
+        address: this.attr.street + " " + this.attr.city + " " + this.attr.state + " " + this.attr.zip
+      }, function(results, status){
+        var message, format, ref$;
+        if (status !== "OK") {
+          message = "We couldn't seem to find your location. Did you enter your address correctly?";
+          this$.alert(message);
+          return typeof cb === 'function' ? cb(this$['throw'](message)) : void 8;
+        } else {
+          format = [(ref$ = values(results[0].geometry.location))[0], ref$[1]];
+          this$.alert(format);
+          this$.set("geo", format);
+          return typeof cb === 'function' ? cb(null, format) : void 8;
+        }
+      }) : void 8;
+    };
+    prototype.geoPlot = function(){
+      var m, g;
+      m = My.userLoc() || {
+        lat: 39,
+        long: -94
+      };
+      g = this.get("geo");
+      return Math.round(distance(m.lat, m.long, g[0], g[1], "MMMMMMMMMM" / 10));
+    };
     function Location(){
-      this._type = "Location";
-      this._collection = Locations;
-      this._locks = {
-        ownerId: function(){
-          return My.userId();
-        },
-        offerId: function(){
-          return My.offerId();
-        }
-      };
-      this._schema = {
-        geo: {
-          'default': [47, -122],
-          max: 2,
-          min: 2
-        },
-        city: {
-          'default': "Kansas City",
-          max: 50,
-          min: 3
-        },
-        street: {
-          'default': "200 Main Street",
-          max: 50,
-          min: 3
-        },
-        state: {
-          'default': "MO",
-          max: 2,
-          min: 2
-        },
-        zip: {
-          'default': "64105",
-          max: 5,
-          min: 5
-        }
-      };
-      this._limit = 20;
-      Location.superclass.call(this);
+      Location.superclass.apply(this, arguments);
     }
-    prototype.gmap = function(){
-      var geo, params, this$ = this;
-      geo = new google.maps.Geocoder();
-      geo.geocode(params);
-      return params = [
-        {
-          address: this.street + " " + this.city + " " + this.state + " " + this.zip
-        }, function(results, status){
-          if (status !== "OK") {
-            return console.log("We couldn't seem to find your location. Did you enter your address correctly?");
-          }
-        }
-      ];
-    };
-    Location.plot = function(){
-      return this.all().map(function(d){
-        var myLoc;
-        myLoc = My.loc();
-        d.distance = Math.round(distance(myLoc.lat, myLoc.long, d.geo[0], d.geo[1], "M") * 10) / 10;
-        return d;
-      });
-    };
     return Location;
   }(Model));
-  Tags = new Meteor.Collection('tags');
+  Tags = new Meteor.Collection('tags', {
+    transform: function(doc){
+      doc.collection = "tags";
+      doc.tagset = "eat";
+      return doc;
+    }
+  });
   Tag = (function(superclass){
     var prototype = extend$((import$(Tag, superclass).displayName = 'Tag', Tag), superclass).prototype, constructor = Tag;
     Tag._type = "Tag";
@@ -334,89 +436,189 @@ console.log("ASD");
       },
       offerId: function(){
         return My.offerId();
+      },
+      collection: function(){
+        return (Tag._type + "s").toLowerCase();
       }
     };
     Tag._schema = {
       name: {
         'default': "tag",
+        required: true,
         max: 20,
         min: 2
+      },
+      tagset: {
+        'default': "eat",
+        required: true,
+        max: 10,
+        min: 2
       }
+    };
+    Tag.rateAll = function(){
+      var list, out, i$, ref$, len$, n, lout, key, val, o;
+      list = this.all().fetch();
+      console.log("LIST", list);
+      out = {};
+      for (i$ = 0, len$ = (ref$ = (fn$())).length; i$ < len$; ++i$) {
+        n = ref$[i$];
+        if (n == null) {
+          continue;
+        }
+        out[n] == null && (out[n] = 0);
+        out[n] += 1;
+      }
+      lout = [];
+      for (key in out) {
+        val = out[key];
+        o = find(fn1$, list);
+        o.rate = val;
+        lout.push(o);
+      }
+      return lout;
+      function fn$(){
+        var i$, x$, ref$, len$, results$ = [];
+        for (i$ = 0, len$ = (ref$ = list).length; i$ < len$; ++i$) {
+          x$ = ref$[i$];
+          results$.push(x$.name);
+        }
+        return results$;
+      }
+      function fn1$(it){
+        return it.name === key;
+      }
+    };
+    prototype.rate = function(){
+      return this.set('rate', this.constructor.where({
+        name: this.attr.name
+      }).count());
     };
     function Tag(){
       Tag.superclass.apply(this, arguments);
     }
     return Tag;
   }(Model));
-  Offers = new Meteor.Collection('offers');
+  Offers = new Meteor.Collection('offers', {
+    transform: function(it){
+      var x$;
+      it = (x$ = Offer['new'](it), x$.pointJam(), x$.setNearest(), x$);
+      it = it.mongoize();
+      return it;
+    }
+  });
   Offer = (function(superclass){
     var prototype = extend$((import$(Offer, superclass).displayName = 'Offer', Offer), superclass).prototype, constructor = Offer;
-    function Offer(attr){
-      ({
-        _type: "Offer",
-        _collection: Offers,
-        _limit: 1,
-        _locks: {
-          ownerId: function(){
-            return My.userId();
-          },
-          updatedAt: function(){
-            return Time.now();
-          }
-        },
-        _schema: {
-          business: {
-            'default': "your business/vendor name",
-            required: true,
-            max: 30,
-            min: 3
-          },
-          description: {
-            'default': "This is a description of the offer. Since the offer name must be very brief, this is the place to put any details you want to include.",
-            required: true,
-            max: 140,
-            min: 3
-          },
-          image: {
-            'default': "http://i.imgur.com/YhUFTyA.jpg"
-          },
-          name: {
-            'default': "Offer",
-            required: true,
-            max: 15,
-            min: 3
-          },
-          price: {
-            'default': "10",
-            required: true
-          },
-          tags: {
-            'default': ""
-          },
-          tagset: {
-            'default': ""
-          },
-          votes_meta: {
-            'default': []
-          },
-          votes_count: {
-            'default': 0
-          },
-          published: {
-            'default': false
-          }
+    Offer._type = "Offer";
+    Offer._collection = Offers;
+    Offer._limit = 1;
+    Offer._points = [
+      {
+        field: "name",
+        list: "tags",
+        attr: "tags"
+      }, {
+        field: "locations",
+        list: "locations",
+        attr: "locations"
+      }
+    ];
+    Offer._locks = {
+      ownerId: function(){
+        return My.userId();
+      },
+      updatedAt: function(){
+        return Time.now();
+      }
+    };
+    Offer._schema = {
+      business: {
+        'default': "your business/vendor name",
+        required: true,
+        max: 30,
+        min: 3
+      },
+      description: {
+        'default': "This is a description of the offer. Since the offer name must be very brief, this is the place to put any details you want to include.",
+        required: true,
+        max: 140,
+        min: 3
+      },
+      image: {
+        'default': "http://i.imgur.com/YhUFTyA.jpg"
+      },
+      locations: {
+        'default': []
+      },
+      name: {
+        'default': "Offer",
+        required: true,
+        max: 15,
+        min: 3
+      },
+      price: {
+        'default': 10,
+        required: true,
+        min: 3,
+        max: 2000
+      },
+      tags: {
+        'default': ""
+      },
+      tagset: {
+        'default': ""
+      },
+      votes_meta: {
+        'default': []
+      },
+      votes_count: {
+        'default': 0
+      },
+      published: {
+        'default': false
+      }
+    };
+    prototype.nearest = function(){
+      return minimum((function(){
+        var i$, x$, ref$, len$, results$ = [];
+        for (i$ = 0, len$ = (ref$ = this.get("locations")).length; i$ < len$; ++i$) {
+          x$ = ref$[i$];
+          results$.push(x$.distance);
         }
-      });
-      Offer.superclass.call(this, attr);
+        return results$;
+      }.call(this)));
+    };
+    prototype.setNearest = function(){
+      return this.set("nearest", this.nearest());
+    };
+    Offer.loadStore = function(){
+      var ref$, this$ = this;
+      return (ref$ = this.handle) != null
+        ? ref$
+        : this.handle = Meteor.autorun(function(){
+          var x$, y$;
+          if (Session.get("subscribe_ready") === true) {
+            switch (false) {
+            case Offer.storeGet() == null:
+              break;
+            case !this$.mine().count():
+              x$ = this$['new'](My.offer());
+              x$.storeSet();
+              return x$;
+              break;
+            default:
+              y$ = this$['new']();
+              y$.defaultSet();
+              y$.storeSet();
+              return y$;
+            }
+          }
+        });
+    };
+    function Offer(){
+      Offer.superclass.apply(this, arguments);
     }
     return Offer;
   }(Model));
-  this.loadStore = function(){
-    var this$ = this;
-    if (!this.handle) {
-      return this.handle = Meteor.autorun(function(){});
-    }
-  };
   App.Model = {};
   App.Collection = {
     Tests: new Meteor.Collection("tests"),
@@ -427,9 +629,13 @@ console.log("ASD");
     Messages: new Meteor.Collection("messages"),
     Alerts: new Meteor.Collection("alerts")
   };
-  grouping = ["Location", "Offer", "Tag"];
-  for (i$ = 0, len$ = grouping.length; i$ < len$; ++i$) {
-    g = grouping[i$];
+  for (key in ref$ = App.Collection) {
+    val = ref$[key];
+    global[key] = val;
+  }
+  hasModel = ["Location", "Offer", "Tag"];
+  for (i$ = 0, len$ = hasModel.length; i$ < len$; ++i$) {
+    g = hasModel[i$];
     m = App.Model[g] = eval(g);
     c = App.Collection[g + "s"] = eval(g + "s");
     if (Meteor.isClient) {
@@ -439,6 +645,23 @@ console.log("ASD");
   }
   return results$;
 })();
+function curry$(f, bound){
+  var context,
+  _curry = function(args) {
+    return f.length > 1 ? function(){
+      var params = args ? args.concat() : [];
+      context = bound ? context || this : this;
+      return params.push.apply(params, arguments) <
+          f.length && arguments.length ?
+        _curry.call(context, params) : f.apply(context, params);
+    } : f;
+  };
+  return _curry();
+}
+function importAll$(obj, src){
+  for (var key in src) obj[key] = src[key];
+  return obj;
+}
 function extend$(sub, sup){
   function fun(){} fun.prototype = (sub.superclass = sup).prototype;
   (sub.prototype = new fun).constructor = sub;

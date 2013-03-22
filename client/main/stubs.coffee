@@ -7,20 +7,6 @@ Meteor.methods
       $inc:
         votes_count: 1
 
-  instance_save: ( model, ctx, cb )->
-    console.log "MODEL", model, ctx
-
-    attributes = App.Model[ model ].new().mongoize ctx.attributes
-    collection = App.Collection[ model + "s" ]
-
-    if ctx.id
-      collection.update ctx.id, { $set: attributes }
-    else
-      ctx.id = collection.insert attributes
-
-    cb?(null, ctx)
-    return ctx
-
   instance_destroy_mine: ( collection ) ->
     App.Collection[ collection ].remove ownerId: My.userId()
 

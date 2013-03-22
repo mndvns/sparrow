@@ -1,7 +1,8 @@
+
 #////////////////////////////////////////////
 #  $$ helpers
 
-Handlebars.registerHelper "nab", () ->
+Handlebars.registerHelper "nab", ->
   nab       = Store.get("nab")
   nab_query = Store.get("nab_query")
   nab_sort  = Store.get("nab_sort")
@@ -20,7 +21,7 @@ Handlebars.registerHelper "nab", () ->
 
   result
 
-Template.editor.events
+Template.editor.events {}=
   'click .save': (event, tmpl) ->
     event.preventDefault()
 
@@ -30,37 +31,15 @@ Template.editor.events
     text       = textarea? JSON.parse(textarea)
 
     switch save_type
-      when "update"
-        window[collection].update @_id,
-          $set: text
+    | "update"    => window[collection].update @_id, { $set   : text }
+    | "insert"    => window[collection].insert text
+    | "remove"    => window[collection].remove @_id
+    | "unset"     => window[collection].update @_id, { $unset : text }
+    | "unset-all" => window[collection].update {}  , { $unset : text }, multi: true
+    | "set"       => window[collection].update @_id, { $set   : text }
+    | "set-all"   => window[collection].update {}  , { $set   : text }, multi: true
 
-      when "insert"
-        window[collection].insert text
-
-      when "remove"
-        window[collection].remove @_id
-
-      when "unset"
-        window[collection].update @_id,
-          $unset: text
-
-      when "unset-all"
-        window[collection].update {},
-          $unset: text
-        ,
-          multi: true
-
-      when "set"
-        window[collection].update @_id,
-          $set: text
-
-      when "set-all"
-        window[collection].update {},
-          $set: text
-        ,
-          multi: true
-
-Template.admin_section.events
+Template.admin_section.events {}=
   'keyup .selector': (event, tmpl) ->
     target   = $(event.currentTarget)
     text     = target.val()
@@ -98,11 +77,17 @@ Template.mocha.rendered = ->
         # $("body").scrollTop 0
       mocha.run(cb)
 
-Template.mocha.events
+Template.mocha.events {}=
   'change input': (event, tmpl) ->
     tar = $(event.currentTarget)
     type= tar.attr "data-type"
 
     Store.set "test_#{type}", tar.val()
+
+Template.stats.helpers {}=
+  "myOffers": (event, tmpl) ->
+    Offer?.mine().count()
+  "myLocations": (event, tmpl) ->
+    Location?.mine().count()
 
 

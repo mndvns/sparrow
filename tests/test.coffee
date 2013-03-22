@@ -8,7 +8,7 @@ instance = undefined
 unless @load_tests
   @load_tests = ->
 
-    if not App?.Area and not @tests_rendered
+    if not @tests_rendered
       @handle = Meteor.setTimeout(=>
         console.log("DELAYED")
         @tests_rendered = true
@@ -18,11 +18,15 @@ unless @load_tests
     else
       Meteor.clearTimeout @handle
 
-
-
-
-
     model_check = ( model, instance, field ) ->
+
+      # console.log "MODEL m", model
+      # console.log "INSTANCE i", instance
+      # console.log "FIELD f", field
+
+      # window.m = model
+      # window.i = instance
+      # window.f = field
 
       model_field = model._schema[field]
 
@@ -54,15 +58,22 @@ unless @load_tests
 
       describe "new", ->
 
-        it "should be object", ->
+        it "should be an object", ->
           instance.should.be.an("object")
+
+        # it "should have valid ownerId", ->
+        #   instance.get("ownerId").should.equal My.userId()
+
+        # it "should not allow invalid locks", ->
+        #   for l in model._locks
+        #     instance.get(l.toString()).should.equal My[l]()
 
       describe "set", ->
 
         it "should set defaults", (done)->
-          instance.setDefaults()
+          instance.defaultSet()
           try
-            instance.validate()
+            instance.checkAll()
           catch error
             throw Error(error)
 
@@ -70,22 +81,22 @@ unless @load_tests
 
         it "should set properties", ->
           instance.set field, "ASD"
-          instance.attributes[field].should.equal "ASD"
+          instance.get([field]).should.equal "ASD"
 
         it "should unset properties", (done)->
           instance.unset field
-          unless instance.attributes[field] then done()
+          unless instance.get([field]) then done()
 
         it "should set store on command", ->
           instance.storeSet()
-          model.storeGet().should.be.an "object"
+          store = model.storeGet()
+          store.should.be.an "object"
 
       describe "save", ->
 
         it "should not save with absent required properties", (done)->
           instance.unset field
           instance.save (err, res)->
-            console.log("ERRRRR", err)
             if err then done()
 
         it "should not save with wrong type properties", (done)->
@@ -131,7 +142,7 @@ unless @load_tests
         it "should also destory store", (done)->
           unless model.storeGet() then done()
 
-    model_clean = ( context, field ) ->
+    model_clean = ( context, field, cb ) ->
 
       a           = App.Model
       model       = a[ context ]
@@ -143,33 +154,52 @@ unless @load_tests
           a[ context ].new().storeClear()
 
         after ->
-          a[ context ]._type = context
           a[ context ].new().storeClear()
 
-        afterEach ->
-          a[ context ].destroyMine()
+        cb( model, instance, field )
+        return
 
-        model_check( model, instance, field )
-
-
-    describe "Base Models", ->
-
-      model_clean( "Offer", "business" )
-
-      model_clean( "Location", "geo" )
 
     describe "Location features", ->
 
-      model = Location
-      instance = model.new().setDefaults()
+      before ->
+        o = Offer.new()
+        o.defaultSet()
+        o.save()
+
+        model = App.Model.Location
+        instance = model.new()
+        instance.defaultSet()
+
+      after ->
+        Offer.destroyMine()
+        Location.destroyMine()
+
+      it "should have an offer", ->
+        Offer.mine().count().should.equal(1)
 
       it "should have a valid street address", (done) ->
-        instance.save (err, res) ->
-          if res then done()
+        instance.save (err, res) -> if res then done()
 
-     # it "should present an error if the address if not correct"
-     # it "should notify the user once it has a response"
-     # it "should save the coordinates if the request was successful"
+      it "should check address before saving", (done) ->
+        done()
+        instance.set "street", ""
+        unless google?.maps?.Geocoder then done()
+        instance.geoMap (err, res) -> if err then done()
+
+      it "should set the coordinates if the request was successful", (done) ->
+        done()
+        unless google?.maps?.Geocoder then done()
+        instance.geoMap (err, res) -> if res then done()
+
+      it "should have valid offerId on save", ->
+        instance.get("offerId").should.equal My.offerId()
+
+    describe "Base Models", ->
+
+      model_clean( "Offer", "business", model_check )
+      return
+
 
     return
 

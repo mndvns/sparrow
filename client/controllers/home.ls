@@ -1,6 +1,7 @@
 
-#////////////////////////////////////////////
-#  $$  globals and locals
+
+# #////////////////////////////////////////////
+# #  $$  globals and locals
 
 checkHelpMode = ->
   $(".wrapper").hasClass("help-mode")
@@ -63,7 +64,7 @@ statRange = ->
 Template.wrapper.rendered = ->
   Session.setDefault "rendered_wrapper", true
 
-Template.wrapper.events
+Template.wrapper.events {}=
 
   "click a[data-toggle-mode='sign-in']": (event, tmpl) ->
 
@@ -77,24 +78,24 @@ Template.wrapper.events
     selector.toggleClass "active"
 
     if selector.is(".active")
-      rival.animate
+      rival.animate {}=
         opacity: 0
       , "fast"
 
       sign.show()
-      target.slipShow
+      target.slipShow {}=
         speed: speed
         haste: 1
 
     else
-      target.slipHide
+      target.slipHide {}=
         speed: speed
         haste: 1
       , ->
         sign.hide()
 
       rival.show()
-      rival.animate
+      rival.animate {}=
         opacity: 1
       , "fast"
 
@@ -208,11 +209,11 @@ slipElements = (opt) ->
   if $select.hasClass("active")
     $mode.show()
     $rival.fadeOut('fast')
-    $target.slipShow
+    $target.slipShow {}=
       speed: $speed
       haste: 1
 
-    $target.slipHide
+    $target.slipHide {}=
       speed: $speed
       haste: 1
       , ->
@@ -220,7 +221,7 @@ slipElements = (opt) ->
         $rival.fadeIn('fast')
 
 
-Template.ceiling.events
+Template.ceiling.events {}=
 
   "click .navigation a": (event, tmpl) ->
     target = event.currentTarget
@@ -241,11 +242,11 @@ Template.ceiling.events
 
     speed = 150
 
-    $(hide).slipHide
+    $(hide).slipHide {}=
       speed: speed
       haste: 1
       , ->
-        $(show).slipShow
+        $(show).slipShow {}=
           speed: speed
           haste: 1
 
@@ -303,7 +304,7 @@ Template.ceiling.events
             handleResponse reason: "Invalid email"
             return
 
-          Accounts.createUser
+          Accounts.createUser {}=
             username: username
             email: email
             password: password,
@@ -361,11 +362,11 @@ Template.content.rendered = ->
         page_sublinks = page_split
         show_sublinks = Store.get("show_#{page}")?.split("_")
 
-        hrefs = [
-            href(page_links),
-            href(page_sublinks),
-            href(show_sublinks)
-          ]
+        hrefs =
+          href(page_links),
+          href(page_sublinks),
+          href(show_sublinks)
+          ...
 
         format_hrefs = _.compact( hrefs ).toString()
         # console.log( "FORMAT HREFS", format_hrefs )
@@ -389,7 +390,7 @@ Template.content.rendered = ->
   @activateLinks()
 
 
-Template.content.events
+Template.content.events {}=
 
   'click .links a': (event, tmpl) ->
     href = event.currentTarget.getAttribute "href"
@@ -414,7 +415,7 @@ Template.content.events
     sub_area = Store.get "page_account_profile"
 
     unless sub_area
-      Meteor.Alert.set
+      Meteor.Alert.set {}=
         text: "An error occurred..."
       console.log("sub_area not defined...which area are we in?")
       return
@@ -428,30 +429,26 @@ Template.content.events
 
         if newEmail
           unless validateEmail(newEmail)
-            Meteor.Alert.set
+            Meteor.Alert.set {}=
               text: "Invalid email"
             return
 
         Meteor.call "updateUser", newEmail, newUsername, (err) ->
           if err
-            Meteor.Alert.set
-              text: err.reason
+            Meteor.Alert.set text: err.reason
 
       when "account_profile_colors"
-        Meteor.Alert.set
-          text: "Profile successfully saved"
+        Meteor.Alert.set text: "Profile successfully saved"
 
       when "account_profile_settings"
         adminCode = form.find("#admin")
         if adminCode.is(":disabled") is false
           Meteor.call "activateAdmin", adminCode.val(), (err) ->
             if err
-              Meteor.Alert.set
-                text: err.reason
+              Meteor.Alert.set text: err.reason
 
         else
-          Meteor.Alert.set
-            text: "Profile saved successfully"
+          Meteor.Alert.set text: "Profile saved successfully"
 
 
 
@@ -551,7 +548,7 @@ class Conf
       if current.tag?.length
         @query.tags = $in: current.tag
 
-Template.home.helpers
+Template.home.helpers {}=
   getOffers: ->
 
     current = statCurrent()?.query
@@ -575,45 +572,51 @@ Template.home.helpers
     #   conf.query
     # ).map (d) ->
 
+
     result = App.Collection.Offers.find(
-      conf.query,
-      conf.sort
-    ).map (d) ->
+    ).fetch()
 
-        d.distance = Math.round(distance(myLoc.lat, myLoc.long, d.loc.lat, d.loc.long, "M") * 10) / 10
-        for r of ranges
-          ranges[r].push d[r]
+    # result = App.Collection.Offers.find(
+    #   conf.query,
+    #   conf.sort
+    # ).map (d) ->
 
-        notes.count +=1
-        notes.votes += d.votes_count
+    #     # d.distance = Math.round(distance(myLoc.lat, myLoc.long, d.loc.lat, d.loc.long, "M") * 10) / 10
+    #     # for r of ranges
+    #     #   ranges[r].push d[r]
 
-        if conf.sort_empty and d.rand
-          d.shuffle = current.sort.order * d.rand
-          d.shuffle = parseInt( d.shuffle.toString().slice(1,4) )
+    #     # notes.count +=1
+    #     # notes.votes += d.votes_count
 
-        d
+    #     # if conf.sort_empty and d.rand
+    #     #   d.shuffle = current.sort.order * d.rand
+    #     #   d.shuffle = parseInt( d.shuffle.toString().slice(1,4) )
+
+    #     d
 
     # console.log(ranges)
 
-    if result and myLoc
+    # if result and myLoc
 
-      watchOffer?.setCount(result.length)
+    #   watchOffer?.setCount(result.length)
 
-      for r of ranges
-        amplify.store "max_#{r}", _.max(ranges[r])
-        amplify.store "min_#{r}", _.min(ranges[r])
+    #   for r of ranges
+    #     amplify.store "max_#{r}", _.max(ranges[r])
+    #     amplify.store "min_#{r}", _.min(ranges[r])
 
-      for n of notes
-        notes[n] = numberWithCommas(notes[n])
+    #   for n of notes
+    #     notes[n] = numberWithCommas(notes[n])
 
-      Store.set "notes", notes
+    #   Store.set "notes", notes
 
-      if conf.sort_empty
-        return result = _.sortBy(result, "shuffle")
-      else
-        return result
+    #   if conf.sort_empty
+    #     return result = _.sortBy(result, "shuffle")
+    #   else
+    #     return result
 
-      # result
+    #   result
+
+    result
 
   styleDate: (date) ->
     moment(date).fromNow()
@@ -622,19 +625,17 @@ Template.home.helpers
 #////////////////////////////////////////////
 #  $$ intro
 
-Template.intro.events
+Template.intro.events {}=
   "click #getLocation": (event, tmpl) ->
-    Meteor.Alert.set
+    Meteor.Alert.set {}=
       text: "One moment while we charge the lasers..."
       wait: true
 
     noLocation = ->
-      Meteor.Alert.set
-        text: "Uh oh... something went wrong"
+      Meteor.Alert.set text: "Uh oh... something went wrong"
 
     foundLocation = (location) ->
-      Meteor.Alert.set
-        text: "Booya! Lasers charged!"
+      Meteor.Alert.set text: "Booya! Lasers charged!"
 
       Store.set "user_loc",
         lat: location.coords.latitude
@@ -646,25 +647,22 @@ Template.intro.events
 
     location = tmpl.find("input").value
     if not location
-      Meteor.Alert.set
-        text: "No location entered"
+      Meteor.Alert.set text: "No location entered"
       return
 
-    Meteor.Alert.set
+    Meteor.Alert.set {}=
       text: "One moment..."
       wait: true
 
     geo = new google.maps.Geocoder()
-    geo.geocode
+    geo.geocode {}=
       address: location
     , (results, status) ->
       if status isnt "OK"
-        Meteor.Alert.set
-          text: "We couldn't seem to find your location. Did you enter your address correctly?"
+        Meteor.Alert.set text: "We couldn't seem to find your location. Did you enter your address correctly?"
 
       else
-        Meteor.Alert.set
-          text: "Found ya!"
+        Meteor.Alert.set text: "Found ya!"
 
         loc = results[0].geometry.location
         userLoc = []
@@ -681,6 +679,6 @@ Template.intro.events
 Template.intro.rendered = ->
   window_height = $(".current").height() / 2
   intro = $(@find("#intro"))
-  intro_height = (intro.outerHeight() * .75)
-  intro.css
+  intro_height = (intro.outerHeight() * 0.75)
+  intro.css {}=
     'margin-top': window_height - intro_height
