@@ -1,4 +1,5 @@
 
+
 #                                               //
 #        _____                                  //
 #       / ___/___  ______   _____  _____        //
@@ -25,12 +26,10 @@ Future   = require "fibers/future"
 #                                                        //
 #                                                        //
 
-Accounts.onCreateUser (options, user) ->
+Accounts.on-create-user (options, user) ->
 
-  # offer = Offer.new().setDefaults()
-  # offer.save()
+  # Offer.new! ..default-set! ..save!
 
-  # console.log(offer)
 
   user.type = "basic"
   user.karma = 50
@@ -43,9 +42,9 @@ Accounts.onCreateUser (options, user) ->
       account: true
   user
 
-Meteor.users.allow
+Meteor.users.allow {}=
   insert: (userId, docs) ->
-    out = undefined
+    out = void
     out = _.all(docs)  if Meteor.users.findOne(_id: userId).type is "admin"
     true
 
@@ -65,21 +64,22 @@ Meteor.users.allow
 
 allowUser = ( collections ) ->
   for c in collections
-    c.allow
+    c.allow {}=
       insert: (userId, doc) ->
-        My.userId() is doc.ownerId
+        userId is doc.ownerId
       update: (userId, doc) ->
-        My.userId() is doc.ownerId
+        userId is doc.ownerId
       remove: (userId, doc) ->
-        My.userId() is doc.ownerId
+        userId is doc.ownerId
       fetch: ['ownerId']
 
 
 allowUser([
-  App.Collection.Offers
-  App.Collection.Tests
-  App.Collection.Tags
-  App.Collection.Locations
+  Offers
+  Tests
+  Tags
+  Locations
+  Pictures
 ])
 
 #                                                         //
@@ -99,10 +99,10 @@ mapper = (a) ->
     out.id = d._id
     out
 
-Meteor.methods
+Meteor.methods {}=
 
   aggregateOffers: ->
-    tags = App.Collection.Offers.aggregate
+    tags = App.Collection.Offers.aggregate {}=
       $project:
         tags: 1
 
@@ -110,8 +110,8 @@ Meteor.methods
     message = {}
     involve = [Meteor.userId()]
     admin = false
-    existing = undefined
-    ID = undefined
+    existing = void
+    ID = void
     if selector is "toAdmins"
       admins = Meteor.users.find(type: "admin").fetch()
       involve.push _.pluck(admins, "_id")
@@ -150,7 +150,7 @@ Meteor.methods
         console.log "Successfully sent message, motherfucker", res
 
     else
-      Messages.update
+      Messages.update  {}=
         _id: ID
       ,
         $push:
@@ -179,14 +179,14 @@ Meteor.methods
     out.price       = parseInt(out.price)
 
     if type is "insert"
-      out.votes_meta.push
+      out.votes_meta.push {}=
         user: @userId
         exp: Date.now() * 10
       out.votes_count = 1
       out.rand = _.random(100, 999)
       App.Collection.Offers.insert out
     else
-      App.Collection.Offers.update
+      App.Collection.Offers.update {}=
         owner: @userId
       ,
         $set: out
@@ -228,32 +228,32 @@ Meteor.methods
     #     multi: true
 
 
-  updateUserColor: (color) ->
-    prime = Color(color).setLightness(.4)
-    comp = prime.setSaturation(.5).tetradicScheme()[1]
-    desat = prime.setSaturation(.2)
-    darken = (a) ->
-      a.setLightness(.2).setSaturation(.6).toString()
-    lighten = (a) ->
-      a.setLightness(.8).setSaturation(.4).toString()
+  # updateUserColor: (color) ->
+  #   prime = Color(color).setLightness 0.4
+  #   comp = prime.setSaturation .5).tetradicScheme()[1]
+  #   desat = prime.setSaturation(.2)
+  #   darken = (a) ->
+  #     a.setLightness(.2).setSaturation(.6).toString()
+  #   lighten = (a) ->
+  #     a.setLightness(.8).setSaturation(.4).toString()
 
-    Meteor.users.update
-      _id: Meteor.userId()
-      ,
-        $set:
-          colors:
-            prime:
-              light: lighten prime
-              medium: prime.toString()
-              dark: darken prime
-            comp:
-              light: lighten comp
-              medium: comp.toString()
-              dark: darken comp
-            desat:
-              light: desat.setLightness( .8 ).toString()
-              medium: desat.setLightness( .5 ).toString()
-              dark: desat.setLightness( .2 ).toString()
+  #   Meteor.users.update
+  #     _id: Meteor.userId()
+  #     ,
+  #       $set:
+  #         colors:
+  #           prime:
+  #             light: lighten prime
+  #             medium: prime.toString()
+  #             dark: darken prime
+  #           comp:
+  #             light: lighten comp
+  #             medium: comp.toString()
+  #             dark: darken comp
+  #           desat:
+  #             light: desat.setLightness( .8 ).toString()
+  #             medium: desat.setLightness( .5 ).toString()
+  #             dark: desat.setLightness( .2 ).toString()
 
   updateUser: (email, username) ->
     users = Meteor.users.find().fetch()
@@ -275,14 +275,14 @@ Meteor.methods
         verified: false
       ]
 
-    Meteor.users.update
+    Meteor.users.update {}=
       _id: Meteor.userId()
     , set, {}, (err) ->
       if err
-        new Alert
+        new Alert {}=
           text: "Uh oh..."
       else
-        new Alert
+        new Alert {}=
           text: "Profile saved successfully"
 
 
@@ -298,10 +298,10 @@ Meteor.methods
           type: "admin"
         , (err) ->
           if err
-            new Alert
+            new Alert {}=
               text: err
           else
-            new Alert
+            new Alert {}=
               text: "Profile saved successfully"
 
 

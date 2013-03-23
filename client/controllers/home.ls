@@ -73,7 +73,7 @@ Template.wrapper.events {}=
     selector = $(event.currentTarget)
     rival  = $(".toggler-group.left")
     target = $(tmpl.find ".terrace")
-    sign = $("#sign-in")
+    sign = $('#sign-in')
 
     selector.toggleClass "active"
 
@@ -262,11 +262,11 @@ Template.ceiling.events {}=
   "click button[type='submit']": (event, tmpl) ->
     event.preventDefault()
 
-    username    = tmpl.find("input#username").value
-    password    = tmpl.find("input#password").value
-    email       = tmpl.find("input#email").value
-    password2   = tmpl.find("input#password2").value
-    forgotEmail = tmpl.find("input#forgot-email").value
+    username    = tmpl.find('input#username').value
+    password    = tmpl.find('input#password').value
+    email       = tmpl.find('input#email').value
+    password2   = tmpl.find('input#password2').value
+    forgotEmail = tmpl.find('input#forgot-email').value
 
     type = event.currentTarget.getAttribute("data-account-submit-type")
 
@@ -345,11 +345,11 @@ Template.content.rendered = ->
   return if Meteor.Router.page() is "home"
 
   unless @activateLinks
-    @activateLinks = =>
+    @activateLinks = ~>
       # context = new Deps.Context()
       # context.onInvalidate @activateLinks
-      # context.run =>
-      Deps.autorun =>
+      # context.run ~>
+      Deps.autorun ~>
 
         href = (link) ->
           if link
@@ -424,8 +424,8 @@ Template.content.events {}=
 
     switch sub_area
       when "account_profile_edit"
-        newEmail    = form.find("#email").val()
-        newUsername = form.find("#username").val()
+        newEmail    = form.find('#email').val()
+        newUsername = form.find('#username').val()
 
         if newEmail
           unless validateEmail(newEmail)
@@ -441,7 +441,7 @@ Template.content.events {}=
         Meteor.Alert.set text: "Profile successfully saved"
 
       when "account_profile_settings"
-        adminCode = form.find("#admin")
+        adminCode = form.find('#admin')
         if adminCode.is(":disabled") is false
           Meteor.call "activateAdmin", adminCode.val(), (err) ->
             if err
@@ -454,7 +454,7 @@ Template.content.events {}=
 
 
   "click .sublinks.account_offer a.save": (event, tmpl) ->
-    Offer.create( Offer.storeGet() ).storeSet()
+    Offer.store-get! ..save!
 
 
     # offer = as()
@@ -573,8 +573,8 @@ Template.home.helpers {}=
     # ).map (d) ->
 
 
-    result = App.Collection.Offers.find(
-    ).fetch()
+    # result = App.Collection.Offers.find(
+    # ).fetch()
 
     # result = App.Collection.Offers.find(
     #   conf.query,
@@ -626,7 +626,7 @@ Template.home.helpers {}=
 #  $$ intro
 
 Template.intro.events {}=
-  "click #getLocation": (event, tmpl) ->
+  'click #getLocation': (event, tmpl) ->
     Meteor.Alert.set {}=
       text: "One moment while we charge the lasers..."
       wait: true
@@ -678,7 +678,7 @@ Template.intro.events {}=
 
 Template.intro.rendered = ->
   window_height = $(".current").height() / 2
-  intro = $(@find("#intro"))
+  intro = $(@find('#intro'))
   intro_height = (intro.outerHeight() * 0.75)
   intro.css {}=
     'margin-top': window_height - intro_height

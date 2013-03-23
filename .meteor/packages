@@ -34,3 +34,4 @@ publish-with-relations
 transitioner
 mocha-web
 event-horizon
+handlebar-bind

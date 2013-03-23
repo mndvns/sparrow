@@ -1,4 +1,5 @@
 
+
 #           ____        __    ___      __            //
 #                                                    //
 #          / __ \__  __/ /_  / (_)____/ /_           //
@@ -23,29 +24,29 @@
 #   #   )
 
 
-Meteor.publish "derps", (user_loc)->
-  miles = 2000
+Meteor.publish "relations", (loc)->
+  miles  = 2000
   radius = (miles / 69)
+  switch loc
+  | (.lat)? => filt = geo: $near: [loc.lat, loc.long ], $maxDistance: radius
+  | _       => filt = {}
 
-  Meteor.publishWithRelations(
+  Meteor.publishWithRelations {}=
     handle: this
-    collection: App.Collection.Locations
-    filter:
-      geo:
-        $near: [ user_loc.lat, user_loc.long ],
-        $maxDistance: radius
+    collection: Locations
+    filter: filt
     mappings: [
       key: 'offerId'
-      collection: App.Collection.Offers
+      collection: Offers
       filter: {}
       mappings: [
         reverse: true
         key: 'offerId'
-        collection: App.Collection.Tags
+        collection: Tags
         filter: {}
       ]
     ]
-  )
+
   @ready()
 
 
@@ -56,14 +57,10 @@ Meteor.publish "derps", (user_loc)->
 # Meteor.publish "locations", ->
 #   App.Collection.Locations.find {}
 
-Meteor.publish "user_offer", ->
-  App.Collection.Offers.find(
-    $or:[
-      owner   : @userId
-    ,
-      ownerId : @userId
-    ]
-  )
+Meteor.publish "my_offer",    -> Offers.find ownerId : @userId
+Meteor.publish "my_tags",     -> Tags.find ownerId : @userId
+Meteor.publish "my_pictures", -> Pictures.find ownerId: @userId , status: $nin: ["deactivated"]
+
 
 Meteor.publish "all_offers", ->
   App.Collection.Offers.find()
@@ -85,12 +82,6 @@ Meteor.publish "sorts", ->
 Meteor.publish "messages", ->
   App.Collection.Messages.find involve:
     $in: [@userId]
-
-Meteor.publish "images", ->
-  App.Collection.Images.find
-    owner: @userId
-    status:
-      $nin: ["deactivated"]
 
 Meteor.publish "alerts", ->
   App.Collection.Alerts.find owner: @userId

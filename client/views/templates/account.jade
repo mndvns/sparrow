@@ -152,28 +152,24 @@ template(name="account_offer_info")
 
 template(name="account_offer_tags")
 
-  {{aggregateStintTags}}
+  h3 {{#each my 'tags'}} {{this.name}} {{contains_my_tags this.name}} {{/each}}
 
-  {{#with getStore "stint_tags"}}
-  #offer-tag-list.row-fluid
-
-
-    ul.tagsets.span4
+  #offer-tag-list.row
+    ul.tagsets.span8.offset2: .row-fluid
       li.header
         span tagsets
       li.sub-header.span12
         span.span6 name
         span.span4 count
       hr.shadow.bottom.thin
-      {{#each_with_key this}}
-      li(data-active="{{active}}", data-group="tagset").clr-bg.span12
+      {{#each tagsets}}
+      li(data-active="{{equal this.name store_tagset}}", data-group="tagset").clr-bg.span12
         span.span6 {{this.name}}
-        span.span4 {{this.tags.length}}
+        // span.span4 {{this.tags.length}}
         span.span2: i.glyph-arrow-right
-      {{/each_with_key}}
+      {{/each}}
 
-    {{#each_with_key this}}
-    ul(data-active="{{active}}").tags.span8
+    ul.tags.span8.offset2: .row-fluid
       li.header
         span tags
       li.sub-header.span12
@@ -181,8 +177,8 @@ template(name="account_offer_tags")
         span.span2 ratio
         span.span2 rate
       hr.shadow.bottom.thin
-      {{#each this.tags}}
-      li(data-active="{{active}}", data-group="tags", data-name="{{name}}").clr-bg.span12
+      {{#each tags_rated}}
+      li(data-active="{{contains_my_tags name}}", data-group="tags", data-name="{{name}}").clr-bg.span12
         span.span8 {{name}}
         span.span2 {{ratio}}
         span.span2 {{rate}}
@@ -206,28 +202,28 @@ template(name="account_offer_tags")
         span.span2 {{this.ratio}}
         span.span2 10
 
-    {{/each_with_key}}
-  {{/with}}
 
 
 template(name="account_offer_images")
-  {{#with getStore 'instance_offer'}}
+  {{#with store 'get' 'instance_offer'}}
   .area
     .file-table.row
       .file-input.span3
         input(name="files", type="file", multiple).file-uploader
         .proxy
           span click to upload a new image
-      {{#each find 'Images' '{}'}}
+      {{#each pictures}}
+      {{#isolate}}
       .file.span3.clr-bg
         img(src="{{this.src}}", class="{{this.status}}")
         {{#if this.imgur}}
-        span.select-file(data-url="{{this.src}}", data-active="{{storeEquals 'offer_active_image' this.src}}"): i.glyph-checkmark
+        span.select-file(data-url="{{this.src}}", data-active="{{store-equals 'offer_active_image' this.src}}"): i.glyph-checkmark
         {{else}}
         span.save-file: i.glyph-disk
         {{/if}}
         span.delete-file: i.glyph-cancel
         .clearfix
+      {{/isolate}}
       {{/each}}
   {{/with}}
 

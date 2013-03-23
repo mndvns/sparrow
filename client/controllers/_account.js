@@ -1,4 +1,4 @@
-var as, draw_qrcode, create_qrcode, update_qrcode, permittedKeys, ref$;
+var as, draw_qrcode, create_qrcode, update_qrcode, permittedKeys, slice$ = [].slice;
 as = amplify.store;
 draw_qrcode = function(text, typeNumber, errorCorrectLevel){
   return document.write(create_qrcode(text, typeNumber, errorCorrectLevel));
@@ -29,14 +29,14 @@ Handlebars.registerHelper("getEmail", function(a){
   user = Meteor.user();
   return (user != null ? user.emails : void 8) && user.emails[0];
 });
-Template.account_offer.events((ref$ = {
+Template.account_offer.events({
   "click .offer": function(event, tmpl){
     return false;
   },
   "keyup [data-validate], change [data-validate]": function(event, tmpl){
     var target, val, offer;
     target = event.currentTarget;
-    val = target.value.toString();
+    val = target.value;
     offer = Offer.storeGet();
     offer[target.id] = val;
     return Offer['new'](offer).storeSet();
@@ -56,13 +56,14 @@ Template.account_offer.events((ref$ = {
     if (!isNumberKey(e)) {
       return false;
     }
+  },
+  'click #qr-button': function(event, tmpl){
+    var offerId, url;
+    offerId = this.business;
+    url = "http://deffenbaugh.herokuapp.com/offer/";
+    return update_qrcode();
   }
-}, ref$["click " + qrButton] = function(event, tmpl){
-  var offerId, url;
-  offerId = this.business;
-  url = "http://deffenbaugh.herokuapp.com/offer/";
-  return update_qrcode();
-}, ref$));
+});
 Template.account_offer.created = function(){
   if (!Store.get("show_account_offer")) {
     Store.set("show_account_offer", "account_offer_info");
@@ -115,7 +116,11 @@ Template.account_offer_images.events({
         var img;
         img = new Image();
         img.onload = function(){
-          return Meteor.call("imgurPrepFile", reader.result);
+          var canvas;
+          canvas = document.createElement("canvas");
+          return new thumbnailer(canvas, img, 500, 3, function(){
+            return Meteor.call("imgurPrepFile", this.canvas.toDataURL());
+          });
         };
         return img.src = reader.result;
       };
@@ -126,7 +131,8 @@ Template.account_offer_images.events({
     return console.log(this);
   },
   'click .delete-file': function(e, t){
-    return Meteor.call("imgurDelete", this, this.deletehash);
+    Meteor.call("imgurDelete", this, this.deletehash);
+    return this.destroy();
   }
 });
 Template.account_offer_images.rendered = function(){
@@ -146,84 +152,48 @@ Template.account_offer_images.rendered = function(){
   });
 };
 Template.account_offer_tags.events({
-  'dblclick li[data-group="tags"]': function(event, tmpl){
-    return Tags.remove({
-      name: $(event.currentTarget).attr("data-name")
-    });
-  },
   'click .create-tag .insert': function(event, tmpl){
-    var target, text, tagset;
-    target = $(event.currentTarget);
-    text = target.next("span").children("input").val();
-    if (!text) {
-      return Meteor.Alert.set({
-        text: "You must enter a name in order to add a tag"
-      });
-    } else {
-      tagset = target.parent("li").attr("data-tagset");
-      return Meteor.call("insertTag", {
-        name: text,
-        tagset: tagset,
-        involves: [],
-        collection: "tags"
-      }, function(err, res){
-        var userLoc, store;
-        if (err) {
-          return Meteor.Alert.set({
-            text: err.reason
-          });
-        } else {
-          userLoc = Store.get("user_loc");
-          store = Store.get("tag_selection");
-          store.tags == null && (store.tags = []);
-          store.tags.push({
-            name: text,
-            tagset: tagset,
-            active: true
-          });
-          console.log(res);
-          amplify.store("tagset", store.tagset);
-          Store.set("tag_selection", store);
-          return Meteor.flush();
-        }
-      });
-    }
-  },
-  "click li[data-group='tags'], click li[data-group='tagset']": function(event, tmpl){
-    var group, store, self, existing, ref$;
-    group = $(event.currentTarget).attr("data-group");
-    store = Store.get("tag_selection") || {};
-    self = this;
-    console.log(self);
-    store[group] == null && (store[group] = []);
-    if (group === "tagset") {
-      store.tags = [];
-      store.tagset = [];
-    }
-    existing = _.find(store[group], function(g){
-      return g.name === self.name;
+    var x$;
+    x$ = Tag['new']({
+      name: tmpl.find('input').value
     });
-    if (existing) {
-      store[group].splice(store[group].indexOf(existing), 1);
-    } else {
-      store[group].push({
-        name: self.name,
-        disabled: false,
-        active: true
-      });
+    x$.save();
+    return x$;
+  },
+  "click li[data-group='tagset']": function(e, t){
+    var x$;
+    x$ = Offer.storeGet();
+    x$.setStore('tagset', this.name);
+    x$.save();
+    return x$;
+  },
+  "click li[data-group='tags']": function(e, t){
+    var x$;
+    switch (partialize$.apply(_, [_.contains, [void 8, this.name], [0]])(
+    My.map("name", "tags"))) {
+    case true:
+      return this.cloneKill("name");
+    default:
+      x$ = this.cloneNew();
+      x$.save();
+      return x$;
     }
-    Store.set("tag_selection", store);
-    amplify.store("tags_meta", store.tags, "name");
-    amplify.store("tags", _.pluck(store.tags, "name"));
-    return amplify.store("tagset", (ref$ = _.pluck(store.tagset, "name")) != null ? ref$[0] : void 8);
   }
 });
-Template.account_messages_feedback.events((ref$ = {}, ref$["click " + feedback + " button"] = function(event, tmpl){
-  var message;
-  event.preventDefault();
-  message = tmpl.find("textarea").value;
-  return Meteor.call("message", message, "toAdmins");
-}, ref$));
+Template.account_offer_tags.helpers({
+  "contains_my_tags": function(it){
+    return partialize$.apply(_, [_.contains, [void 8, it], [0]])(
+    My.map("name", "tags"));
+  }
+});
+Template.account_messages_feedback.events({
+  'click #feedback button': function(event, tmpl){
+    var message;
+    event.preventDefault();
+    message = tmpl.find("textarea").value;
+    return Meteor.call("message", message, "toAdmins");
+  }
+});
 Template.account_messages.rendered = function(){
   Store.set("page_account", "account_messages");
   return Store.set("page_account_messages", "account_messages_inbox");
@@ -249,3 +219,14 @@ Template.account_earnings_dashboard.events({
     return window.open("https://connect.stripe.com/oauth/authorize?response_type=code&client_id=" + Stripe.client_id);
   }
 });
+function partialize$(f, args, where){
+  var context = this;
+  return function(){
+    var params = slice$.call(arguments), i,
+        len = params.length, wlen = where.length,
+        ta = args ? args.concat() : [], tw = where ? where.concat() : [];
+    for(i = 0; i < len; ++i) { ta[tw[0]] = params[i]; tw.shift(); }
+    return len < wlen && len ?
+      partialize$.apply(context, [f, ta, tw]) : f.apply(context, ta);
+  };
+}

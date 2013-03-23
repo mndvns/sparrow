@@ -1,4 +1,6 @@
 
+
+
 type = (obj) ->
   unless obj?
     return String obj
@@ -12,51 +14,30 @@ type = (obj) ->
 
 My =
 
-  env: ->
-    if Meteor.isServer
-      return global
-    if Meteor.isClient
-      return window
+  env       : ->
+    | Meteor.isServer => return global
+    | Meteor.isClient => return window
 
-  user:  ->
-    Meteor.user() or @user()
+  user      : ->
+    | Meteor.isServer => return Meteor.user!
+    | Meteor.isClient => return Meteor.user!
 
-  userId:  ->
-    if Meteor.isServer
-      return Meteor.userId()
-    if Meteor.isClient
-      return Meteor.userId()
+  userId    : ->
+    | Meteor.isServer => return Meteor.userId?()
+    | Meteor.isClient => return Meteor.userId!
 
-  userLoc: ->
-    if Meteor.isClient
-      return Store.get("user_loc")
+  userLoc   : -> Store?.get "user_loc"
 
-  offer: ->
-    Offers?.findOne(
-      ownerId: Meteor.userId() or @userId
-    )
+  offer     : -> Offers?.findOne ownerId: @userId!
+  offerId   : -> @offer()?._id
 
-  offerId: ->
-    if Meteor.isServer
-      return Offers?.findOne(
-        ownerId: @userId
-      )?._id
+  tags      : -> Tags?.find ownerId: @userId! .fetch!
+  tagset    : -> @offer! ?.tagset
 
-    if Meteor.isClient
-      return Offers?.findOne(
-        ownerId: Meteor.userId()
-      )?._id
+  locations : -> Locations?.find ownerId: @userId! .fetch!
+  pictures  : -> Pictures?.find ownerId: @userId! .fetch!
 
+  alert     : -> Alerts?.findOne ownerId: @userId! ?._id
 
-  tags: ->
-    Tags?.find ownerId: @userId! .fetch!
-
-  locations: ->
-    Locations?.find ownerId: @userId! .fetch!
-
-  alert: ->
-    App.Collection.Alerts.findOne(
-      ownerId: @userId()
-    )?._id
-
+  map       : (field, list) --> map (-> it[field]), @[list]?!
 

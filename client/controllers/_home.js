@@ -1,4 +1,4 @@
-var checkHelpMode, Sparrow, statCurrent, statRange, slipElements, colorFill, Conf, ref$;
+var checkHelpMode, Sparrow, statCurrent, statRange, slipElements, colorFill, Conf;
 checkHelpMode = function(){
   return $(".wrapper").hasClass("help-mode");
 };
@@ -73,7 +73,7 @@ Template.wrapper.events({
     selector = $(event.currentTarget);
     rival = $(".toggler-group.left");
     target = $(tmpl.find(".terrace"));
-    sign = $(signIn + "");
+    sign = $('#sign-in');
     selector.toggleClass("active");
     if (selector.is(".active")) {
       rival.animate({
@@ -215,11 +215,11 @@ Template.ceiling.events({
   "click button[type='submit']": function(event, tmpl){
     var username, password, email, password2, forgotEmail, type, handleResponse, errors;
     event.preventDefault();
-    username = tmpl.find("input" + username).value;
-    password = tmpl.find("input" + password).value;
-    email = tmpl.find("input" + email).value;
-    password2 = tmpl.find("input" + password2).value;
-    forgotEmail = tmpl.find("input" + forgotEmail).value;
+    username = tmpl.find('input#username').value;
+    password = tmpl.find('input#password').value;
+    email = tmpl.find('input#email').value;
+    password2 = tmpl.find('input#password2').value;
+    forgotEmail = tmpl.find('input#forgot-email').value;
     type = event.currentTarget.getAttribute("data-account-submit-type");
     handleResponse = function(err, res){
       if (err) {
@@ -310,18 +310,38 @@ Template.ceiling.rendered = function(){
   return $(this.findAll("[data-toggle='tooltip']")).tooltip();
 };
 Template.content.rendered = function(){
-  var href, page, page_split, page_area, page_links, page_sublinks, show_sublinks, ref$, hrefs, format_hrefs;
+  var this$ = this;
   if (Meteor.Router.page() === "home") {
     return;
   }
   if (!this.activateLinks) {
-    this.activateLinks = [
-      Deps.autorun, href = function(link){
-        if (link) {
-          return '[href="/' + link.join('/') + '"]';
+    this.activateLinks = function(){
+      return Deps.autorun(function(){
+        var href, page, page_split, page_area, page_links, page_sublinks, show_sublinks, ref$, hrefs, format_hrefs;
+        href = function(link){
+          if (link) {
+            return '[href="/' + link.join('/') + '"]';
+          }
+        };
+        page = Meteor.Router.page();
+        page_split = page.split("_");
+        page_area = page_split.splice(0, 1);
+        page_links = page_split.splice(0, 2);
+        page_sublinks = page_split;
+        show_sublinks = (ref$ = Store.get("show_" + page)) != null ? ref$.split("_") : void 8;
+        hrefs = [href(page_links), href(page_sublinks), href(show_sublinks)];
+        format_hrefs = _.compact(hrefs).toString();
+        $(this$.findAll("ul.links a, ul.sublinks a")).removeClass("active").addClass("inactive").filter(format_hrefs).removeClass("inactive").addClass("active");
+        if (page_area !== "account") {
+          if (!$(this$.find("[data-validate]")).is(":focus")) {
+            if (!this$.page_sublinks === page_sublinks.toString()) {
+              this$.page_sublinks = page_sublinks.toString();
+              return $(this$.findAll("[data-validate]")).jqBootstrapValidation();
+            }
+          }
         }
-      }, page = Meteor.Router.page(), page_split = page.split("_"), page_area = page_split.splice(0, 1), page_links = page_split.splice(0, 2), page_sublinks = page_split, show_sublinks = (ref$ = Store.get("show_" + page)) != null ? ref$.split("_") : void 8, hrefs = [href(page_links), href(page_sublinks), href(show_sublinks)], format_hrefs = _.compact(hrefs).toString(), $(this.findAll("ul.links a, ul.sublinks a")).removeClass("active").addClass("inactive").filter(format_hrefs).removeClass("inactive").addClass("active"), page_area !== "account" ? !$(this.find("[data-validate]")).is(":focus") ? !this.page_sublinks === page_sublinks.toString() ? (this.page_sublinks = page_sublinks.toString(), $(this.findAll("[data-validate]")).jqBootstrapValidation()) : void 8 : void 8 : void 8
-    ];
+      });
+    };
   }
   return this.activateLinks();
 };
@@ -359,8 +379,8 @@ Template.content.events({
     form = $(tmpl.find("form"));
     switch (sub_area) {
     case "account_profile_edit":
-      newEmail = form.find(email + "").val();
-      newUsername = form.find(username + "").val();
+      newEmail = form.find('#email').val();
+      newUsername = form.find('#username').val();
       if (newEmail) {
         if (!validateEmail(newEmail)) {
           Meteor.Alert.set({
@@ -381,7 +401,7 @@ Template.content.events({
         text: "Profile successfully saved"
       });
     case "account_profile_settings":
-      adminCode = form.find(admin + "");
+      adminCode = form.find('#admin');
       if (adminCode.is(":disabled") === false) {
         return Meteor.call("activateAdmin", adminCode.val(), function(err){
           if (err) {
@@ -398,7 +418,10 @@ Template.content.events({
     }
   },
   "click .sublinks.account_offer a.save": function(event, tmpl){
-    return Offer.create(Offer.storeGet()).storeSet();
+    var x$;
+    x$ = Offer.storeGet();
+    x$.save();
+    return x$;
   },
   'click .accord header': function(event, tmpl){
     if (!$(event.target).hasClass("active")) {
@@ -450,7 +473,7 @@ Conf = (function(){
 }());
 Template.home.helpers({
   getOffers: function(){
-    var current, ref$, myLoc, conf, ranges, notes, result;
+    var current, ref$, myLoc, conf, ranges, notes;
     current = (ref$ = statCurrent()) != null ? ref$.query : void 8;
     myLoc = Store.get("user_loc");
     conf = new Conf(current);
@@ -464,80 +487,82 @@ Template.home.helpers({
       count: 0,
       votes: 0
     };
-    result = App.Collection.Offers.find().fetch();
     return result;
   },
   styleDate: function(date){
     return moment(date).fromNow();
   }
 });
-Template.intro.events((ref$ = {}, ref$["click " + getLocation] = function(event, tmpl){
-  var noLocation, foundLocation;
-  Meteor.Alert.set({
-    text: "One moment while we charge the lasers...",
-    wait: true
-  });
-  noLocation = function(){
-    return Meteor.Alert.set({
-      text: "Uh oh... something went wrong"
-    });
-  };
-  foundLocation = function(location){
+Template.intro.events({
+  'click #getLocation': function(event, tmpl){
+    var noLocation, foundLocation;
     Meteor.Alert.set({
-      text: "Booya! Lasers charged!"
+      text: "One moment while we charge the lasers...",
+      wait: true
     });
-    return Store.set("user_loc", {
-      lat: location.coords.latitude,
-      long: location.coords.longitude
-    });
-  };
-  return navigator.geolocation.getCurrentPosition(foundLocation, noLocation);
-}, ref$['click .geolocate'] = function(event, tmpl){
-  var location, geo;
-  location = tmpl.find("input").value;
-  if (!location) {
-    Meteor.Alert.set({
-      text: "No location entered"
-    });
-    return;
-  }
-  Meteor.Alert.set({
-    text: "One moment...",
-    wait: true
-  });
-  geo = new google.maps.Geocoder();
-  return geo.geocode({
-    address: location
-  }, function(results, status){
-    var loc, userLoc, key;
-    if (status !== "OK") {
+    noLocation = function(){
       return Meteor.Alert.set({
-        text: "We couldn't seem to find your location. Did you enter your address correctly?"
+        text: "Uh oh... something went wrong"
       });
-    } else {
+    };
+    foundLocation = function(location){
       Meteor.Alert.set({
-        text: "Found ya!"
+        text: "Booya! Lasers charged!"
       });
-      loc = results[0].geometry.location;
-      userLoc = [];
-      for (key in loc) {
-        if (typeof loc[key] !== 'number') {
-          break;
-        }
-        userLoc.push(loc[key]);
-      }
-      console.log("USERLOC", userLoc);
       return Store.set("user_loc", {
-        lat: userLoc[0],
-        long: userLoc[1]
+        lat: location.coords.latitude,
+        long: location.coords.longitude
       });
+    };
+    return navigator.geolocation.getCurrentPosition(foundLocation, noLocation);
+  },
+  'click .geolocate': function(event, tmpl){
+    var location, geo;
+    location = tmpl.find("input").value;
+    if (!location) {
+      Meteor.Alert.set({
+        text: "No location entered"
+      });
+      return;
     }
-  });
-}, ref$));
+    Meteor.Alert.set({
+      text: "One moment...",
+      wait: true
+    });
+    geo = new google.maps.Geocoder();
+    return geo.geocode({
+      address: location
+    }, function(results, status){
+      var loc, userLoc, key;
+      if (status !== "OK") {
+        return Meteor.Alert.set({
+          text: "We couldn't seem to find your location. Did you enter your address correctly?"
+        });
+      } else {
+        Meteor.Alert.set({
+          text: "Found ya!"
+        });
+        loc = results[0].geometry.location;
+        userLoc = [];
+        for (key in loc) {
+          if (typeof loc[key] !== 'number') {
+            break;
+          }
+          userLoc.push(loc[key]);
+        }
+        console.log("USERLOC", userLoc);
+        return Store.set("user_loc", {
+          lat: userLoc[0],
+          long: userLoc[1]
+        });
+      }
+    });
+  }
+});
 Template.intro.rendered = function(){
   var window_height, intro, intro_height;
   window_height = $(".current").height() / 2;
-  intro = $(this.find(intro + ""));
+  intro = $(this.find('#intro'));
   intro_height = intro.outerHeight() * 0.75;
   return intro.css({
     'margin-top': window_height - intro_height

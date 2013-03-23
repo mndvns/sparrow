@@ -24,78 +24,78 @@ watch = (arg) ->
 
 
 
-cronSeconds = 10
-Meteor.setInterval (->
-
-  # console.log("RAN CRON")
-  # console.log(Sticker.toArray())
-
-  # u = Meteor.users.findOne( "username": "mikey" )
-  # watch
-  #   selector: u
-  #   title: u.username
-  #   fields:
-  #     karma: {}
-  #     activeTags:
-  #       name: "active tags"
-  #       value: ->
-  #         _.filter( u.stint.tags, (s)->
-  #           s.active ).length
-
-  # t = Tags.findOne( "name" : "vegan" )
-  # watch
-  #   selector: t
-  #   title: "TAG (VEGAN)"
-  #   fields:
-  #     inv:
-  #       name: "involves"
-  #       value: ->
-  #         _.filter( t.involves, (i) ->
-  #           i.user = u._id ).length
-
-
-  Meteor.users.find( "stint.tags": $exists: true ).forEach (user)->
-    if user.karma <= 0 then return
-
-    decreaseKarma = 0
-    adjustedTags = []
-
-    for tag in user.stint.tags
-      if tag.active
-        decreaseKarma += tag.ratio
-
-        if decreaseKarma > user.karma
-          tagsDisabled = true
-
-        else
-          tagsDisabled = false
-          adjustedTags.push(tag.name)
-
-    adjustedKarma = ((user.karma - (decreaseKarma / (60 / cronSeconds)))*100)/100
-    # adjustedKarma = 2
-
-    Meteor.users.update user._id,
-      $set:
-        karma: adjustedKarma
-
-    App.Collection.Offers.update
-      owner: user._id
-    ,
-      $set:
-        tags: adjustedTags
-
-    userOffer = App.Collection.Offers.findOne(owner: user._id)
-
-    if userOffer
-      App.Collection.Tags.update
-        "involves.user": user._id
-      ,
-        $set:
-          "involves.$.disabled": tagsDisabled
-          "involves.$.votes_count": userOffer.votes_count
-      ,
-        multi: true
-
-), cronSeconds * 1000
+# cronSeconds = 10
+# Meteor.setInterval (->
+# 
+#   # console.log("RAN CRON")
+#   # console.log(Sticker.toArray())
+# 
+#   # u = Meteor.users.findOne( "username": "mikey" )
+#   # watch
+#   #   selector: u
+#   #   title: u.username
+#   #   fields:
+#   #     karma: {}
+#   #     activeTags:
+#   #       name: "active tags"
+#   #       value: ->
+#   #         _.filter( u.stint.tags, (s)->
+#   #           s.active ).length
+# 
+#   # t = Tags.findOne( "name" : "vegan" )
+#   # watch
+#   #   selector: t
+#   #   title: "TAG (VEGAN)"
+#   #   fields:
+#   #     inv:
+#   #       name: "involves"
+#   #       value: ->
+#   #         _.filter( t.involves, (i) ->
+#   #           i.user = u._id ).length
+# 
+# 
+#   Meteor.users.find( "stint.tags": $exists: true ).forEach (user)->
+#     if user.karma <= 0 then return
+# 
+#     decreaseKarma = 0
+#     adjustedTags = []
+# 
+#     for tag in user.stint.tags
+#       if tag.active
+#         decreaseKarma += tag.ratio
+# 
+#         if decreaseKarma > user.karma
+#           tagsDisabled = true
+# 
+#         else
+#           tagsDisabled = false
+#           adjustedTags.push(tag.name)
+# 
+#     adjustedKarma = ((user.karma - (decreaseKarma / (60 / cronSeconds)))*100)/100
+#     # adjustedKarma = 2
+# 
+#     Meteor.users.update user._id,
+#       $set:
+#         karma: adjustedKarma
+# 
+#     App.Collection.Offers.update
+#       owner: user._id
+#     ,
+#       $set:
+#         tags: adjustedTags
+# 
+#     userOffer = App.Collection.Offers.findOne(owner: user._id)
+# 
+#     if userOffer
+#       App.Collection.Tags.update
+#         "involves.user": user._id
+#       ,
+#         $set:
+#           "involves.$.disabled": tagsDisabled
+#           "involves.$.votes_count": userOffer.votes_count
+#       ,
+#         multi: true
+# 
+# ), cronSeconds * 1000
 
 

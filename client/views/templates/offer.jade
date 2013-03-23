@@ -35,7 +35,7 @@ template(name='offer')
       mixin data({ selector: "votes_count", glyph: "plus", metric: "{{this.votes_count}}", after:"votes" })
       {{/isolate}}
       {{#constant}}
-      mixin data({ selector: "distance", glyph: "location", metric: "{{this.distance}}", after:"miles" })
+      mixin data({ selector: "distance", glyph: "location", metric: "{{this.nearest}}", after:"miles" })
       {{/constant}}
       mixin data({ selector: "price", glyph: "tag-2", metric: "${{numberWithCommas this.price}}" })
       mixin data({ selector: "updatedAt", glyph: "history", metric: "{{styleDate this.updatedAt}}" })

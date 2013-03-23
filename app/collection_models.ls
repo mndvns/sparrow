@@ -4,58 +4,58 @@
 do ->
 
   App.{}Util.characterize = ->
-    if not it? then return false
-    switch it
-    | "string" => "letters"
-    | "array"  => "items"
-    | "number" => "number"
-    | "object" => "values"
-    | "boolean" => "true or false"
+      unless it? then return false
+      switch it
+      | "string"  => "letters"
+      | "array"   => "items"
+      | "number"  => "number"
+      | "object"  => "values"
+      | "boolean" => "true or false"
 
   Storer =
     store-method  : -> Store?[&0] "instance_#{@@@_type?.toLowerCase!}", &1
-    store-set     : -> @store-method "set", _.extend( @attr, if @id then {_id: @id} )
+    store-set     : -> @store-method "set", @
     store-clear   : -> @store-method "set", null
     store-get     : -> @store-method "get", null
 
   Point =
-    point-recall  : --> App.Collection[it.toProperCase!]find "ownerId": @attr."ownerId" .fetch!
-    point-compact : ( list ) --> _.compact unique list
-    point-strip   : ( field , list ) --> map (.[field]), list
-    point-get : ( field, list ) -->
+    point-recall  :                       --> App.Collection[it.to-proper-case!]find "ownerId": @ownerId .fetch!
+    point-compact : ( list )              --> _.compact unique list
+    point-strip   : ( field , list )      --> map (.[field]), list
+    point-get     : ( field , list )      -->
       | field isnt list => @point-compact @point-strip field, @point-recall list
       | _               => @point-compact @point-recall list
-    point-set : ( field, list, attr = list ) --> @set attr, @point-get field, list
-    point-jam : -> for p in @@@_points then @point-set p.field, p.list, p.attr
+    point-set     : ( field , list , attr = list ) --> @attr = @point-get field, list
+    point-jam     : -> for p in @@@_points then @point-set p.field, p.list, p.attr
 
   Lock =
     lock-get    : -> @@@_locks[it]
-    lock-set    : -> for k, v of @@@_locks then @set k, v!
-    lock-check  : -> for l of @@@_locks then unless @get(l)?
+    lock-set    : -> for k, v of @@@_locks  => @[k] = v!
+    lock-check  : -> for l of @@@_locks     => unless @[l]?
       @throw "An error occured during the #{l} verification process"
 
   Default =
-    default-set   : -> for k, v of @@@_schema => @set k, v.default
-    default-null  : -> for k of @@@_schema    => @set k, null
+    default-set   : -> for k, v of @@@_schema => @[k] = v.default
+    default-null  : -> for k of @@@_schema    => unless @[k]? => @[k] = null
 
   Check =
     check-field: ( f ) ->
       e = ~> @throw "#{@@@name}'s #{f} property " + it
 
-      a = @attr[f]
+      a = @[f]
       s = @@@_schema[f]
 
       switch
       | not s? => e "does not exist"
       | not a? => e "has not been set"
 
-      at = type a
       st = type s.default
       c = -> App.Util.characterize it
 
-      switch at
+      switch st
       | "boolean" => return
-      | "number" =>
+      | "number"  =>
+        a    = parse-int a
         aval = a
         verb = "be"
         char = numberWithCommas s.max
@@ -63,6 +63,8 @@ do ->
         aval = length a
         verb = "have"
         char = s.max + " " + c st
+
+      at = type a
 
       switch
       | at isnt st                      => e "must have #{c st}, not #{c at}"
@@ -75,30 +77,24 @@ do ->
     check-list  : -> for i in it then @check-field i
     check-all   : ->
 
+      console.log \1
       @lock-set!
+      console.log 2
       @lock-check!
 
+      console.log \3
       @check-limit!
+      console.log \4
       @check-list keys filter (.required), @@@_schema
 
     check-limit : ->
       if (not @is-persisted!) and (@@@_limit - @@@mine!count! <= 0) then @throw "Collection at limit"
 
 
-
   class Model implements Point, Storer, Lock, Check, Default
-    attr : {}
     id   : void
 
-    (attr = {}) ->
-
-      if attr._id
-        @attr = @demongoize attr
-        @id   = attr._id
-
-      else
-        @default-null!
-        @lock-set!
+    -> _.extend @, it
 
     alert: (text) ->
       if Meteor.isServer
@@ -109,14 +105,25 @@ do ->
         Meteor.Alert.set text: text
 
 
-    is-persisted: -> @id?
+    is-persisted: -> @_id?
 
     set : ( key, val ) ->
-      @attr[key] = val
+      @[key] = val
       @
 
-    unset     : -> @attr = _.omit @attr, it
-    get       : -> @attr[it]
+    set-store : ->
+      @[&0] = &1
+      @store-set!
+      @
+
+    set-save  : ->
+      unless @is-persisted! => @throw @@@name + " must save before set-saving"
+      @[&0] = &1
+      @check-field &0
+      @@@_collection.update @_id, $set: (&0) : &1
+
+    extend        : -> for k, v of it => @[k] = v
+    update        : -> @extend it and @save!
 
     save: -->
       try @check-all!
@@ -129,17 +136,17 @@ do ->
       @alert "Successfully saved #{@@@name}"
 
       switch
-      | @is-persisted!  => @@@_collection.update @id, $set: @attr
-      | _               => @id = @@@_collection.insert @attr
+      | @is-persisted!  => @@@_collection.update @_id, $set: _.omit @, "_id"
+      | _               => @_id = @@@_collection.insert @
 
       switch
-      | it?   => it null, @attr
-      | _     => return @attr
+      | it?   => it null, @
+      | _     => return @
 
     destroy: ->
       if @is-persisted!
-        @@@_collection.remove @id
-        @id = null
+        @@@_collection.remove @_id
+        @_id = null
 
       @store-clear!
 
@@ -147,40 +154,34 @@ do ->
       | it?   => it null, @
       | _     => return @
 
-    mongoize: (attr = @attr) ->
-      attr._id = @id
-      @attr
+    throw         : -> throw new Error it
 
-    demongoize: (attr = @attr) ->
-      taken = {}
-      for name, value of attr
-        if name.match(/^_/) then continue
-        taken[name] = value
-      taken
+    clone-new     : -> @@@new _.omit @, (keys @_locks ..push "_id")
+    clone-kill    : -> @@@_collection.remove that._id if @clone-find it
+    clone-find    : (f) -> find (~> it[f] is @[f]), My[@@@_collection._name]?!
 
-    throw : -> throw new Error it
-
-
-    @new    = -> new @ it
-    @create = -> @new it .save()
+    @new          = ->  new @ it
+    @create       = -> @new it .save!
+    @new-default  = -> @new it ..default-set!
+    @new-null     = -> @new it ..default-null!
 
     @where  = (sel = {}, opt = {}) -> @_collection?.find sel, opt
     @all    = (sel = {}, opt = {}) -> @_collection?.find sel, opt
-    @mine   = (sel = {}, opt = {}) -> @where _.extend sel, ownerId: My.userId!, opt
+    @mine   = (sel = {}, opt = {}) -> @where _.extend sel, ownerId: My.userId!
 
-    @destroy-mine = -> Meteor.call "instance_destroy_mine", @_collection._name.to-proper-case!
-    @store-get    = -> Store.get "instance_#{@_type.to-lower-case!}"
+    @destroy-where  = -> @_collection.remove _.extend it, ownerId: My.userId!
+    @destroy-mine   = -> Meteor.call "instance_destroy_mine", @_collection._name.to-proper-case!
+    @store-get      = -> @new Store.get "instance_#{@_type.to-lower-case!}"
+
 
 
   Locations = new Meteor.Collection 'locations',
-    transform: ->
-      it = Location.new it ..set "distance", ..geo-plot!
-      it .= mongoize!
-      it
+    transform: -> Location.new it ..set "distance", ..geo-plot!
 
   class Location extends Model
     @_type = "Location"
     @_collection = Locations
+    @_limit = 20
     @_locks =
       ownerId: -> My.userId!
       offerId: -> My.offerId!
@@ -210,7 +211,6 @@ do ->
         required: true
         max: 5
         min: 5
-    @_limit = 20
 
     geo-map : ->
       try
@@ -221,7 +221,7 @@ do ->
         return
 
       new google.maps.Geocoder?()
-        .geocode address: "#{@attr.street} #{@attr.city} #{@attr.state} #{@attr.zip}",
+        .geocode address: "#{@street} #{@city} #{@state} #{@zip}",
         (results, status) ~>
           if status isnt "OK"
             message = "We couldn't seem to find your location. Did you enter your address correctly?"
@@ -230,35 +230,46 @@ do ->
           else
             format = (values results[0].geometry.location)[0,1]
             @alert format
-            @set "geo", format
+            @geo = format
             cb? null, format
 
     geo-plot: ->
-      m = My.userLoc! or {lat: 39, long: -94}
-      g = @get "geo"
+      m = My.userLoc?! or {lat: 39, long: -94}
+      g = @geo
 
-      Math.round distance m.lat, m.long, g[0], g[1], "M" * 10 / 10
+      if g? => Math.round distance m.lat, m.long, g[0], g[1], "M" * 10 / 10
 
 
-  Tags = new Meteor.Collection 'tags',
-    transform: (doc) ->
 
-      doc.collection = "tags"
-      doc.tagset = "eat"
+  Tagsets = new Meteor.Collection 'tagsets',
+    transform: -> it = Tagset.new it
 
-      # d = Tag.new doc ..rate!
-      # d = d.demongoize!
-      # console.log "DOC", d
+  class Tagset extends Model
+    @_type       = "Tagset"
+    @_collection = Tagsets
+    @_limit      = 5
+    @_locks =
+      collection: ~> (@_type + "s").to-lower-case!
+    @_schema =
+      name:
+        default: "see"
+      noun:
+        default: "event"
 
-      doc
+    count-tags: -> Tag.where "tagset": @name .count!
+
+
+  Tags = new Meteor.Collection 'tags', transform: -> it = Tag.new it
+  # Tags.bind-template 'account_offer_tags'
 
   class Tag extends Model
     @_type = "Tag"
     @_collection = Tags
     @_limit = 20
     @_locks =
-      ownerId: -> My.userId!
-      offerId: -> My.offerId!
+      ownerId   : -> My.userId!
+      offerId   : -> My.offerId!
+      tagset    : -> My.tagset!
       collection: ~> (@_type + "s").to-lower-case!
     @_schema =
       name:
@@ -272,9 +283,9 @@ do ->
         max: 10
         min: 2
 
-    @rate-all = ->
-      list = @all!fetch!
-      console.log "LIST", list
+    rate-it: -> @rate = (@@@where name: @name .count!)
+    @rate-all = (it = {}) ->
+      list = @where it .fetch!
 
       out = {}
       for n in [..name for list]
@@ -285,19 +296,16 @@ do ->
       lout = []
       for key, val of out
         o = find (.name is key), list
-        o.rate = val
+          ..rate = val
         lout.push o
 
       lout
-
-    rate: -> @set 'rate', (@@@where name: @attr.name .count!)
 
 
 
   Offers = new Meteor.Collection 'offers',
     transform: ->
       it = Offer.new it ..point-jam! ..set-nearest!
-      it .= mongoize!
       it
 
   class Offer extends Model
@@ -343,6 +351,9 @@ do ->
         default: ""
       tagset:
         default: ""
+        required: true
+        min: 2
+        max: 20
       votes_meta:
         default: []
       votes_count:
@@ -351,45 +362,109 @@ do ->
         default: false
 
 
-    nearest     : -> minimum [..distance for @get "locations"]
-    set-nearest : -> @set "nearest", @nearest!
+    set-nearest     : -> @nearest = minimum [..distance for @locations]
 
     @load-store = ->
       @handle ?= Meteor.autorun ~>
         if Session.get("subscribe_ready") is true
           switch
           | Offer.store-get()?      => return
-          | @mine!count!            => @new My.offer! ..store-set!
+          | @mine!count!            => My.offer! ..store-set!
           | _                       => @new! ..default-set! ..store-set!
+
+
+  Pictures = new Meteor.Collection "pictures",
+    transform: -> 
+      it = Picture.new it
+      it
+
+  class Picture extends Model
+    @_type = "Picture"
+    @_collection = Pictures
+    @_limit = 10
+    @_locks  =
+      ownerId : -> My.userId!
+      offerId : -> My.offerId!
+    @_schema =
+      status:
+        default: "active"
+      imgur:
+        default: false
+      type:
+        default: "jpg"
+      src:
+        default: "http://i.imgur.com/YhUFTyA.jpg"
+
+    activate: ->
+      Pictures.update {}=
+        ownerId: @ownerId
+        _id: $nin: [@_id]
+      ,
+        $set: status: "inactive"
+      ,
+        multi: true
+
+      Pictures.update @_id,
+        $set: status: "active"
+
+    deactivate: ->
+      @status = "deactivated"
+      @alert "Image successfully removed"
+
+    on-upload : (err, res)->
+      if err
+        console.log("ERROR", err)
+        @update status: "failed"
+      else
+        console.log("SUCCESS", res)
+        @update {}=
+          status: "active"
+          src: res.data.link
+          imgur: true
+          deletehash: res.data.deletehash
+
+      # console.log "ATATTATATATWQEWEQEWQ", _.omit @, "src"
+
+    on-delete : (err, res)->
+      if err
+        console.log("ERROR", err)
+        @destoy!
+      else
+        console.log("SUCCESS", res)
+        @destoy!
+
+
 
   App.Model = {}
   App.Collection =
 
     Tests    : new Meteor.Collection "tests"
 
-    Images   : new Meteor.Collection "images"
     Users    : new Meteor.Collection "userData"
 
-    Tagsets  : new Meteor.Collection "tagsets"
     Sorts    : new Meteor.Collection "sorts"
 
     Messages : new Meteor.Collection "messages"
     Alerts   : new Meteor.Collection "alerts"
 
   for key, val of App.Collection
-    global[key] = val
+    My.env![key] = val
 
-  hasModel = [
+  has-model =
     "Location"
     "Offer"
     "Tag"
-  ]
+    "Tagset"
+    "Picture"
+    ...
 
-  for g in hasModel
+  for g in has-model
     m = App.Model[g]            = eval(g)
     c = App.Collection[g + "s"] = eval(g + "s")
 
-    if Meteor.isClient
-      window[g]       = m
-      window[g + "s"] = c
+    window?[g]       = m
+    window?[g + "s"] = c
+
+    global?[g]       = m
+    global?[g + "s"] = c
 

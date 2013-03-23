@@ -17,61 +17,82 @@ type = function(obj){
 };
 My = {
   env: function(){
-    if (Meteor.isServer) {
+    switch (false) {
+    case !Meteor.isServer:
       return global;
-    }
-    if (Meteor.isClient) {
+    case !Meteor.isClient:
       return window;
     }
   },
   user: function(){
-    return Meteor.user() || this.user();
+    switch (false) {
+    case !Meteor.isServer:
+      return Meteor.user();
+    case !Meteor.isClient:
+      return Meteor.user();
+    }
   },
   userId: function(){
-    if (Meteor.isServer) {
-      return Meteor.userId();
-    }
-    if (Meteor.isClient) {
+    switch (false) {
+    case !Meteor.isServer:
+      return typeof Meteor.userId === 'function' ? Meteor.userId() : void 8;
+    case !Meteor.isClient:
       return Meteor.userId();
     }
   },
   userLoc: function(){
-    if (Meteor.isClient) {
-      return Store.get("user_loc");
-    }
+    return typeof Store != 'undefined' && Store !== null ? Store.get("user_loc") : void 8;
   },
   offer: function(){
     return typeof Offers != 'undefined' && Offers !== null ? Offers.findOne({
-      ownerId: Meteor.userId() || this.userId
+      ownerId: this.userId()
     }) : void 8;
   },
   offerId: function(){
     var ref$;
-    if (Meteor.isServer) {
-      return typeof Offers != 'undefined' && Offers !== null ? (ref$ = Offers.findOne({
-        ownerId: this.userId
-      })) != null ? ref$._id : void 8 : void 8;
-    }
-    if (Meteor.isClient) {
-      return typeof Offers != 'undefined' && Offers !== null ? (ref$ = Offers.findOne({
-        ownerId: Meteor.userId()
-      })) != null ? ref$._id : void 8 : void 8;
-    }
+    return (ref$ = this.offer()) != null ? ref$._id : void 8;
   },
   tags: function(){
     return typeof Tags != 'undefined' && Tags !== null ? Tags.find({
       ownerId: this.userId()
     }).fetch() : void 8;
   },
+  tagset: function(){
+    var ref$;
+    return (ref$ = this.offer()) != null ? ref$.tagset : void 8;
+  },
   locations: function(){
     return typeof Locations != 'undefined' && Locations !== null ? Locations.find({
       ownerId: this.userId()
     }).fetch() : void 8;
   },
+  pictures: function(){
+    return typeof Pictures != 'undefined' && Pictures !== null ? Pictures.find({
+      ownerId: this.userId()
+    }).fetch() : void 8;
+  },
   alert: function(){
     var ref$;
-    return (ref$ = App.Collection.Alerts.findOne({
+    return typeof Alerts != 'undefined' && Alerts !== null ? (ref$ = Alerts.findOne({
       ownerId: this.userId()
-    })) != null ? ref$._id : void 8;
-  }
+    })) != null ? ref$._id : void 8 : void 8;
+  },
+  map: curry$(function(field, list){
+    return map(function(it){
+      return it[field];
+    }, typeof this[list] === 'function' ? this[list]() : void 8);
+  })
 };
+function curry$(f, bound){
+  var context,
+  _curry = function(args) {
+    return f.length > 1 ? function(){
+      var params = args ? args.concat() : [];
+      context = bound ? context || this : this;
+      return params.push.apply(params, arguments) <
+          f.length && arguments.length ?
+        _curry.call(context, params) : f.apply(context, params);
+    } : f;
+  };
+  return _curry();
+}

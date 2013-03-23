@@ -5,6 +5,7 @@
 #  $$ globals locals
 
 as = amplify.store
+
 draw_qrcode = (text, typeNumber, errorCorrectLevel) ->
   document.write create_qrcode(text, typeNumber, errorCorrectLevel)
 
@@ -52,7 +53,7 @@ Template.account_offer.events {}=
 
   "keyup [data-validate], change [data-validate]": (event, tmpl) ->
     target = event.currentTarget
-    val = target.value.toString()
+    val = target.value
     offer = Offer.storeGet()
     offer[target.id] =  val
     Offer.new(offer).storeSet()
@@ -64,7 +65,7 @@ Template.account_offer.events {}=
       true
     unless isNumberKey(e) then return false
 
-  "click #qr-button": (event, tmpl) ->
+  'click #qr-button': (event, tmpl) ->
     offerId = @business
     url = "http://deffenbaugh.herokuapp.com/offer/"
     update_qrcode()
@@ -72,8 +73,10 @@ Template.account_offer.events {}=
 Template.account_offer.created = ->
   unless Store.get("show_account_offer")
     Store.set("show_account_offer", "account_offer_info")
-
   Offer.loadStore()
+  # My.offer!
+
+
 
 #////////////////////////////////////////////
 #  $$ account_offer_symbol
@@ -110,26 +113,24 @@ Template.account_offer_images.events {}=
   'click .file-input .proxy': (e, t) ->
     $(e.currentTarget).siblings("input").trigger('click')
 
-
   "change .file-uploader": (e, t) ->
     file = e.target.files?[0]
-    Meteor.Alert.set(
+    Meteor.Alert.set {}=
       text: "Compressing image..."
       wait: true
-    )
 
     if file
-      reader = new FileReader()
+      reader = new FileReader!
       reader.onloadend = (e)->
-        img = new Image()
+        img = new Image!
         img.onload = ->
 
-          Meteor.call "imgurPrepFile", reader.result
+          # Meteor.call "imgurPrepFile", reader.result
 
-          # canvas = document.createElement "canvas"
-          # new thumbnailer canvas, img, 500, 3, ->
+          canvas = document.createElement "canvas"
+          new thumbnailer canvas, img, 500, 3, ->
 
-          #   Meteor.call "imgurPrepFile", @canvas.toDataURL()
+            Meteor.call "imgurPrepFile", @canvas.toDataURL()
 
         img.src = reader.result
 
@@ -140,6 +141,7 @@ Template.account_offer_images.events {}=
 
   'click .delete-file': (e, t) ->
     Meteor.call "imgurDelete", @, @deletehash
+    @destroy!
 
 Template.account_offer_images.rendered = ->
   adjustFileInput = ~>
@@ -155,7 +157,7 @@ Template.account_offer_images.rendered = ->
   adjustFileInput()
 
   $(window).on "resize", ->
-    _.throttle(adjustFileInput(), 100)
+    _.throttle adjustFileInput!, 100
 
 
 #////////////////////////////////////////////
@@ -163,88 +165,27 @@ Template.account_offer_images.rendered = ->
 
 Template.account_offer_tags.events {}=
 
-  'dblclick li[data-group="tags"]': (event, tmpl) ->
-    Tags.remove name: $(event.currentTarget).attr("data-name")
-
   'click .create-tag .insert': (event, tmpl) ->
-    target = $(event.currentTarget)
-    text = target.next("span").children("input").val()
+    Tag.new name: (tmpl.find \input .value) ..save!
 
-    if not text
-      Meteor.Alert.set text: "You must enter a name in order to add a tag"
+  "click li[data-group='tagset']": (e, t) ->
+    Offer.store-get! ..set-store \tagset, @name ..save!
 
-    else
-      tagset = target.parent("li").attr("data-tagset")
-
-      Meteor.call "insertTag",
-        name: text
-        tagset: tagset
-        involves: []
-        collection: "tags"
-        , (err, res) ->
-          if err
-            Meteor.Alert.set text: err.reason
-          else
-            userLoc = Store.get("user_loc")
-            store = Store.get("tag_selection")
-
-            store.tags ?= []
-            store.tags.push {}=
-              name: text
-              tagset: tagset
-              active: true
-            console.log(res)
-            amplify.store "tagset", store.tagset
-            Store.set "tag_selection", store
-            Meteor.flush()
+  "click li[data-group='tags']": (e, t) ->
+    switch My.map "name", "tags" |> _.contains _, @name
+    | true => @clone-kill "name"
+    | _    => @clone-new! ..save!
 
 
-  "click li[data-group='tags'], click li[data-group='tagset']": (event, tmpl) ->
-    group = $(event.currentTarget).attr "data-group"
-    store = Store.get("tag_selection") or {}
-    self = @
-    console.log(self)
 
-    store[group] ?= []
+Template.account_offer_tags.helpers {}=
+  "contains_my_tags": -> My.map "name", "tags" |> _.contains _, it
 
-    if group is "tagset"
-      store.tags = []
-      store.tagset = []
-
-    existing = _.find( store[group], (g)-> g.name == self.name)
-
-    if existing
-      store[group].splice(store[group].indexOf(existing), 1)
-    else
-      store[group].push {}=
-        name: self.name
-        disabled: false
-        active: true
-
-    Store.set "tag_selection", store
-
-    amplify.store "tags_meta", store.tags, "name"
-    amplify.store "tags", _.pluck(store.tags, "name")
-    amplify.store "tagset", _.pluck(store.tagset, "name")?[0]
-
-# Template.account_offer_tags.rendered = ->
-#   unless @handle
-#     @handle = Meteor.autorun ->
-# 
-#       console.log("RUNNING")
-#       Meteor.call "pushStintTags", Store.get("user_loc"), Store.get("tag_selection"), (err, result) ->
-#         if typeof err is 'undefined'
-#           Store.set "stint_tags", result
-#         else
-#           console.log err
-# 
-# Template.account_offer_tags.destroyed = ->
-#   @handle.stop()
 
 #////////////////////////////////////////////
 #  $$ account_feedback
 
-Template.account_messages_feedback.events "click #feedback button": (event, tmpl) ->
+Template.account_messages_feedback.events 'click #feedback button': (event, tmpl) ->
   event.preventDefault()
   message = tmpl.find("textarea").value
   Meteor.call "message", message, "toAdmins"
