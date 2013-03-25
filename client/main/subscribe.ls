@@ -1,9 +1,4 @@
 
-
-# Meteor.subscribe "offers", Store.get("user_loc")
-# Meteor.subscribe "stickers"
-
-
 do ->
   ms = Meteor.subscribe
 
@@ -14,23 +9,13 @@ do ->
   ms "my_offer"
   ms "my_tags"
   ms "my_pictures"
-
+  ms "my_messages"
+  ms "my_alerts"
 
   ms "tagsets"
-  ms "tags"
-
   ms "sorts"
-  ms "userData"
-  ms "messages"
-  ms "alerts"
-
-  # TEMP
-  ms "locations"
+  ms "votes"
 
   ms "all_offers"
 
-
-
-
-  ms "tests"
-
+  ms "user_data"

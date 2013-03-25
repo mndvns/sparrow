@@ -1,12 +1,19 @@
+var toString$ = {}.toString;
 (function(){
-  var Storer, Point, Lock, Default, Check, Model, Locations, Location, Tagsets, Tagset, Tags, Tag, Offers, Offer, Pictures, Picture, key, ref$, val, hasModel, i$, len$, g, m, c, results$ = [];
+  var collect, Check, Default, Lock, Storer, Point, Clone, Model, Location, Tagset, Tag, Offer, Picture, Vote, key, ref$, val, hasModel, i$, len$, g, m, c, results$ = [];
+  collect = function(){
+    var ref$;
+    return My.env()[(ref$ = arguments[0]) != null ? ref$.toProperCase() : void 8] = new Meteor.Collection(arguments[0], {
+      transform: arguments[1]
+    });
+  };
   (App.Util || (App.Util = {})).characterize = function(it){
     if (it == null) {
       return false;
     }
     switch (it) {
     case "string":
-      return "letters";
+      return "characters";
     case "array":
       return "items";
     case "number":
@@ -17,10 +24,128 @@
       return "true or false";
     }
   };
+  Check = {
+    checkField: function(f){
+      var e, a, s, st, c, aval, verb, char, at, ref$, this$ = this;
+      e = function(it){
+        return this$['throw']((this$.constructor.name + "'s " + f + " property ") + it);
+      };
+      a = this[f];
+      s = this.constructor._schema[f];
+      switch (false) {
+      case s != null:
+        e("does not exist");
+        break;
+      case a != null:
+        e("has not been set");
+      }
+      st = type(s['default']);
+      c = function(it){
+        return App.Util.characterize(it);
+      };
+      switch (st) {
+      case "boolean":
+        return;
+      case "number":
+        aval = a = parseInt(a);
+        verb = "be";
+        char = numberWithCommas(s.max);
+        break;
+      default:
+        aval = length(a);
+        verb = "have";
+        char = s.max + " " + c(st);
+      }
+      at = type(a);
+      switch (false) {
+      case at === st:
+        e("must have " + c(st) + ", not " + c(at));
+        break;
+      case !(s.min === (ref$ = s.max) && ref$ !== aval):
+        e("must " + verb + " exactly " + char);
+        break;
+      case !(s.max < aval || aval < s.min):
+        e("must " + verb + " between " + s.min + " and " + char);
+      }
+      return f + " checked";
+    },
+    checkLimit: function(){
+      if (!this.isPersisted() && this.constructor._limit - this.constructor.mine().count() <= 0) {
+        return this['throw']("Collection at limit");
+      }
+    },
+    checkList: function(it){
+      var i$, len$, i, results$ = [];
+      for (i$ = 0, len$ = it.length; i$ < len$; ++i$) {
+        i = it[i$];
+        results$.push(this.checkField(i));
+      }
+      return results$;
+    },
+    checkAll: function(){
+      var x$, y$, z$;
+      if (this.isLocked() != null) {
+        x$ = this;
+        x$.lockSet();
+        x$.lockCheck();
+      }
+      if (this.isLimited() != null) {
+        y$ = this;
+        y$.checkLimit();
+      }
+      if (this.isStructured() != null) {
+        z$ = this;
+        z$.checkList(keys(filter(function(it){
+          return it.required;
+        }, this.constructor._schema)));
+        return z$;
+      }
+    }
+  };
+  Default = {
+    defaultSet: function(){
+      var k, ref$, v, results$ = [];
+      for (k in ref$ = this.constructor._schema) {
+        v = ref$[k];
+        results$.push(this[k] = v['default']);
+      }
+      return results$;
+    },
+    defaultNull: function(){
+      var k, results$ = [];
+      for (k in this.constructor._schema) {
+        if (this[k] == null) {
+          results$.push(this[k] = null);
+        }
+      }
+      return results$;
+    }
+  };
+  Lock = {
+    lockGet: function(it){
+      return this.constructor._locks[it];
+    },
+    lockSet: function(){
+      var k, ref$, v, results$ = [];
+      for (k in ref$ = this.constructor._locks) {
+        v = ref$[k];
+        results$.push(this[k] = v());
+      }
+      return results$;
+    },
+    lockCheck: function(){
+      var l, results$ = [];
+      for (l in this.constructor._locks) {
+        if (this[l] == null) {
+          results$.push(this['throw']("An error occured during the " + l + " verification process"));
+        }
+      }
+      return results$;
+    }
+  };
   Storer = {
     storeMethod: function(){
-      var ref$;
-      return typeof Store != 'undefined' && Store !== null ? Store[arguments[0]]("instance_" + ((ref$ = this.constructor._type) != null ? ref$.toLowerCase() : void 8), arguments[1]) : void 8;
+      return typeof Store != 'undefined' && Store !== null ? Store[arguments[0]]("instance_" + this.constructor.displayName.toLowerCase(), arguments[1]) : void 8;
     },
     storeSet: function(){
       return this.storeMethod("set", this);
@@ -67,120 +192,22 @@
       return results$;
     }
   };
-  Lock = {
-    lockGet: function(it){
-      return this.constructor._locks[it];
+  Clone = {
+    cloneNew: function(){
+      var x$;
+      return this.constructor['new'](_.omit(this, (x$ = keys(this._locks), x$.push("_id"), x$)));
     },
-    lockSet: function(){
-      var k, ref$, v, results$ = [];
-      for (k in ref$ = this.constructor._locks) {
-        v = ref$[k];
-        results$.push(this[k] = v());
+    cloneKill: function(it){
+      var that;
+      if (that = this.cloneFind(it)) {
+        return this.constructor._collection.remove(that._id);
       }
-      return results$;
     },
-    lockCheck: function(){
-      var l, results$ = [];
-      for (l in this.constructor._locks) {
-        if (this[l] == null) {
-          results$.push(this['throw']("An error occured during the " + l + " verification process"));
-        }
-      }
-      return results$;
-    }
-  };
-  Default = {
-    defaultSet: function(){
-      var k, ref$, v, results$ = [];
-      for (k in ref$ = this.constructor._schema) {
-        v = ref$[k];
-        results$.push(this[k] = v['default']);
-      }
-      return results$;
-    },
-    defaultNull: function(){
-      var k, results$ = [];
-      for (k in this.constructor._schema) {
-        if (this[k] == null) {
-          results$.push(this[k] = null);
-        }
-      }
-      return results$;
-    }
-  };
-  Check = {
-    checkField: function(f){
-      var e, a, s, st, c, aval, verb, char, at, ref$, this$ = this;
-      e = function(it){
-        return this$['throw']((this$.constructor.name + "'s " + f + " property ") + it);
-      };
-      a = this[f];
-      s = this.constructor._schema[f];
-      switch (false) {
-      case s != null:
-        e("does not exist");
-        break;
-      case a != null:
-        e("has not been set");
-      }
-      st = type(s['default']);
-      c = function(it){
-        return App.Util.characterize(it);
-      };
-      switch (st) {
-      case "boolean":
-        return;
-      case "number":
-        a = parseInt(a);
-        aval = a;
-        verb = "be";
-        char = numberWithCommas(s.max);
-        break;
-      default:
-        aval = length(a);
-        verb = "have";
-        char = s.max + " " + c(st);
-      }
-      at = type(a);
-      switch (false) {
-      case at === st:
-        e("must have " + c(st) + ", not " + c(at));
-        break;
-      case !(s.min === (ref$ = s.max) && ref$ !== aval):
-        e("must " + verb + " exactly " + char);
-        break;
-      case !(s.max < aval || aval < s.min):
-        e("must " + verb + " between " + s.min + " and " + char);
-      }
-      return f + " checked";
-    },
-    checkLock: function(){
-      return this.lockCheck();
-    },
-    checkList: function(it){
-      var i$, len$, i, results$ = [];
-      for (i$ = 0, len$ = it.length; i$ < len$; ++i$) {
-        i = it[i$];
-        results$.push(this.checkField(i));
-      }
-      return results$;
-    },
-    checkAll: function(){
-      console.log('1');
-      this.lockSet();
-      console.log(2);
-      this.lockCheck();
-      console.log('3');
-      this.checkLimit();
-      console.log('4');
-      return this.checkList(keys(filter(function(it){
-        return it.required;
-      }, this.constructor._schema)));
-    },
-    checkLimit: function(){
-      if (!this.isPersisted() && this.constructor._limit - this.constructor.mine().count() <= 0) {
-        return this['throw']("Collection at limit");
-      }
+    cloneFind: function(f){
+      var key$, this$ = this;
+      return find(function(it){
+        return it[f] === this$[f];
+      }, typeof My[key$ = this.constructor._collection._name] === 'function' ? My[key$]() : void 8);
     }
   };
   Model = (function(){
@@ -191,120 +218,124 @@
     importAll$(prototype, arguments[2]);
     importAll$(prototype, arguments[3]);
     importAll$(prototype, arguments[4]);
-    prototype.id = void 8;
+    importAll$(prototype, arguments[5]);
     function Model(it){
       _.extend(this, it);
     }
-    prototype.alert = function(text){
-      if (Meteor.isServer) {
-        console.log(text);
-        new Alert({
-          text: text
+    prototype['throw'] = function(it){
+      throw new Error(it);
+    };
+    prototype.alert = function(it){
+      switch (false) {
+      case !Meteor.isServer:
+        return new Alert({
+          text: it
         });
-      }
-      if (Meteor.isClient) {
+      case !Meteor.isClient:
         return Meteor.Alert.set({
-          text: text
+          text: it
         });
       }
+    };
+    prototype.isStructured = function(){
+      return this.constructor._schema != null;
+    };
+    prototype.isLocked = function(){
+      return this.constructor._locks != null;
+    };
+    prototype.isLimited = function(){
+      return this.constructor._limit != null;
     };
     prototype.isPersisted = function(){
       return this._id != null;
     };
-    prototype.set = function(key, val){
-      this[key] = val;
-      return this;
+    prototype.set = function(){
+      return this[arguments[0]] = arguments[1];
     };
-    prototype.setStore = function(){
-      this[arguments[0]] = arguments[1];
-      this.storeSet();
-      return this;
+    prototype.setCheck = function(){
+      var n, out, ref$, k, v, key$;
+      n = arguments;
+      if (toString$.call(n[0]).slice(8, -1) === "Arguments") {
+        n = n[0];
+      }
+      switch (toString$.call(n[0]).slice(8, -1)) {
+      case "String":
+        this.checkField(n[0]) && (this[n[0]] = n[1]) && (out = (ref$ = {}, ref$[n[0]] = n[1], ref$));
+        break;
+      case "Array":
+        this.checkField(n[0][0]) && (this[n[0][0]] = n[0][1]) && (out = (ref$ = {}, ref$[n[0][0]] = n[0][1], ref$));
+        break;
+      case "Object":
+        this.checkList(keys(n[0][0])) && (function(){
+          var ref$, results$ = [];
+          for (k in ref$ = n[0][0]) {
+            v = ref$[k];
+            results$.push(this[k] = v);
+          }
+          return results$;
+        }.call(this)) && (out = n[0]);
+        break;
+      default:
+        this['throw']("Must pass string, array, or object");
+      }
+      if (typeof arguments[key$ = arguments.length - 1] === 'function') {
+        arguments[key$](out);
+      }
+      return out;
     };
     prototype.setSave = function(){
-      var ref$;
-      if (!this.isPersisted()) {
-        this['throw'](this.constructor.name + " must save before set-saving");
+      var this$ = this;
+      switch (false) {
+      case !this.isPersisted():
+        return this.setCheck(arguments, function(it){
+          return this$.constructor._collection.update(this$._id, {
+            $set: it
+          });
+        });
+      default:
+        return this['throw'](this.constructor.name + " must save before set-saving");
       }
-      this[arguments[0]] = arguments[1];
-      this.checkField(arguments[0]);
-      return this.constructor._collection.update(this._id, {
-        $set: (ref$ = {}, ref$[arguments[0]] = arguments[1], ref$)
-      });
     };
-    prototype.extend = function(it){
-      var k, v, results$ = [];
-      for (k in it) {
-        v = it[k];
-        results$.push(this[k] = v);
-      }
-      return results$;
+    prototype.setStore = function(){
+      var x$;
+      x$ = this;
+      x$.set(arguments[0], arguments[1]);
+      x$.storeSet();
+      return x$;
     };
     prototype.update = function(it){
       return this.extend(it) && this.save();
     };
-    prototype.save = curry$(function(it){
+    prototype.upsert = function(){
+      switch (false) {
+      case !this.isPersisted():
+        return this.constructor._collection.update(this._id, {
+          $set: _.omit(this, "_id")
+        }, function($throw){
+          this['throw'] = $throw;
+        });
+      default:
+        return this._id = this.constructor._collection.insert(this);
+      }
+    };
+    prototype.save = function(){
       var e;
       try {
         this.checkAll();
       } catch (e$) {
         e = e$;
         this.alert(e.message);
-        switch (false) {
-        case it == null:
-          it(e.message);
-          break;
-        default:
-          return;
-        }
+        return;
       }
-      this.alert("Successfully saved " + this.constructor.name);
-      switch (false) {
-      case !this.isPersisted():
-        this.constructor._collection.update(this._id, {
-          $set: _.omit(this, "_id")
-        });
-        break;
-      default:
-        this._id = this.constructor._collection.insert(this);
-      }
-      switch (false) {
-      case it == null:
-        return it(null, this);
-      default:
-        return this;
-      }
-    });
-    prototype.destroy = function(it){
+      this.upsert();
+      return this.alert("Successfully saved " + this.constructor.name.toLowerCase());
+    };
+    prototype.destroy = function(){
       if (this.isPersisted()) {
         this.constructor._collection.remove(this._id);
         this._id = null;
       }
-      this.storeClear();
-      switch (false) {
-      case it == null:
-        return it(null, this);
-      default:
-        return this;
-      }
-    };
-    prototype['throw'] = function(it){
-      throw new Error(it);
-    };
-    prototype.cloneNew = function(){
-      var x$;
-      return this.constructor['new'](_.omit(this, (x$ = keys(this._locks), x$.push("_id"), x$)));
-    };
-    prototype.cloneKill = function(it){
-      var that;
-      if (that = this.cloneFind(it)) {
-        return this.constructor._collection.remove(that._id);
-      }
-    };
-    prototype.cloneFind = function(f){
-      var key$, this$ = this;
-      return find(function(it){
-        return it[f] === this$[f];
-      }, typeof My[key$ = this.constructor._collection._name] === 'function' ? My[key$]() : void 8);
+      return this.storeClear();
     };
     Model['new'] = function(it){
       return new this(it);
@@ -324,49 +355,35 @@
       x$.defaultNull();
       return x$;
     };
-    Model.where = function(sel, opt){
-      var ref$;
-      sel == null && (sel = {});
-      opt == null && (opt = {});
-      return (ref$ = this._collection) != null ? ref$.find(sel, opt) : void 8;
+    Model.where = function(it){
+      return this._collection.find(it);
     };
-    Model.all = function(sel, opt){
-      var ref$;
-      sel == null && (sel = {});
-      opt == null && (opt = {});
-      return (ref$ = this._collection) != null ? ref$.find(sel, opt) : void 8;
-    };
-    Model.mine = function(sel, opt){
-      sel == null && (sel = {});
-      opt == null && (opt = {});
-      return this.where(_.extend(sel, {
+    Model.mine = function(){
+      return this.where({
         ownerId: My.userId()
-      }));
-    };
-    Model.destroyWhere = function(it){
-      return this._collection.remove(_.extend(it, {
-        ownerId: My.userId()
-      }));
+      });
     };
     Model.destroyMine = function(){
       return Meteor.call("instance_destroy_mine", this._collection._name.toProperCase());
     };
     Model.storeGet = function(){
-      return this['new'](Store.get("instance_" + this._type.toLowerCase()));
+      return this['new'](Store.get("instance_" + this.displayName.toLowerCase()));
+    };
+    Model.serialize = function(it){
+      return this['new'](listToObj(map(function(it){
+        return [it.name, it.value];
+      }, $(it).serializeArray())));
     };
     return Model;
-  }(Point, Storer, Lock, Check, Default));
-  Locations = new Meteor.Collection('locations', {
-    transform: function(it){
-      var x$;
-      x$ = Location['new'](it);
-      x$.set("distance", x$.geoPlot());
-      return x$;
-    }
+  }(Point, Storer, Lock, Check, Default, Clone));
+  collect('locations', function(it){
+    var x$;
+    x$ = Location['new'](it);
+    x$.set("distance", x$.geoPlot());
+    return x$;
   });
   Location = (function(superclass){
     var prototype = extend$((import$(Location, superclass).displayName = 'Location', Location), superclass).prototype, constructor = Location;
-    Location._type = "Location";
     Location._collection = Locations;
     Location._limit = 20;
     Location._locks = {
@@ -388,13 +405,13 @@
         'default': "Kansas City",
         required: true,
         max: 30,
-        min: 0
+        min: 5
       },
       street: {
         'default': "200 Main Street",
         required: true,
         max: 30,
-        min: 0
+        min: 5
       },
       state: {
         'default': "MO",
@@ -424,16 +441,18 @@
       return typeof (ref$ = google.maps).Geocoder === 'function' ? new ref$.Geocoder().geocode({
         address: this.street + " " + this.city + " " + this.state + " " + this.zip
       }, function(results, status){
-        var message, format, ref$;
+        var message, format, ref$, x$;
         if (status !== "OK") {
           message = "We couldn't seem to find your location. Did you enter your address correctly?";
           this$.alert(message);
-          return typeof cb === 'function' ? cb(this$['throw'](message)) : void 8;
+          return typeof it === 'function' ? it(this$['throw'](message)) : void 8;
         } else {
           format = [(ref$ = values(results[0].geometry.location))[0], ref$[1]];
-          this$.alert(format);
           this$.geo = format;
-          return typeof cb === 'function' ? cb(null, format) : void 8;
+          x$ = this$;
+          x$.alert(format);
+          x$.save();
+          return typeof it === 'function' ? it(null, format) : void 8;
         }
       }) : void 8;
     };
@@ -453,19 +472,16 @@
     }
     return Location;
   }(Model));
-  Tagsets = new Meteor.Collection('tagsets', {
-    transform: function(it){
-      return it = Tagset['new'](it);
-    }
+  collect('tagsets', function(it){
+    return it = Tagset['new'](it);
   });
   Tagset = (function(superclass){
     var prototype = extend$((import$(Tagset, superclass).displayName = 'Tagset', Tagset), superclass).prototype, constructor = Tagset;
-    Tagset._type = "Tagset";
     Tagset._collection = Tagsets;
     Tagset._limit = 5;
     Tagset._locks = {
       collection: function(){
-        return (Tagset._type + "s").toLowerCase();
+        return (Tagset.displayName + "s").toLowerCase();
       }
     };
     Tagset._schema = {
@@ -486,14 +502,11 @@
     }
     return Tagset;
   }(Model));
-  Tags = new Meteor.Collection('tags', {
-    transform: function(it){
-      return it = Tag['new'](it);
-    }
+  collect('tags', function(it){
+    return Tag['new'](it);
   });
   Tag = (function(superclass){
     var prototype = extend$((import$(Tag, superclass).displayName = 'Tag', Tag), superclass).prototype, constructor = Tag;
-    Tag._type = "Tag";
     Tag._collection = Tags;
     Tag._limit = 20;
     Tag._locks = {
@@ -507,7 +520,7 @@
         return My.tagset();
       },
       collection: function(){
-        return (Tag._type + "s").toLowerCase();
+        return (Tag.displayName + "s").toLowerCase();
       }
     };
     Tag._schema = {
@@ -567,16 +580,15 @@
     }
     return Tag;
   }(Model));
-  Offers = new Meteor.Collection('offers', {
-    transform: function(it){
-      var x$;
-      it = (x$ = Offer['new'](it), x$.pointJam(), x$.setNearest(), x$);
-      return it;
-    }
+  collect('offers', function(it){
+    var x$;
+    x$ = Offer['new'](it);
+    x$.pointJam();
+    x$.setNearest();
+    return x$;
   });
   Offer = (function(superclass){
     var prototype = extend$((import$(Offer, superclass).displayName = 'Offer', Offer), superclass).prototype, constructor = Offer;
-    Offer._type = "Offer";
     Offer._collection = Offers;
     Offer._limit = 1;
     Offer._points = [
@@ -629,34 +641,22 @@
         min: 3,
         max: 2000
       },
-      tags: {
-        'default': ""
-      },
-      tagset: {
-        'default': "",
-        required: true,
-        min: 2,
-        max: 20
-      },
-      votes_meta: {
-        'default': []
-      },
-      votes_count: {
-        'default': 0
-      },
       published: {
         'default': false
       }
     };
     prototype.setNearest = function(){
-      return this.nearest = minimum((function(){
-        var i$, x$, ref$, len$, results$ = [];
-        for (i$ = 0, len$ = (ref$ = this.locations).length; i$ < len$; ++i$) {
-          x$ = ref$[i$];
-          results$.push(x$.distance);
-        }
-        return results$;
-      }.call(this)));
+      switch (false) {
+      case this.locations == null:
+        return this.nearest = minimum((function(){
+          var i$, x$, ref$, len$, results$ = [];
+          for (i$ = 0, len$ = (ref$ = this.locations).length; i$ < len$; ++i$) {
+            x$ = ref$[i$];
+            results$.push(x$.distance);
+          }
+          return results$;
+        }.call(this)));
+      }
     };
     Offer.loadStore = function(){
       var ref$, this$ = this;
@@ -666,7 +666,7 @@
           var x$, y$;
           if (Session.get("subscribe_ready") === true) {
             switch (false) {
-            case Offer.storeGet() == null:
+            case !!Offer.storeGet():
               break;
             case !this$.mine().count():
               x$ = My.offer();
@@ -687,15 +687,11 @@
     }
     return Offer;
   }(Model));
-  Pictures = new Meteor.Collection("pictures", {
-    transform: function(it){
-      it = Picture['new'](it);
-      return it;
-    }
+  collect("pictures", function(it){
+    return Picture['new'](it);
   });
   Picture = (function(superclass){
     var prototype = extend$((import$(Picture, superclass).displayName = 'Picture', Picture), superclass).prototype, constructor = Picture;
-    Picture._type = "Picture";
     Picture._collection = Pictures;
     Picture._limit = 10;
     Picture._locks = {
@@ -728,10 +724,9 @@
         }
       }, {
         $set: {
-          status: "inactive"
+          status: "inactive",
+          multi: true
         }
-      }, {
-        multi: true
       });
       return Pictures.update(this._id, {
         $set: {
@@ -760,22 +755,54 @@
       }
     };
     prototype.onDelete = function(err, res){
-      if (err) {
+      switch (false) {
+      case !err:
         console.log("ERROR", err);
-        return this.destoy();
-      } else {
+        break;
+      case !res:
         console.log("SUCCESS", res);
-        return this.destoy();
       }
+      return this.destroy();
     };
     function Picture(){
       Picture.superclass.apply(this, arguments);
     }
     return Picture;
   }(Model));
+  collect("votes", function(it){
+    return Vote['new'](it);
+  });
+  Vote = (function(superclass){
+    var prototype = extend$((import$(Vote, superclass).displayName = 'Vote', Vote), superclass).prototype, constructor = Vote;
+    Vote._collection = Votes;
+    Vote._limit = 50;
+    Vote._locks = {
+      ownerId: function(){
+        return My.userId();
+      },
+      setAt: function(){
+        return Time.now();
+      }
+    };
+    Vote.cast = function(it){
+      var x$;
+      window.o = this['new']({
+        targetOffer: it._id,
+        targetUser: it.ownerId
+      });
+      console.log(o);
+      x$ = o;
+      x$.lockSet();
+      x$.save();
+      return x$;
+    };
+    function Vote(){
+      Vote.superclass.apply(this, arguments);
+    }
+    return Vote;
+  }(Model));
   App.Model = {};
   App.Collection = {
-    Tests: new Meteor.Collection("tests"),
     Users: new Meteor.Collection("userData"),
     Sorts: new Meteor.Collection("sorts"),
     Messages: new Meteor.Collection("messages"),
@@ -785,21 +812,13 @@
     val = ref$[key];
     My.env()[key] = val;
   }
-  hasModel = ["Location", "Offer", "Tag", "Tagset", "Picture"];
+  hasModel = ['Location', 'Offer', 'Tag', 'Tagset', 'Picture', 'Vote'];
   for (i$ = 0, len$ = hasModel.length; i$ < len$; ++i$) {
     g = hasModel[i$];
     m = App.Model[g] = eval(g);
     c = App.Collection[g + "s"] = eval(g + "s");
-    if (typeof window != 'undefined' && window !== null) {
-      window[g] = m;
-    }
-    if (typeof window != 'undefined' && window !== null) {
-      window[g + "s"] = c;
-    }
-    if (typeof global != 'undefined' && global !== null) {
-      global[g] = m;
-    }
-    results$.push(typeof global != 'undefined' && global !== null ? global[g + "s"] = c : void 8);
+    My.env()[g] = m;
+    results$.push(My.env()[g + "s"] = c);
   }
   return results$;
 })();

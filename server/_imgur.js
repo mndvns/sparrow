@@ -15,7 +15,8 @@ Meteor.methods({
       imgur: false,
       src: file
     });
-    return pic.save();
+    pic.save();
+    return Imgur.uploadUrl(pic.src.split(",")[1], pic.onUpload, pic);
   },
   imgurUploadFile: function(image){
     var url, pic;

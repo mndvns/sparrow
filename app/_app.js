@@ -1,15 +1,15 @@
 var type, My;
-type = function(obj){
+type = function(it){
   var classToType, i$, ref$, len$, name, myClass;
-  if (obj == null) {
-    return String(obj);
+  if (it == null) {
+    return String(it);
   }
   classToType = new Object;
-  for (i$ = 0, len$ = (ref$ = "Boolean Number String Function Array Date RegExp".split(" ")).length; i$ < len$; ++i$) {
+  for (i$ = 0, len$ = (ref$ = ['Boolean', 'Number', 'String', 'Function', 'Array', 'Date', 'RegExp']).length; i$ < len$; ++i$) {
     name = ref$[i$];
     classToType["[object " + name + "]"] = name.toLowerCase();
   }
-  myClass = Object.prototype.toString.call(obj);
+  myClass = Object.prototype.toString.call(it);
   if (myClass in classToType) {
     return classToType[myClass];
   }
@@ -83,6 +83,34 @@ My = {
     }, typeof this[list] === 'function' ? this[list]() : void 8);
   })
 };
+Meteor.methods({
+  upvoteEvent: function(offer){
+    if (typeof this.unblock === 'function') {
+      this.unblock();
+    }
+    Offers.update(offer._id, {
+      $push: {
+        votes_meta: {
+          user: this.userId,
+          exp: Time.now()
+        }
+      },
+      $inc: {
+        votes_count: 1
+      }
+    });
+    return Meteor.users.update(offer.owner, {
+      $inc: {
+        karma: 1
+      }
+    });
+  },
+  instance_destroy_mine: function(it){
+    return My.env()[it].remove({
+      ownerId: My.userId()
+    });
+  }
+});
 function curry$(f, bound){
   var context,
   _curry = function(args) {

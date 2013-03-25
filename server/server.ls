@@ -1,36 +1,69 @@
 
-
-#                                               //
-#        _____                                  //
-#       / ___/___  ______   _____  _____        //
-#       \__ \/ _ \/ ___/ | / / _ \/ ___/        //
-#      ___/ /  __/ /   | |/ /  __/ /            //
-#     /____/\___/_/    |___/\___/_/             //
-#                                               //
-#                                               //
+# secrets
+dwollaClientId = "SU4FlmQ2/mSfvexkPIE/6I+LV5dIoeFoNXexYGTUKLwAXgC/ki"
+dwollaClientSecret = "+j15d9+/pUvpInw4lR+5rfyH+ECZURvg8y/7msgs1Qv2VvuIg2"
+dwollaUrl = "https://www.dwolla.com/oauth/v2/token"
 
 require  = __meteor_bootstrap__.require
-# Colors = require "colors"
 MongoDB  = require "mongodb"
 Future   = require "fibers/future"
+# Colors = require "colors"
 # fs       = require "fs"
-
 # console.log(Meteor.settings)
 
-#                                                        //
-#         ___                               __           //
-#        /   | ______________  __  ______  / /______     //
-#       / /| |/ ___/ ___/ __ \/ / / / __ \/ __/ ___/     //
-#      / ___ / /__/ /__/ /_/ / /_/ / / / / /_(__  )      //
-#     /_/  |_\___/\___/\____/\__,_/_/ /_/\__/____/       //
-#                                                        //
-#                                                        //
+# publish
+do ->
+  mp = Meteor.publish
 
+  mp "relations", (loc)->
+    miles  = 2000
+    radius = (miles / 69)
+    switch loc
+    | (.lat)? => filt = geo: $near: [loc.lat, loc.long ], $maxDistance: radius
+    | _       => filt = {}
+
+    Meteor.publishWithRelations {}=
+      handle: this
+      collection: Locations
+      filter: filt
+      mappings: [
+        key: 'offerId'
+        collection: Offers
+        filter: {}
+        mappings: [
+          reverse: true
+          key: 'offerId'
+          collection: Tags
+          filter: {}
+        ]
+      ]
+
+    @ready()
+
+  mp "my_offer",    -> Offers.find ownerId : @userId
+  mp "my_tags",     -> Tags.find ownerId : @userId
+  mp "my_pictures", -> Pictures.find ownerId: @userId , status: $nin: ["deactivated"]
+  mp "my_messages", -> Messages.find involve: $in: [@userId]
+  mp "my_alerts",   -> Alerts.find owner: @userId
+
+  mp "tagsets",     -> Tagsets.find!
+  mp "sorts",       -> Sorts.find {}, sort: list_order: 1
+  mp "votes",       -> Votes.find!
+
+  mp "all_offers",  -> Offers.find!
+
+  mp "user_data",   -> Meteor.users.find!
+
+
+class Alert
+  ->
+    Alerts.insert {}=
+      owner: Meteor.userId!
+      text: it.text
+      wait: it.wait or false
+
+# accounts
 Accounts.on-create-user (options, user) ->
-
-  # Offer.new! ..default-set! ..save!
-
-
   user.type = "basic"
   user.karma = 50
   user.logins = 0
@@ -76,7 +109,7 @@ allowUser = ( collections ) ->
 
 allowUser([
   Offers
-  Tests
+  Votes
   Tags
   Locations
   Pictures
@@ -100,11 +133,6 @@ mapper = (a) ->
     out
 
 Meteor.methods {}=
-
-  aggregateOffers: ->
-    tags = App.Collection.Offers.aggregate {}=
-      $project:
-        tags: 1
 
   message: (text, selector, opt) ->
     message = {}
@@ -191,70 +219,6 @@ Meteor.methods {}=
       ,
         $set: out
 
-
-    # tagName = _.pluck(opts.tags_meta, "name")
-    # existTags = []
-    # Tags.find().forEach (m) ->
-    #   _.filter m.involves, (f)->
-    #     unless _.find(existTags, (ex)->
-    #       ex._id is m._id)
-    #       existTags.push m
-
-    # for exist in existTags
-
-    #   Tags.update
-    #       _id: exist._id
-    #       "involves.user": Meteor.userId()
-    #     ,
-    #       $unset: "involves.$": 1
-    #   Tags.update
-    #       _id: exist._id
-    #     ,
-    #       $pull: "involves": null
-
-    # Tags.update
-    #     name: $in: tagName
-    #   ,
-    #     $push:
-    #       involves:
-    #         user: out.owner
-    #         loc:
-    #           lat: out.loc.lat
-    #           long: out.loc.long
-    #         price: out.price
-    #         updatedAt: out.updatedAt
-    #         votes_count: out.votes_count
-    #   ,
-    #     multi: true
-
-
-  # updateUserColor: (color) ->
-  #   prime = Color(color).setLightness 0.4
-  #   comp = prime.setSaturation .5).tetradicScheme()[1]
-  #   desat = prime.setSaturation(.2)
-  #   darken = (a) ->
-  #     a.setLightness(.2).setSaturation(.6).toString()
-  #   lighten = (a) ->
-  #     a.setLightness(.8).setSaturation(.4).toString()
-
-  #   Meteor.users.update
-  #     _id: Meteor.userId()
-  #     ,
-  #       $set:
-  #         colors:
-  #           prime:
-  #             light: lighten prime
-  #             medium: prime.toString()
-  #             dark: darken prime
-  #           comp:
-  #             light: lighten comp
-  #             medium: comp.toString()
-  #             dark: darken comp
-  #           desat:
-  #             light: desat.setLightness( .8 ).toString()
-  #             medium: desat.setLightness( .5 ).toString()
-  #             dark: desat.setLightness( .2 ).toString()
-
   updateUser: (email, username) ->
     users = Meteor.users.find().fetch()
     existing = _.reject(users, (d) ->
@@ -304,12 +268,5 @@ Meteor.methods {}=
             new Alert {}=
               text: "Profile saved successfully"
 
-
-  isAdmin: (id) ->
-    type = Meteor.users.findOne(_id: id).type
-    unless type is "admin"
-      false
-    else
-      true
 
 

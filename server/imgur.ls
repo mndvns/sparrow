@@ -23,10 +23,8 @@ Meteor.methods {}=
       src: file
 
     pic.save!
-    # console.log _.omit pic, "src"
-    # return
 
-    # Imgur.upload-url pic.src.split(",")[1], pic.on-upload, pic
+    Imgur.upload-url pic.src.split(",")[1], pic.on-upload, pic
 
 
   imgur-upload-file: (image) ->
@@ -36,4 +34,6 @@ Meteor.methods {}=
     pic = Picture.new image
 
     Imgur.uploadFile url, pic.on-upload, pic
+
+
 

@@ -1,4 +1,4 @@
-var distance, arrayRepeat, numberWithCommas, Color, Time, Stopwatch;
+var distance, Color, Time, Stopwatch;
 distance = function(lat1, lon1, lat2, lon2, unit){
   var radlat1, radlat2, radlon1, radlon2, theta, radtheta, dist;
   radlat1 = Math.PI * lat1 / 180;
@@ -18,28 +18,6 @@ distance = function(lat1, lon1, lat2, lon2, unit){
     dist = dist * 0.8684;
   }
   return dist;
-};
-String.prototype.toProperCase = function(){
-  return this.replace(/\w\S*/g, function(txt){
-    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-  });
-};
-String.prototype.repeat = function(num){
-  var out;
-  out = new Array(num + 1).join("");
-  return out;
-};
-arrayRepeat = function(value, len){
-  var out;
-  len += 1;
-  out = [];
-  while (len -= 1) {
-    out.push(value);
-  }
-  return out;
-};
-numberWithCommas = function(x){
-  return x != null ? x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : void 8;
 };
 Color = net.brehaut.Color;
 Time = {

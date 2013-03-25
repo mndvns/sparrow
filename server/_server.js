@@ -1,7 +1,111 @@
-var require, MongoDB, Future, allowUser, mapper;
+var dwollaClientId, dwollaClientSecret, dwollaUrl, require, MongoDB, Future, Alert, allowUser, mapper;
+dwollaClientId = "SU4FlmQ2/mSfvexkPIE/6I+LV5dIoeFoNXexYGTUKLwAXgC/ki";
+dwollaClientSecret = "+j15d9+/pUvpInw4lR+5rfyH+ECZURvg8y/7msgs1Qv2VvuIg2";
+dwollaUrl = "https://www.dwolla.com/oauth/v2/token";
 require = __meteor_bootstrap__.require;
 MongoDB = require("mongodb");
 Future = require("fibers/future");
+(function(){
+  var mp;
+  mp = Meteor.publish;
+  mp("relations", function(loc){
+    var miles, radius, filt;
+    miles = 2000;
+    radius = miles / 69;
+    switch (loc) {
+    case function(it){
+      return it.lat;
+    } != null:
+      filt = {
+        geo: {
+          $near: [loc.lat, loc.long],
+          $maxDistance: radius
+        }
+      };
+      break;
+    default:
+      filt = {};
+    }
+    Meteor.publishWithRelations({
+      handle: this,
+      collection: Locations,
+      filter: filt,
+      mappings: [{
+        key: 'offerId',
+        collection: Offers,
+        filter: {},
+        mappings: [{
+          reverse: true,
+          key: 'offerId',
+          collection: Tags,
+          filter: {}
+        }]
+      }]
+    });
+    return this.ready();
+  });
+  mp("my_offer", function(){
+    return Offers.find({
+      ownerId: this.userId
+    });
+  });
+  mp("my_tags", function(){
+    return Tags.find({
+      ownerId: this.userId
+    });
+  });
+  mp("my_pictures", function(){
+    return Pictures.find({
+      ownerId: this.userId,
+      status: {
+        $nin: ["deactivated"]
+      }
+    });
+  });
+  mp("my_messages", function(){
+    return Messages.find({
+      involve: {
+        $in: [this.userId]
+      }
+    });
+  });
+  mp("my_alerts", function(){
+    return Alerts.find({
+      owner: this.userId
+    });
+  });
+  mp("tagsets", function(){
+    return Tagsets.find();
+  });
+  mp("sorts", function(){
+    return Sorts.find({}, {
+      sort: {
+        list_order: 1
+      }
+    });
+  });
+  mp("votes", function(){
+    return Votes.find();
+  });
+  mp("all_offers", function(){
+    return Offers.find();
+  });
+  return mp("user_data", function(){
+    return Meteor.users.find();
+  });
+})();
+Alert = (function(){
+  Alert.displayName = 'Alert';
+  var prototype = Alert.prototype, constructor = Alert;
+  function Alert(it){
+    Alerts.insert({
+      owner: Meteor.userId(),
+      text: it.text,
+      wait: it.wait || false
+    });
+  }
+  return Alert;
+}());
 Accounts.onCreateUser(function(options, user){
   user.type = "basic";
   user.karma = 50;
@@ -71,7 +175,7 @@ allowUser = function(collections){
     return userId === doc.ownerId;
   }
 };
-allowUser([Offers, Tests, Tags, Locations, Pictures]);
+allowUser([Offers, Votes, Tags, Locations, Pictures]);
 mapper = function(a){
   var map;
   map = _.isArray(a)
@@ -86,14 +190,6 @@ mapper = function(a){
   });
 };
 Meteor.methods({
-  aggregateOffers: function(){
-    var tags;
-    return tags = App.Collection.Offers.aggregate({
-      $project: {
-        tags: 1
-      }
-    });
-  },
   message: function(text, selector, opt){
     var message, involve, admin, existing, ID, admins, user, from, content;
     message = {};
@@ -255,17 +351,6 @@ Meteor.methods({
           });
         }
       });
-    }
-  },
-  isAdmin: function(id){
-    var type;
-    type = Meteor.users.findOne({
-      _id: id
-    }).type;
-    if (type !== "admin") {
-      return false;
-    } else {
-      return true;
     }
   }
 });

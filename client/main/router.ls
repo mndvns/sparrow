@@ -1,4 +1,5 @@
 
+
 A.Area =
   area : ->
     page = Meteor.Router.page().split("_")
@@ -24,7 +25,7 @@ A.Area =
     @area()
 
 
-Meteor.Router.add
+Meteor.Router.add {}=
   "/": ->
     Session.set "shift_current", "home"
     "home"
@@ -33,14 +34,15 @@ Meteor.Router.add
     console.log("YOOOOOOOOO")
     urlParams = {}
     (->
-      match = undefined
+      compare = void
       pl = /\+/g
       search = /([^&=]+)=?([^&]*)/g
       decode = (s) ->
         decodeURIComponent s.replace(pl, " ")
 
       query = window.location.search.substring(1)
-      urlParams[decode(match[1])] = decode(match[2])  while match = search.exec(query)
+      while compare = search.exec(query)
+        urlParams[decode(compare[1])] = decode(compare[2]) 
     )()
 
     console.log(urlParams)
@@ -74,6 +76,7 @@ Meteor.Router.add
       Store.set("nab_query", {})
       Store.set("nab_sort", {})
 
+    # Store.set "page_#{area}", sub_area
     sub_area
 
   "/offer/:id": (id) ->
@@ -85,7 +88,7 @@ Meteor.Router.add
     Session.set "shift_current", "home"
     "404"
 
-Meteor.Router.filters
+Meteor.Router.filters {}=
   checkLoggedIn: (page) ->
     if Meteor.user()
       page

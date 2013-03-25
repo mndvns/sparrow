@@ -8,13 +8,11 @@
   ms("my_offer");
   ms("my_tags");
   ms("my_pictures");
+  ms("my_messages");
+  ms("my_alerts");
   ms("tagsets");
-  ms("tags");
   ms("sorts");
-  ms("userData");
-  ms("messages");
-  ms("alerts");
-  ms("locations");
+  ms("votes");
   ms("all_offers");
-  return ms("tests");
+  return ms("user_data");
 })();

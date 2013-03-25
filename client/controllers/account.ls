@@ -169,17 +169,29 @@ Template.account_offer_tags.events {}=
     Tag.new name: (tmpl.find \input .value) ..save!
 
   "click li[data-group='tagset']": (e, t) ->
+    if @name is My.tagset! => return
     Offer.store-get! ..set-store \tagset, @name ..save!
+    Tag.destroy-mine!
 
   "click li[data-group='tags']": (e, t) ->
     switch My.map "name", "tags" |> _.contains _, @name
     | true => @clone-kill "name"
     | _    => @clone-new! ..save!
 
-
-
 Template.account_offer_tags.helpers {}=
   "contains_my_tags": -> My.map "name", "tags" |> _.contains _, it
+
+
+#////////////////////////////////////////////
+#  $$ account_location
+
+Template.account_offer_location.events {}=
+  'click button': (e, t) ->
+    e.prevent-default!
+    Location.serialize \form#locations ..geo-map!
+
+  'click .destroy': (e, t) ->
+    @destroy!
 
 
 #////////////////////////////////////////////

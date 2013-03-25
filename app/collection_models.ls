@@ -1,42 +1,16 @@
 
-
-
 do ->
+
+  collect = -> My.env![&0?to-proper-case!] = new Meteor.Collection &0, transform: &1
 
   App.{}Util.characterize = ->
       unless it? then return false
       switch it
-      | "string"  => "letters"
+      | "string"  => "characters"
       | "array"   => "items"
       | "number"  => "number"
       | "object"  => "values"
       | "boolean" => "true or false"
-
-  Storer =
-    store-method  : -> Store?[&0] "instance_#{@@@_type?.toLowerCase!}", &1
-    store-set     : -> @store-method "set", @
-    store-clear   : -> @store-method "set", null
-    store-get     : -> @store-method "get", null
-
-  Point =
-    point-recall  :                       --> App.Collection[it.to-proper-case!]find "ownerId": @ownerId .fetch!
-    point-compact : ( list )              --> _.compact unique list
-    point-strip   : ( field , list )      --> map (.[field]), list
-    point-get     : ( field , list )      -->
-      | field isnt list => @point-compact @point-strip field, @point-recall list
-      | _               => @point-compact @point-recall list
-    point-set     : ( field , list , attr = list ) --> @attr = @point-get field, list
-    point-jam     : -> for p in @@@_points then @point-set p.field, p.list, p.attr
-
-  Lock =
-    lock-get    : -> @@@_locks[it]
-    lock-set    : -> for k, v of @@@_locks  => @[k] = v!
-    lock-check  : -> for l of @@@_locks     => unless @[l]?
-      @throw "An error occured during the #{l} verification process"
-
-  Default =
-    default-set   : -> for k, v of @@@_schema => @[k] = v.default
-    default-null  : -> for k of @@@_schema    => unless @[k]? => @[k] = null
 
   Check =
     check-field: ( f ) ->
@@ -55,8 +29,7 @@ do ->
       switch st
       | "boolean" => return
       | "number"  =>
-        a    = parse-int a
-        aval = a
+        aval = a = parse-int a
         verb = "be"
         char = numberWithCommas s.max
       | otherwise =>
@@ -73,75 +46,97 @@ do ->
 
       return "#{f} checked"
 
-    check-lock  : -> @lock-check!
+    check-limit : -> if (not @is-persisted!) and (@@@_limit - @@@mine!count! <= 0) => @throw "Collection at limit"
     check-list  : -> for i in it then @check-field i
     check-all   : ->
+      if @is-locked()?     => @ ..lock-set! ..lock-check!
+      if @is-limited()?    => @ ..check-limit!
+      if @is-structured()? => @ ..check-list keys filter (.required), @@@_schema
 
-      console.log \1
-      @lock-set!
-      console.log 2
-      @lock-check!
+  Default =
+    default-set   : -> for k, v of @@@_schema => @[k] = v.default
+    default-null  : -> for k of @@@_schema    => unless @[k]? => @[k] = null
 
-      console.log \3
-      @check-limit!
-      console.log \4
-      @check-list keys filter (.required), @@@_schema
+  Lock =
+    lock-get    : -> @@@_locks[it]
+    lock-set    : -> for k, v of @@@_locks  => @[k] = v!
+    lock-check  : -> for l of @@@_locks     => unless @[l]?
+      @throw "An error occured during the #{l} verification process"
 
-    check-limit : ->
-      if (not @is-persisted!) and (@@@_limit - @@@mine!count! <= 0) then @throw "Collection at limit"
+  Storer =
+    store-method  : -> Store?[&0] "instance_#{@@@display-name.to-lower-case!}", &1
+    store-set     : -> @store-method "set", @
+    store-clear   : -> @store-method "set", null
+    store-get     : -> @store-method "get", null
+
+  Point =
+    point-recall  :                  --> App.Collection[it.to-proper-case!]find "ownerId": @owner-id .fetch!
+    point-compact : ( list )         --> _.compact unique list
+    point-strip   : ( field , list ) --> map (.[field]), list
+    point-get     : ( field , list ) -->
+      | field isnt list => @point-compact @point-strip field, @point-recall list
+      | _               => @point-compact @point-recall list
+    point-set     : ( field , list , attr = list ) --> @attr = @point-get field, list
+    point-jam     : -> for p in @@@_points then @point-set p.field, p.list, p.attr
+
+  Clone =
+    clone-new     : -> @@@new _.omit @, (keys @_locks ..push "_id")
+    clone-kill    : -> @@@_collection.remove that._id if @clone-find it
+    clone-find    : (f) -> find (~> it[f] is @[f]), My[@@@_collection._name]?!
 
 
-  class Model implements Point, Storer, Lock, Check, Default
-    id   : void
+
+
+  class Model implements Point, Storer, Lock, Check, Default, Clone
+    # id   : void
 
     -> _.extend @, it
 
-    alert: (text) ->
-      if Meteor.isServer
-        console.log(text)
-        new Alert text: text
+    throw : -> throw new Error it
+    alert : ->
+      | Meteor.isServer => new Alert text: it
+      | Meteor.isClient => Meteor.Alert.set text: it
 
-      if Meteor.isClient
-        Meteor.Alert.set text: text
+    is-structured : -> @@@_schema?
+    is-locked     : -> @@@_locks?
+    is-limited    : -> @@@_limit?
+    is-persisted  : -> @_id?
 
+    set       : -> @[&0] = &1
+    set-check : ->
+      n = &
+      if typeof! n.0 is "Arguments" => n = n.0
 
-    is-persisted: -> @_id?
+      switch typeof! n.0
+      | "String"  => (@check-field n.0       ) and (@[n.0] = n.1                  ) and (out = {(n.0)   : n.1   }) # and n.2? out
+      | "Array"   => (@check-field n.0[0]    ) and (@[n.0[0]] = n.0[1]            ) and (out = {(n.0[0]): n.0[1]}) # and n.1? out
+      | "Object"  => (@check-list keys n.0[0]) and (for k, v of n.0[0] => @[k] = v) and (out = n.0               ) # and n.1? out
+      | _         => @throw "Must pass string, array, or object"
 
-    set : ( key, val ) ->
-      @[key] = val
-      @
-
-    set-store : ->
-      @[&0] = &1
-      @store-set!
-      @
+      &[&.length - 1]? out
+      out
 
     set-save  : ->
-      unless @is-persisted! => @throw @@@name + " must save before set-saving"
-      @[&0] = &1
-      @check-field &0
-      @@@_collection.update @_id, $set: (&0) : &1
+      | @is-persisted! => @set-check &, ~> @@@_collection.update @_id, $set: it
+      | _              => @throw @@@name + " must save before set-saving"
 
-    extend        : -> for k, v of it => @[k] = v
-    update        : -> @extend it and @save!
+    set-store : -> @ ..set &0, &1 ..store-set!
 
-    save: -->
+    update  : -> @extend it and @save!
+
+    upsert  : ->
+      | @is-persisted!  => @throw <- @@@_collection.update @_id, $set: _.omit @, "_id"
+      | _               => @_id = @@@_collection.insert @
+
+    save    : ->
       try @check-all!
       catch
         @alert e.message
-        switch
-        | it? => it e.message
-        | _   => return
+        return
 
-      @alert "Successfully saved #{@@@name}"
+      @upsert!
+      @alert "Successfully saved #{@@@name.to-lower-case!}"
 
-      switch
-      | @is-persisted!  => @@@_collection.update @_id, $set: _.omit @, "_id"
-      | _               => @_id = @@@_collection.insert @
-
-      switch
-      | it?   => it null, @
-      | _     => return @
 
     destroy: ->
       if @is-persisted!
@@ -150,41 +145,28 @@ do ->
 
       @store-clear!
 
-      switch
-      | it?   => it null, @
-      | _     => return @
-
-    throw         : -> throw new Error it
-
-    clone-new     : -> @@@new _.omit @, (keys @_locks ..push "_id")
-    clone-kill    : -> @@@_collection.remove that._id if @clone-find it
-    clone-find    : (f) -> find (~> it[f] is @[f]), My[@@@_collection._name]?!
-
     @new          = ->  new @ it
     @create       = -> @new it .save!
     @new-default  = -> @new it ..default-set!
     @new-null     = -> @new it ..default-null!
 
-    @where  = (sel = {}, opt = {}) -> @_collection?.find sel, opt
-    @all    = (sel = {}, opt = {}) -> @_collection?.find sel, opt
-    @mine   = (sel = {}, opt = {}) -> @where _.extend sel, ownerId: My.userId!
+    @where  = -> @_collection.find it
+    @mine   = -> @where owner-id: My.user-id!
 
-    @destroy-where  = -> @_collection.remove _.extend it, ownerId: My.userId!
-    @destroy-mine   = -> Meteor.call "instance_destroy_mine", @_collection._name.to-proper-case!
-    @store-get      = -> @new Store.get "instance_#{@_type.to-lower-case!}"
+    @destroy-mine = -> Meteor.call "instance_destroy_mine", @_collection._name.to-proper-case!
+    @store-get    = -> @new Store.get "instance_#{@display-name.to-lower-case!}"
+
+    @serialize    = -> @new <| list-to-obj <| map (->[it.name, it.value]), $(it).serialize-array!
 
 
 
-  Locations = new Meteor.Collection 'locations',
-    transform: -> Location.new it ..set "distance", ..geo-plot!
-
+  collect 'locations', -> Location.new it ..set "distance", ..geo-plot!
   class Location extends Model
-    @_type = "Location"
     @_collection = Locations
     @_limit = 20
     @_locks =
-      ownerId: -> My.userId!
-      offerId: -> My.offerId!
+      owner-id: -> My.user-id!
+      offer-id: -> My.offer-id!
     @_schema =
       geo :
         default : [ 47, -122 ]
@@ -195,12 +177,12 @@ do ->
         default : "Kansas City"
         required: true
         max: 30
-        min: 0
+        min: 5
       street :
         default : "200 Main Street"
         required: true
         max: 30
-        min: 0
+        min: 5
       state :
         default : "MO"
         required: true
@@ -226,12 +208,12 @@ do ->
           if status isnt "OK"
             message = "We couldn't seem to find your location. Did you enter your address correctly?"
             @alert message
-            cb? @throw message
+            it? @throw message
           else
             format = (values results[0].geometry.location)[0,1]
-            @alert format
             @geo = format
-            cb? null, format
+            @ ..alert format ..save!
+            it? null, format
 
     geo-plot: ->
       m = My.userLoc?! or {lat: 39, long: -94}
@@ -241,15 +223,12 @@ do ->
 
 
 
-  Tagsets = new Meteor.Collection 'tagsets',
-    transform: -> it = Tagset.new it
-
+  collect 'tagsets', -> it = Tagset.new it
   class Tagset extends Model
-    @_type       = "Tagset"
     @_collection = Tagsets
     @_limit      = 5
     @_locks =
-      collection: ~> (@_type + "s").to-lower-case!
+      collection: ~> "#{@display-name}s".to-lower-case!
     @_schema =
       name:
         default: "see"
@@ -259,18 +238,15 @@ do ->
     count-tags: -> Tag.where "tagset": @name .count!
 
 
-  Tags = new Meteor.Collection 'tags', transform: -> it = Tag.new it
-  # Tags.bind-template 'account_offer_tags'
-
+  collect 'tags', -> Tag.new it
   class Tag extends Model
-    @_type = "Tag"
     @_collection = Tags
     @_limit = 20
     @_locks =
-      ownerId   : -> My.userId!
-      offerId   : -> My.offerId!
+      owner-id   : -> My.user-id!
+      offer-id   : -> My.offer-id!
       tagset    : -> My.tagset!
-      collection: ~> (@_type + "s").to-lower-case!
+      collection: ~> "#{@display-name}s".to-lower-case!
     @_schema =
       name:
         default: "tag"
@@ -303,13 +279,8 @@ do ->
 
 
 
-  Offers = new Meteor.Collection 'offers',
-    transform: ->
-      it = Offer.new it ..point-jam! ..set-nearest!
-      it
-
+  collect 'offers', -> Offer.new it ..point-jam! ..set-nearest!
   class Offer extends Model
-    @_type = "Offer"
     @_collection = Offers
     @_limit = 1
     @_points =
@@ -320,8 +291,8 @@ do ->
         list  : "locations"
         attr  : "locations"
     @_locks =
-      ownerId: -> My.userId!
-      updatedAt: -> Time.now!
+      owner-id   : -> My.userId!
+      updated-at : -> Time.now!
     @_schema =
       business:
         default: "your business/vendor name"
@@ -329,7 +300,10 @@ do ->
         max: 30
         min: 3
       description:
-        default: "This is a description of the offer. Since the offer name must be very brief, this is the place to put any details you want to include."
+        default: "
+          This is a description of the offer. Since the offer name 
+          must be very brief, this is the place to put any details you 
+          want to include."
         required: true
         max: 140
         min: 3
@@ -347,44 +321,29 @@ do ->
         required: true
         min: 3
         max: 2000
-      tags:
-        default: ""
-      tagset:
-        default: ""
-        required: true
-        min: 2
-        max: 20
-      votes_meta:
-        default: []
-      votes_count:
-        default: 0
       published:
         default: false
 
-
-    set-nearest     : -> @nearest = minimum [..distance for @locations]
+    set-nearest     : -> 
+      | @locations? => @nearest = minimum  [..distance for @locations]
+      | _           => return
 
     @load-store = ->
       @handle ?= Meteor.autorun ~>
         if Session.get("subscribe_ready") is true
           switch
-          | Offer.store-get()?      => return
+          | not Offer.store-get!    => return
           | @mine!count!            => My.offer! ..store-set!
           | _                       => @new! ..default-set! ..store-set!
 
 
-  Pictures = new Meteor.Collection "pictures",
-    transform: -> 
-      it = Picture.new it
-      it
-
+  collect "pictures", -> Picture.new it
   class Picture extends Model
-    @_type = "Picture"
     @_collection = Pictures
     @_limit = 10
     @_locks  =
-      ownerId : -> My.userId!
-      offerId : -> My.offerId!
+      owner-id : -> My.user-id!
+      offer-id : -> My.offer-id!
     @_schema =
       status:
         default: "active"
@@ -397,12 +356,10 @@ do ->
 
     activate: ->
       Pictures.update {}=
-        ownerId: @ownerId
+        owner-id: @owner-id
         _id: $nin: [@_id]
-      ,
-        $set: status: "inactive"
-      ,
-        multi: true
+      , $set: status: "inactive"
+      , multi: true
 
       Pictures.update @_id,
         $set: status: "active"
@@ -423,48 +380,47 @@ do ->
           imgur: true
           deletehash: res.data.deletehash
 
-      # console.log "ATATTATATATWQEWEQEWQ", _.omit @, "src"
-
     on-delete : (err, res)->
-      if err
-        console.log("ERROR", err)
-        @destoy!
-      else
-        console.log("SUCCESS", res)
-        @destoy!
+      | err => console.log("ERROR", err)
+      | res => console.log("SUCCESS", res)
+      @destroy!
+
+  collect "votes", -> Vote.new it
+  class Vote extends Model
+    @_collection = Votes
+    @_limit = 50
+    @_locks =
+      owner-id  : -> My.user-id!
+      set-at    : -> Time.now!
+
+    @cast   = ->
+      window.o = @new { target-offer: it._id, target-user: it.owner-id }
+
+      console.log o
+
+      o ..lock-set! ..save!
 
 
 
   App.Model = {}
   App.Collection =
 
-    Tests    : new Meteor.Collection "tests"
-
     Users    : new Meteor.Collection "userData"
-
     Sorts    : new Meteor.Collection "sorts"
-
     Messages : new Meteor.Collection "messages"
     Alerts   : new Meteor.Collection "alerts"
+
 
   for key, val of App.Collection
     My.env![key] = val
 
-  has-model =
-    "Location"
-    "Offer"
-    "Tag"
-    "Tagset"
-    "Picture"
-    ...
+  has-model = <[ Location Offer Tag Tagset Picture Vote ]>
 
   for g in has-model
     m = App.Model[g]            = eval(g)
     c = App.Collection[g + "s"] = eval(g + "s")
 
-    window?[g]       = m
-    window?[g + "s"] = c
+    My.env![g]       = m
+    My.env![g + "s"] = c
 
-    global?[g]       = m
-    global?[g + "s"] = c
 

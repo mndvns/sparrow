@@ -205,7 +205,6 @@ template(name="account_offer_tags")
 
 
 template(name="account_offer_images")
-  {{#with store 'get' 'instance_offer'}}
   .area
     .file-table.row
       .file-input.span3
@@ -213,7 +212,6 @@ template(name="account_offer_images")
         .proxy
           span click to upload a new image
       {{#each pictures}}
-      {{#isolate}}
       .file.span3.clr-bg
         img(src="{{this.src}}", class="{{this.status}}")
         {{#if this.imgur}}
@@ -223,21 +221,45 @@ template(name="account_offer_images")
         {{/if}}
         span.delete-file: i.glyph-cancel
         .clearfix
-      {{/isolate}}
       {{/each}}
-  {{/with}}
 
 
 template(name="account_offer_location")
-  {{#with store 'get' 'instance_offer'}}
-  .area.offer-bind-fields
-    form#location
-      .span5.offset3
-        mixin Field({ el: "input", label: "street", id: "street", value: "{{this.street}}", type: "text", class: "span5", tabindex: 1 , attributes: "data-validate"})
-        mixin Field({ el: "input", label: "city", id: "city", value: "{{this.city}}", type: "text", class: "span4", tabindex: 2 , attributes: "data-validate"})
-        mixin Field({ el: "input", label: "state", id: "state", value: "{{this.state}}", type: "text", class: "span2", tabindex: 3 , attributes: "data-validate"})
-        mixin Field({ el: "input", label: "zip", id: "zip", value: "{{this.zip}}", type: "text", class: "span2", tabindex: 4, attributes: "data-validate" })
-  {{/with}}
+  h1 {{#each find 'Votes' '{}'}} {{this.setAt}} {{/each}}
+  mixin g(list)
+    .control-group: .controls
+      for l in list
+        mixin i(l[0], l[1], l[2])
+
+  mixin i(ph, span, val)
+      input(type='text', name= ph, placeholder= ph, value= val, class= 'span#{span}')
+
+  form#locations
+    mixin g([['street', 5, '200 main street']])
+    mixin g([['city', 4, 'kansas city'], ['state', 2, 'mo']])
+    mixin g([['zip', 3, '64105']])
+
+    button.btn submit
+
+  {{#each my 'locations'}}
+  h3.
+    <br>{{street}}
+    <br>{{city}}, {{state}}
+    <br>{{zip}}
+  .btn.destroy x
+  {{/each}}
+
+
+
+// {{#with store 'get' 'instance_offer'}}
+// .area.offer-bind-fields
+//   form#location
+//     .span5.offset3
+//       mixin Field({ el: "input", label: "street", id: "street", value: "{{this.street}}", type: "text", class: "span5", tabindex: 1 , attributes: "data-validate"})
+//       mixin Field({ el: "input", label: "city", id: "city", value: "{{this.city}}", type: "text", class: "span4", tabindex: 2 , attributes: "data-validate"})
+//       mixin Field({ el: "input", label: "state", id: "state", value: "{{this.state}}", type: "text", class: "span2", tabindex: 3 , attributes: "data-validate"})
+//       mixin Field({ el: "input", label: "zip", id: "zip", value: "{{this.zip}}", type: "text", class: "span2", tabindex: 4, attributes: "data-validate" })
+// {{/with}}
 
 template(name="account_messages")
   {{> account_messages_inbox }}

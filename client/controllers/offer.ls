@@ -37,10 +37,13 @@ Template.offer.events {}=
     return false
 
   'click .vote': (event, tmpl) ->
+    Vote.cast @
+
     # if event.currentTarget.hasAttribute "disabled" then return
 
-    watchOffer.click()
-    Meteor.call "upvoteEvent", tmpl.data
+    # watch-offer?.click!
+    # Meteor.call "upvoteEvent", tmpl.data
+
 
   'click .image': (event, tmpl) ->
     console.log(this)
@@ -167,18 +170,18 @@ adjustOfferElements = (main) ->
 
   return padding_top
 
-setPadding = (section_main) ~>
-  padding_top = adjustOfferElements(section_main)
+set-padding = (section_main) ~>
+  padding_top = adjust-offer-elements(section_main)
   $(section_main).css("padding-top", padding_top)
 
 Template.offer.rendered = ->
 
-  setPadding(@find("section.main"))
+  set-padding(@find("section.main"))
 
-  if Session.get("shift_area") is "account" or Meteor.Router.page() is "account_offer"
+  if Session.get("shift_area") is "account" or Meteor.Router.page! is "account_offer"
     return
 
-  range = statRange()
+  range = stat-range!
   keys = [
     name: "updatedAt"
     invert: false
@@ -194,64 +197,65 @@ Template.offer.rendered = ->
   ]
   self = @
 
-  renderRatio = (callback) ->
+  render-ratio = (callback) ->
     ratio = {}
     _.each keys, (k) ->
       d = k.name
-      upperRange = self.data[d] - range.min[d] + 0.01
-      lowerRange = range.max[d] - range.min[d]
+      upper-range = self.data[d] - range.min[d] + 0.01
+      lower-range = range.max[d] - range.min[d]
       out = Math.ceil((100 * (upperRange) / (lowerRange)) * 5) / 10
       ratio[d] = (if k.invert is false then out else Math.abs(out - 50))
 
     callback ratio
 
-  renderRatio (ratio) ->
+  render-ratio (ratio) ->
     for key of ratio
-      if ratio.hasOwnProperty(key) and ratio[key]
+      if ratio.has-own-property(key) and ratio[key]
         data = d3.select(self.find("section.data ." + key))
         metric = data.select(".metric")
         metric.style height: ->
           ratio[key] + "%"
 
-  userId = Meteor.userId()
+  user-id = Meteor.user-id!
 
   voted = _.find self.data.votes_meta, (d) ->
     d.user is userId
 
   if voted
-    self.find( "li.vote" ).setAttribute "disabled"
+    self.find( "li.vote" ).set-attribute "disabled"
 
-  if watchOffer?
-    watchOffer.stop()
+  if watch-offer?
+    watch-offer.stop!
 
-Template.offer.created = ->
-  # @data.distance = 1234
-
-
+# old stuff
 # Template.offer.created = ->
-#   # console.log("OFFFFER", @)
-#   # themeColors = _.find document.styleSheets, (d) ->
-#   #   d.title is "dynamic-offers"
-# 
-#   # for rule in themeColors.rules
-#   #   themeColors.removeRule()
+#   # @data.distance = 1234
 # 
 # 
-#   # themeColors.insertRule( colorFill ".clr-text.prime", "color", color.prime.medium)
-#   # themeColors.insertRule( colorFill "a", "color", color.prime.medium)
-#   # themeColors.insertRule( colorFill "a:hover, a.active", "color", color.prime.medium )
+# # Template.offer.created = ->
+# #   # console.log("OFFFFER", @)
+# #   # themeColors = _.find document.styleSheets, (d) ->
+# #   #   d.title is "dynamic-offers"
+# # 
+# #   # for rule in themeColors.rules
+# #   #   themeColors.removeRule()
+# # 
+# # 
+# #   # themeColors.insertRule( colorFill ".clr-text.prime", "color", color.prime.medium)
+# #   # themeColors.insertRule( colorFill "a", "color", color.prime.medium)
+# #   # themeColors.insertRule( colorFill "a:hover, a.active", "color", color.prime.medium )
+# # 
+# #   # themeColors.insertRule( colorFill ".clr-text.desat", "color", color.prime.light )
+# #   # themeColors.insertRule( colorFill ".clr-text.desat:hover", "color", color.prime.medium )
+# #   # themeColors.insertRule( colorFill ".clr-text.desat:active", "color", color.prime.dark )
+# # 
+# #   # themeColors.insertRule( colorFill ".clr-bg", "background", color.prime.medium)
+# #   # themeColors.insertRule( colorFill ".clr-bg.btn:hover", "background", color.prime.medium)
+# # 
+# #   # themeColors.insertRule( colorFill ".clr-bg.light", "background", color.prime.light )
+# #   # themeColors.insertRule( colorFill ".clr-bg.dark", "background", color.prime.dark )
 # 
-#   # themeColors.insertRule( colorFill ".clr-text.desat", "color", color.prime.light )
-#   # themeColors.insertRule( colorFill ".clr-text.desat:hover", "color", color.prime.medium )
-#   # themeColors.insertRule( colorFill ".clr-text.desat:active", "color", color.prime.dark )
 # 
-#   # themeColors.insertRule( colorFill ".clr-bg", "background", color.prime.medium)
-#   # themeColors.insertRule( colorFill ".clr-bg.btn:hover", "background", color.prime.medium)
-# 
-#   # themeColors.insertRule( colorFill ".clr-bg.light", "background", color.prime.light )
-#   # themeColors.insertRule( colorFill ".clr-bg.dark", "background", color.prime.dark )
-
-
-Template.thisOffer.events "click button": (event, tmpl) ->
-  userId = tmpl.find("input.text").value
-  Meteor.call "upvoteEvent", "username", userId, this
+# Template.thisOffer.events "click button": (event, tmpl) ->
+#   userId = tmpl.find("input.text").value
+#   Meteor.call "upvoteEvent", "username", userId, this

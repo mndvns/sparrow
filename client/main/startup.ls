@@ -1,7 +1,8 @@
 
 
+
 getLocation = ->
-  Meteor.Alert.set
+  Meteor.Alert.set {}=
     text: "One moment while we charge the lasers..."
     wait: true
 
@@ -10,11 +11,11 @@ getLocation = ->
       lat: location.coords.latitude
       long: location.coords.longitude
 
-    Meteor.Alert.set
+    Meteor.Alert.set {}=
       text: "Booya! Lasers charged!"
 
   noLocation = ->
-    Meteor.Alert.set
+    Meteor.Alert.set {}=
       text: "Uh oh... something went wrong"
 
   navigator.geolocation.getCurrentPosition foundLocation, noLocation

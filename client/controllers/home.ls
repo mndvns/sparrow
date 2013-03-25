@@ -456,52 +456,6 @@ Template.content.events {}=
   "click .sublinks.account_offer a.save": (event, tmpl) ->
     Offer.store-get! ..save!
 
-
-    # offer = as()
-    # Session.set "currentOffer", offer
-    # errors = []
-
-    # for key of Offer._schema
-    #   errors.push key if Offer._schema[key].hasOwnProperty("max") unless offer[key]
-
-    # if errors.length
-    #   Meteor.Alert.set
-    #     text: "You didn't enter anything for your #{errors.join(", ")}."
-    #   return
-
-    # userOffer = App.Collection.Offers.findOne(owner: Meteor.userId())
-    # type = (if userOffer then "update" else "insert")
-
-    # Meteor.Alert.set
-    #   text: "Loading..."
-    #   wait: true
-
-    # geo = new google.maps.Geocoder()
-    # geo.geocode
-    #   address: "#{offer.street} #{offer.city} #{offer.state} #{offer.zip}"
-    # , (results, status) ->
-    #   if status isnt "OK"
-    #     Meteor.Alert.set
-    #       text: "We couldn't seem to find your location. Did you enter your address correctly?"
-    #   else
-
-    #     geometry = _.values(results[0].geometry.location)
-    #     offer.loc =
-    #       lat: geometry[0]
-    #       long: geometry[1]
-    #     offer.updatedAt = Time.now()
-
-    #     Meteor.call "editOffer", type, offer, (error) ->
-    #       unless error
-    #         Meteor.Alert.set
-    #           text: "You're good to go!"
-    #         return
-
-    #       else
-    #         Meteor.Alert.set
-    #           text: error.reason
-    #         return
-
   'click .accord header': (event, tmpl) ->
     if not $(event.target).hasClass "active"
       $(event.currentTarget).siblings().slideDown()

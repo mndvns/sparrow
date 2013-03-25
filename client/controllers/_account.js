@@ -162,10 +162,13 @@ Template.account_offer_tags.events({
   },
   "click li[data-group='tagset']": function(e, t){
     var x$;
+    if (this.name === My.tagset()) {
+      return;
+    }
     x$ = Offer.storeGet();
     x$.setStore('tagset', this.name);
     x$.save();
-    return x$;
+    return Tag.destroyMine();
   },
   "click li[data-group='tags']": function(e, t){
     var x$;
@@ -184,6 +187,18 @@ Template.account_offer_tags.helpers({
   "contains_my_tags": function(it){
     return partialize$.apply(_, [_.contains, [void 8, it], [0]])(
     My.map("name", "tags"));
+  }
+});
+Template.account_offer_location.events({
+  'click button': function(e, t){
+    var x$;
+    e.preventDefault();
+    x$ = Location.serialize('form#locations');
+    x$.geoMap();
+    return x$;
+  },
+  'click .destroy': function(e, t){
+    return this.destroy();
   }
 });
 Template.account_messages_feedback.events({

@@ -1,4 +1,5 @@
 
+
 #                                                    //
 #         _____ __             __                    //
 #        / ___// /_____ ______/ /___  ______         //
@@ -39,8 +40,8 @@ Meteor.startup ->
 
         cb(e, r)
         future.return [
-           e,
-          (r[pipeline.keep] or "OK" unless e)
+          e,
+          unless e => r[pipeline.keep] or "OK"
         ]
     )
     future.wait()
@@ -48,11 +49,11 @@ Meteor.startup ->
   Meteor.Future.update = (target, apply, query, update, cb) ->
     future = new Future()
     target[apply[0]][apply[1]](
-        query
-      , update
-      , (err, res) ->
-        cb(err, res)
-        future.return [err?.response.error, ("OK" unless err)]
+      query
+    , update
+    , (err, res) ->
+      cb(err, res)
+      future.return [err?.response.error, ("OK" unless err)]
     )
     future.wait()
 

@@ -250,7 +250,7 @@ template(name="content")
 
 
 template(name='home')
-  {{#if getStore "user_loc"}}
+  {{#if store "get" "user_loc"}}
   {{> hero }}
   .offers(data-help-block="false", data-help-selector="offers", data-gray="{{gray 'offers'}}")
     {{#each getOffers}}

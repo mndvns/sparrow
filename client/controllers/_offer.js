@@ -46,8 +46,7 @@ Template.offer.events({
     return false;
   },
   'click .vote': function(event, tmpl){
-    watchOffer.click();
-    return Meteor.call("upvoteEvent", tmpl.data);
+    return Vote.cast(this);
   },
   'click .image': function(event, tmpl){
     return console.log(this);
@@ -263,11 +262,3 @@ Template.offer.rendered = function(){
     return watchOffer.stop();
   }
 };
-Template.offer.created = function(){};
-Template.thisOffer.events({
-  "click button": function(event, tmpl){
-    var userId;
-    userId = tmpl.find("input.text").value;
-    return Meteor.call("upvoteEvent", "username", userId, this);
-  }
-});
