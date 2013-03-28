@@ -33,11 +33,14 @@ Template.offer.helpers {}=
     true  if _.contains(user.votes, selection)
 
 Template.offer.events {}=
+  # 'click li, click button, click a': (e, t)->
+  #   Session.set 'selected_offer', @
+
   'click .help-mode .offer': ->
     return false
 
   'click .vote': (event, tmpl) ->
-    Vote.cast @
+    Point.cast @
 
     # if event.currentTarget.hasAttribute "disabled" then return
 
@@ -53,28 +56,30 @@ Template.offer.events {}=
 
 
   "click section.actions li.map": (event, tmpl) ->
-    targetEl = tmpl.find("section.extension[data-extension='map'] .inner.map")
-    handleActions event, tmpl, ->
+    target-el = tmpl.find("section.extension[data-extension='map'] .inner.map")
+    handle-actions event, tmpl, ->
       map = {}
-      directionsDisplay = {}
-      directionsService = new google.maps.DirectionsService()
-      origin = Store.get("user_loc")
+      directions-display = {}
+      directions-service = new google.maps.DirectionsService()
+
+      origin  = Store.get("user_loc")
       gorigin = new google.maps.LatLng(origin.lat, origin.long)
-      dest = tmpl.data.loc
-      gdest = new google.maps.LatLng(dest.lat, dest.long)
+      dest    = tmpl.data.locations?.0?.geo
+      gdest   = new google.maps.LatLng dest.0, dest.1
+
       directionsService.route {}=
-        origin: gorigin
-        destination: gdest
-        travelMode: google.maps.DirectionsTravelMode.DRIVING
+        origin      : gorigin
+        destination : gdest
+        travelMode  : google.maps.DirectionsTravelMode.DRIVING
       , (response, status) ->
         directionsDisplay = new google.maps.DirectionsRenderer()
         mapOptions =
-          mapTypeId: google.maps.MapTypeId.ROADMAP
-          panControl: false
-          zoomControl: false
-          scaleControl: false
-          streetViewControl: false
-          mapTypeControl: false
+          mapTypeId         : google.maps.MapTypeId.ROADMAP
+          panControl        : false
+          zoomControl       : false
+          scaleControl      : false
+          streetViewControl : false
+          mapTypeControl    : false
 
         console.log response, status
         map = new google.maps.Map(targetEl, mapOptions)
@@ -92,53 +97,6 @@ Template.offer.events {}=
   "click section.actions li.reserve": (event, tmpl) ->
     handleActions event, tmpl, ->
       console.log "clicked buy"
-
-  'click .payment-form button': (event, tmpl) ->
-    event.preventDefault()
-    form = $(tmpl.find("form"))
-    form.find("button").prop 'disabled', true
-
-    Stripe.createToken {}=
-      number    : $(".card-number").val()
-      cvc       : $(".card-cvc").val()
-      exp_month : $(".card-expiry-month").val()
-      exp_year  : $(".card-expiry-year").val()
-    , "sk_test_AAKXLw2R4kozgEqCoMFu9ufH", (status, response) ->
-        if response.error
-          form.find("button").prop "disabled", false
-          Meteor.Alert.set text: response.error.message
-        else
-          console.log(response.id)
-          token = response.id
-          form.append $("<input type=\"hidden\" name=\"stripeToken\" />").val(token)
-
-          customer_id = Meteor.user().stripe_customer_id
-          createCharge = ->
-            Meteor.call "stripeChargeCreate",
-              amount: 1000
-              application_fee: 250
-              user: Meteor.user(), (err, res) ->
-                if err then throw err
-                console.log(err, res, "stripeChargeCreate")
-
-          if not customer_id
-            console.log("NEW CUSTOMER")
-            Meteor.call "stripeCustomerCreate", token, (err, res)->
-              if err then throw err
-              console.log(err, res, "stripeCustomerCreate")
-              customerId = _.compact(res)?.toString()
-              Meteor.call "stripeSaveCustomerId", customerId, (err, res)->
-                if err then throw err
-                console.log(err, res, "stripeSaveCustomerId")
-                createCharge()
-          else
-            console.log("CUSTOMER EXISTS")
-            createCharge()
-
-
-
-
-
 
   "click .send": (event, tmpl) ->
     target = $(event.target)
@@ -160,102 +118,182 @@ Template.offer.events {}=
           target.removeClass "busy"
         ), 3000
 
-adjustOfferElements = (main) ->
 
-  kids   = main.children
+      # if @data._id in map (.target-id), My.prompts!
+      #   $ @find '.prompt-area' .slide-down!
 
-  bottom = kids[kids.length - 1].offsetTop
 
-  padding_top = (170 - bottom) * 0.3
+Template.offer_market.events {}=
 
-  return padding_top
+  'click .payment-form button': (e, t) ->
+    e.prevent-default!
+    form = $ t.find "form"
 
-set-padding = (section_main) ~>
-  padding_top = adjust-offer-elements(section_main)
-  $(section_main).css("padding-top", padding_top)
+    offer        = @find-offer!
+    access-token = @access_token
+
+    card =
+      number    : $ ".card-number" .val!
+      cvc       : $ ".card-cvc" .val!
+      exp_month : $ ".card-expiry-month" .val!
+      exp_year  : $ ".card-expiry-year" .val!
+
+    if $ e.current-target .has-class "new"
+      console.log "NEW CUSTOMER"
+
+      Meteor.call "stripe_customers_create", card, ->
+        [err, cust] = [&1.0, &1.1]
+        if err
+          console.log \ERROR, err
+          return
+        console.log \STRIPE_CUSTOMERS_CREATE, cust
+
+        Meteor.call "stripe_customers_save", cust, ->
+          [err, res] = [&1.0, &1.1]
+          if err
+            console.log \ERROR, err
+            return
+          console.log \STRIPE_CUSTOMERS_SAVE, res
+
+          Meteor.call "stripe_token_create", cust.id, access-token, ->
+            [err, token] = [&1.0, &1.1]
+            if err
+              console.log \ERROR, err
+              return
+            console.log \STRIPE_TOKEN_CREATE, token
+
+            Meteor.call "stripe_charges_create", offer, cust.id, access-token, ->
+              [err, charge] = [&1.0, &1.1]
+              if err
+                console.log \ERROR, err
+                return
+              console.log \STRIPE_CHARGES_CREATE, charge
+
+    else
+      cust-id = My.customer-id!
+
+      console.log "EXISTING CUSTOMER"
+
+      Meteor.call "stripe_token_create", cust-id, access-token, ->
+        [err, token] = [&1.0, &1.1]
+        if err
+          console.log \ERROR, err
+          return
+        console.log \STRIPE_TOKEN_CREATE, token
+
+        Meteor.call "stripe_charges_create", offer, cust-id, access-token, ->
+          [err, charge] = [&1.0, &1.1]
+          if err
+            console.log \ERROR, err
+            return
+          console.log \STRIPE_CHARGES_CREATE, charge
+
+
+Template.offer_market.rendered = ->
+  $ @find 'form' .parsley {}=
+
+    # basic data-api overridable properties here..
+    inputs               : "input, textarea, select"
+    excluded             : "input[type=hidden]"
+    trigger              : false
+    focus                : "first"
+    validation-minlength : 3
+    success-class        : "parsley-success"
+    error-class          : "parsley-error"
+    validators           : {}
+    messages             : {}
+
+    #some quite advanced configuration here..
+    validate-if-unchanged: false
+    errors: # specify where parsley error-success classes are set
+      class-handler: (elem, is-radio-or-checkbox) ->
+
+      container: (elem, is-radio-or-checkbox) ->
+
+      errors-wrapper: "<ul></ul>"
+      error-elem: "<li></li>"
+
+    listeners:
+      on-field-validate: (elem, Parsley-field) ->
+        false
+
+      on-form-submit: (is-form-valid, event, Parsley-form) ->
+
+      on-field-error: (elem, constraints, Parsley-field) ->
+
+      on-field-success: (elem, constraints, Parsley-field) ->
+
+
+
+
+
+
+
+# adjustOfferElements = (main) ->
+# 
+#   kids   = main.children
+# 
+#   bottom = kids[kids.length - 1].offsetTop
+# 
+#   padding_top = (170 - bottom) * 0.3
+# 
+#   return padding_top
+# 
+# set-padding = (section_main) ~>
+#   padding_top = adjust-offer-elements(section_main)
+#   $(section_main).css("padding-top", padding_top)
 
 Template.offer.rendered = ->
+  Session.when-true <[ derp herp ]>, -> console.log "DERP AND HERP"
 
-  set-padding(@find("section.main"))
+  # set-padding(@find("section.main"))
 
-  if Session.get("shift_area") is "account" or Meteor.Router.page! is "account_offer"
-    return
+  # if Session.get("shift_area") is "account" or Meteor.Router.page! is "account_offer"
+  #   return
 
-  range = stat-range!
-  keys = [
-    name: "updatedAt"
-    invert: false
-  ,
-    name: "distance"
-    invert: true
-  ,
-    name: "votes_count"
-    invert: false
-  ,
-    name: "price"
-    invert: true
-  ]
-  self = @
+  # range = stat-range!
+  # keys = [
+  #   name: "updatedAt"
+  #   invert: false
+  # ,
+  #   name: "distance"
+  #   invert: true
+  # ,
+  #   name: "votes_count"
+  #   invert: false
+  # ,
+  #   name: "price"
+  #   invert: true
+  # ]
+  # self = @
 
-  render-ratio = (callback) ->
-    ratio = {}
-    _.each keys, (k) ->
-      d = k.name
-      upper-range = self.data[d] - range.min[d] + 0.01
-      lower-range = range.max[d] - range.min[d]
-      out = Math.ceil((100 * (upperRange) / (lowerRange)) * 5) / 10
-      ratio[d] = (if k.invert is false then out else Math.abs(out - 50))
+  # render-ratio = (callback) ->
+  #   ratio = {}
+  #   _.each keys, (k) ->
+  #     d = k.name
+  #     upper-range = self.data[d] - range.min[d] + 0.01
+  #     lower-range = range.max[d] - range.min[d]
+  #     out = Math.ceil((100 * (upperRange) / (lowerRange)) * 5) / 10
+  #     ratio[d] = (if k.invert is false then out else Math.abs(out - 50))
 
-    callback ratio
+  #   callback ratio
 
-  render-ratio (ratio) ->
-    for key of ratio
-      if ratio.has-own-property(key) and ratio[key]
-        data = d3.select(self.find("section.data ." + key))
-        metric = data.select(".metric")
-        metric.style height: ->
-          ratio[key] + "%"
+  # render-ratio (ratio) ->
+  #   for key of ratio
+  #     if ratio.has-own-property(key) and ratio[key]
+  #       data = d3.select(self.find("section.data ." + key))
+  #       metric = data.select(".metric")
+  #       metric.style height: ->
+  #         ratio[key] + "%"
 
-  user-id = Meteor.user-id!
+  # user-id = Meteor.user-id!
 
-  voted = _.find self.data.votes_meta, (d) ->
-    d.user is userId
+  # voted = _.find self.data.votes_meta, (d) ->
+  #   d.user is userId
 
-  if voted
-    self.find( "li.vote" ).set-attribute "disabled"
+  # if voted
+  #   self.find( "li.vote" ).set-attribute "disabled"
 
   if watch-offer?
     watch-offer.stop!
 
-# old stuff
-# Template.offer.created = ->
-#   # @data.distance = 1234
-# 
-# 
-# # Template.offer.created = ->
-# #   # console.log("OFFFFER", @)
-# #   # themeColors = _.find document.styleSheets, (d) ->
-# #   #   d.title is "dynamic-offers"
-# # 
-# #   # for rule in themeColors.rules
-# #   #   themeColors.removeRule()
-# # 
-# # 
-# #   # themeColors.insertRule( colorFill ".clr-text.prime", "color", color.prime.medium)
-# #   # themeColors.insertRule( colorFill "a", "color", color.prime.medium)
-# #   # themeColors.insertRule( colorFill "a:hover, a.active", "color", color.prime.medium )
-# # 
-# #   # themeColors.insertRule( colorFill ".clr-text.desat", "color", color.prime.light )
-# #   # themeColors.insertRule( colorFill ".clr-text.desat:hover", "color", color.prime.medium )
-# #   # themeColors.insertRule( colorFill ".clr-text.desat:active", "color", color.prime.dark )
-# # 
-# #   # themeColors.insertRule( colorFill ".clr-bg", "background", color.prime.medium)
-# #   # themeColors.insertRule( colorFill ".clr-bg.btn:hover", "background", color.prime.medium)
-# # 
-# #   # themeColors.insertRule( colorFill ".clr-bg.light", "background", color.prime.light )
-# #   # themeColors.insertRule( colorFill ".clr-bg.dark", "background", color.prime.dark )
-# 
-# 
-# Template.thisOffer.events "click button": (event, tmpl) ->
-#   userId = tmpl.find("input.text").value
-#   Meteor.call "upvoteEvent", "username", userId, this

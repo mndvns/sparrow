@@ -11,15 +11,16 @@ do ->
   hh "my", ->
     My?[it]?!
 
+  hh "if_my", (a, b)->
+    My[a]()?[b]
+
   hh "my_tagset", ->
     My.tagset!
 
   hh "store_tagset", ->
     Offer.store-get!?[\tagset]
 
-  hh "get-store", (a) ->
-    if Meteor.BrowserStore.get a
-      return Store.get a
+  hh "store_get", -> Store.get it
 
   hh "store-equals", (a, b) ->
     # console.log(a)
@@ -34,7 +35,11 @@ do ->
   hh "session", (method, a, b = "")->
     Session[method](a, b)
 
+  hh "is_customer", ->
+    My.customer-id()?
 
+  hh "count", (collection) ->
+    window[collection]?.find!count!
 
 
   hh "pictures",  -> Pictures?.find!
@@ -85,30 +90,6 @@ do ->
     result = "<#{el}>#{content}</#{el}>"
     new Handlebars.SafeString result
 
-  hh "renderThemeColors", (user, selector) ->
-    if user and user.colors
-      color = user.colors
-
-      themeColors = _.find document.styleSheets, (d) ->
-        d.title is "dynamic-theme"
-
-      for rule in themeColors.rules
-        themeColors.removeRule()
-
-      themeColors.insertRule( colorFill ".clr-text.prime", "color", color.prime.medium)
-      themeColors.insertRule( colorFill "a", "color", color.prime.medium)
-      themeColors.insertRule( colorFill "a:hover, a.active", "color", color.prime.medium )
-
-      themeColors.insertRule( colorFill ".clr-text.desat", "color", color.prime.light )
-      themeColors.insertRule( colorFill ".clr-text.desat:hover", "color", color.prime.medium )
-      themeColors.insertRule( colorFill ".clr-text.desat:active", "color", color.prime.dark )
-
-      themeColors.insertRule( colorFill ".clr-bg", "background", color.prime.medium)
-      themeColors.insertRule( colorFill ".clr-bg.btn:hover", "background", color.prime.medium)
-
-      themeColors.insertRule( colorFill ".clr-bg.light", "background", color.prime.light )
-      themeColors.insertRule( colorFill ".clr-bg.dark", "background", color.prime.dark )
-      return
 
   hh "page_next", (area) ->
     shift_sub_area = Session.get("shift_sub_area")
@@ -154,12 +135,6 @@ do ->
     # console.log(sub_area, page, show)
 
     Template?[show]?()
-
-  # hh "validate_fields", (template_name) ->
-  #   console.log "RANG IT"
-  # 
-  #   $("[data-validate]")
-  #     .jqBootstrapValidation()
 
   hh "textareaRows", (id)->
     el = document.getElementById(id)

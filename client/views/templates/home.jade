@@ -45,8 +45,6 @@ mixin topnav(name)
           mixin link({label: "about", href: "/about", glyph: "paper-plane" })
           mixin link({label: "faq", href: "/about/faq", glyph: "question" })
           mixin link({label: "blog", href: "/about/blog", glyph: "ampersand" })
-          // mixin link({label: "roadmap", href: "/about/roadmap", glyph: "map" })
-          // mixin link({label: "feedback", href: "/about/feedback", glyph: "keyboard" })
         ul.sublinks
 
       when "account"
@@ -56,7 +54,6 @@ mixin topnav(name)
           mixin link({label: "offer", href: "/account/offer", glyph: "bucket" })
           mixin link({label: "earnings", href: "/account/earnings", glyph: "pig" })
           mixin link({label: "messages", href: "/account/messages", glyph: "list" })
-          // mixin link({label: "feedback", href: "/account/feedback", glyph: "keyboard" })
         {{#if equal currentUser.type "admin"}}
         mixin shift-block({direction: "right", area: "admin"})
         {{/if}}
@@ -84,7 +81,6 @@ mixin topnav(name)
             mixin sublink( "show", name, area, "location" )
             mixin sublink-separator()
             mixin sublink-action( "save" )
-            // mixin sublink( "show", name, area, "limits" )
           .bg
           mixin sublink-shadow
         {{/if}}
@@ -94,6 +90,7 @@ mixin topnav(name)
         ul.sublinks(class="#{name}_#{area}")
           .inner
             mixin sublink( "page", name, area, "dashboard" )
+            mixin sublink( "page", name, area, "purchases" )
             mixin sublink( "page", name, area, "guidelines" )
             mixin sublink( "page", name, area, "reference" )
           .bg
@@ -146,7 +143,6 @@ head
   title Connected
   meta(name='viewport',content='initial-scale=1.0, user-scalable=no')
   meta(charset='utf-8')
-  style(type="text/css", title="dynamic-theme")
 
 
 body
@@ -164,10 +160,6 @@ template(name="ceiling")
     .toggler-group.left
       a(href="#")
         .brand
-
-      // a(data-toggle-mode="help")
-      //   i.glyph-help
-      //   span help
 
     .terrace
       {{#constant}}
@@ -207,6 +199,7 @@ template(name="ceiling")
       div(data-signed-in="true")
         span {{currentUser.username}}
         span.badge(data-toggle="tooltip", title='The number next to your name is your "karma." It represents how much good you&#8216;ve done for the Connected community, and can be spent in a variety of ways. You&#8216;ll figure it out as you go along.', data-placement="bottom") {{dropDecimal currentUser.karma}} karma 
+        span.badge {{count 'Purchases'}} purchases
         span.badge.logout logout
       {{/isolate}}
       {{else}}
@@ -230,7 +223,6 @@ template(name="content")
       mixin topnav("admin") {{/if}}
 
       .container
-        {{renderThemeColors currentUser}}
         {{renderPage}}
 
     .next

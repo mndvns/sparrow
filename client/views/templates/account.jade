@@ -116,7 +116,7 @@ template(name='account_offer')
 
 
   .account_offer
-    {{#with store "get" "instance_offer"}}
+    {{#with store_get "instance_offer"}}
     {{> offer}}
     {{/with}}
 
@@ -163,7 +163,7 @@ template(name="account_offer_tags")
         span.span4 count
       hr.shadow.bottom.thin
       {{#each tagsets}}
-      li(data-active="{{equal this.name store_tagset}}", data-group="tagset").clr-bg.span12
+      li(data-active="{{equal this.name my_tagset}}", data-group="tagset").clr-bg.span12
         span.span6 {{this.name}}
         // span.span4 {{this.tags.length}}
         span.span2: i.glyph-arrow-right
@@ -225,7 +225,7 @@ template(name="account_offer_images")
 
 
 template(name="account_offer_location")
-  h1 {{#each find 'Votes' '{}'}} {{this.setAt}} {{/each}}
+  h1 {{#each find 'Points' '{}'}} {{this.setAt}} {{/each}}
   mixin g(list)
     .control-group: .controls
       for l in list
@@ -300,15 +300,28 @@ template(name="account_earnings")
 
 template(name="account_earnings_dashboard")
   .area.centered.span5.offset3
-    {{#if currentUser.stripe.access_token}}
-    h3 Woohoo!
-    p.
-      You've successfully connected to your Stripe account. We can now sell on your behalf!
-      Please familiarize yourself with our <a href="/account/earnings/guidelines">guidelines</a> to take
-      full advantage of Connected's system.
-    {{else}}
-    a(href="#").stripe-connect.light-blue: span Connect with Stripe
+    {{#if if_my 'market'}}
+    h3 you're connected
     {{/if}}
+    a(href="#").stripe-connect.light-blue: span Connect with Stripe
+
+template(name="account_earnings_purchases")
+  .area.centered.span5.offset3
+    {{#each find 'Purchases' '{}'}}
+    h3.
+      <br>amount: {{amount}}
+      <br>last four: {{card.last4}}
+    {{/each}}
+
+// {{#if currentUser.stripe.access_token}}
+// h3 Woohoo!
+// p.
+//   You've successfully connected to your Stripe account. We can now sell on your behalf!
+//   Please familiarize yourself with our <a href="/account/earnings/guidelines">guidelines</a> to take
+//   full advantage of Connected's system.
+// {{else}}
+// a(href="#").stripe-connect.light-blue: span Connect with Stripe
+// {{/if}}
 
 template(name="account_earnings_guidelines")
   .row.centered

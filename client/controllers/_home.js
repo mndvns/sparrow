@@ -97,39 +97,6 @@ Template.wrapper.events({
       }, "fast");
     }
   },
-  "click a[data-toggle-mode='help']": function(event, tmpl){
-    return Meteor.Help.set();
-  },
-  "click .help-mode [data-help-block='true']": function(event, tmpl){
-    var $target, selector, oldB, newB;
-    event.stopPropagation();
-    $target = $(event.currentTarget);
-    selector = $target.attr("data-help-selector");
-    oldB = tmpl.findAll("[help-active='true']");
-    newB = tmpl.findAll("[data-help-selector='" + selector + "']");
-    console.log(oldB, newB);
-    $(oldB).attr("help-active", "false");
-    $(newB).attr("help-active", "true");
-    tmpl.find(help + " p").textContent = helpBlocks[selector].summary;
-    return false;
-  },
-  "mouseenter .help-mode [data-help-block='true']": function(event, tmpl){
-    var selector, help, text;
-    selector = event.currentTarget.getAttribute("data-help-selector");
-    help = tmpl.find(help + "");
-    return text = function(cb){
-      help.querySelector("h4").innerHTML = helpBlocks[selector] && helpBlocks[selector].title;
-      help.querySelector("p").innerHTML = helpBlocks[selector] && helpBlocks[selector].summary;
-      if (cb && typeof cb === "function") {
-        return cb();
-      }
-    };
-  },
-  "mouseleave .help-mode [data-help-block='true']": function(event, tmpl){
-    var help;
-    help = tmpl.find(help + "");
-    return $(help).fadeOut('fast');
-  },
   "click .shift": function(event, tmpl){
     var dir, area, page, current, store_area, store_sub_area, sub_area;
     if (checkHelpMode()) {
@@ -419,7 +386,7 @@ Template.content.events({
   },
   "click .sublinks.account_offer a.save": function(event, tmpl){
     var x$;
-    x$ = Offer.storeGet();
+    x$ = Offer['new']().storeGet();
     x$.save();
     return x$;
   },
@@ -449,7 +416,7 @@ colorFill = function(el, selector, value){
 Conf = (function(){
   Conf.displayName = 'Conf';
   var prototype = Conf.prototype, constructor = Conf;
-  prototype.constructor = function(current){
+  function Conf(current){
     var ref$;
     this.sort = {};
     if ((ref$ = current.sort.verbose) != null && ref$.length) {
@@ -462,21 +429,21 @@ Conf = (function(){
     if ((ref$ = current.tagset) != null && ref$.length) {
       this.query.tagset = current.tagset.toString();
       if ((ref$ = current.tag) != null && ref$.length) {
-        return this.query.tags = {
+        this.query.tags = {
           $in: current.tag
         };
       }
     }
-  };
-  function Conf(){}
+  }
   return Conf;
 }());
 Template.home.helpers({
   getOffers: function(){
-    var current, ref$, myLoc, conf, ranges, notes;
+    var current, ref$, myLoc, conf, ranges, notes, result, ct;
     current = (ref$ = statCurrent()) != null ? ref$.query : void 8;
     myLoc = Store.get("user_loc");
     conf = new Conf(current);
+    delete conf.query.tags;
     ranges = {
       updatedAt: [],
       distance: [],
@@ -487,6 +454,20 @@ Template.home.helpers({
       count: 0,
       votes: 0
     };
+    result = Offers.find();
+    ct = Store.get("current_tags");
+    result = Offers.find(conf.query, {
+      reactive: true
+    }).map(function(it){
+      switch (false) {
+      case !(ct.length > 0):
+        it.active = _.intersection(it.tags, ct).length > 0;
+        break;
+      default:
+        it.active = true;
+      }
+      return it;
+    });
     return result;
   },
   styleDate: function(date){

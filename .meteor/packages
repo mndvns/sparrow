@@ -32,6 +32,7 @@ canvas-image-manipulation
 jqbootstrapvalidation
 publish-with-relations
 transitioner
-mocha-web
 event-horizon
 handlebar-bind
+session-extras
+appcache

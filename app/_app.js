@@ -35,13 +35,22 @@ My = {
   userId: function(){
     switch (false) {
     case !Meteor.isServer:
-      return typeof Meteor.userId === 'function' ? Meteor.userId() : void 8;
+      return Meteor.userId();
     case !Meteor.isClient:
       return Meteor.userId();
     }
   },
   userLoc: function(){
     return typeof Store != 'undefined' && Store !== null ? Store.get("user_loc") : void 8;
+  },
+  customer: function(){
+    return Customers.findOne({
+      ownerId: this.userId()
+    });
+  },
+  customerId: function(){
+    var ref$;
+    return (ref$ = this.customer()) != null ? ref$.id : void 8;
   },
   offer: function(){
     return typeof Offers != 'undefined' && Offers !== null ? Offers.findOne({
@@ -51,6 +60,11 @@ My = {
   offerId: function(){
     var ref$;
     return (ref$ = this.offer()) != null ? ref$._id : void 8;
+  },
+  market: function(){
+    return Markets.findOne({
+      ownerId: this.userId()
+    });
   },
   tags: function(){
     return typeof Tags != 'undefined' && Tags !== null ? Tags.find({
@@ -76,6 +90,13 @@ My = {
     return typeof Alerts != 'undefined' && Alerts !== null ? (ref$ = Alerts.findOne({
       ownerId: this.userId()
     })) != null ? ref$._id : void 8 : void 8;
+  },
+  prompts: function(){
+    return typeof Prompts != 'undefined' && Prompts !== null ? Prompts.find().fetch() : void 8;
+  },
+  init: function(klass, obj){
+    obj == null && (obj = {});
+    return this[klass]() || this.env()[klass.toProperCase()]['new'](obj);
   },
   map: curry$(function(field, list){
     return map(function(it){

@@ -9,6 +9,8 @@ if Meteor.isServer
   path     = require "path"
   basepath = (path.resolve('.'))
 
+EH = Event-horizon
+
 
 String ::=
 

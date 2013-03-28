@@ -2,51 +2,6 @@
 #////////////////////////////////////////////
 #  $$ globals and locals
 
-heroColor =
-  shiftColor: (a) ->
-
-    white     = Color("#fff")
-    col       = Color(a)
-
-    @normal   = col.toString()
-    @bright   = col.desaturateByAmount 0.1
-    @sat_dark = col.darkenByAmount 0.5 .saturateByAmount 0.3
-    @hue      = col.getHue()
-    @light    = col.setSaturation 0.8 .setLightness 0.7 .toString()
-    @desat    = col.desaturateByAmount 0.8 .darkenByAmount 0.2 .toString()
-    @dark     = col.setSaturation 1 .setLightness 0.2 .toString()
-
-heroAdjustColors = (d)->
-
-  user = Meteor.user()
-  if user and user.colors
-    heroColor.shiftColor user.colors.prime.medium
-    Session.set "user_colors_set", true
-
-    # else if not $(document.body).hasClass("transitioning")
-    #   themeColors = _.find document.styleSheets, (d) ->
-    #     d.title is "dynamic-theme"
-
-    #   for rule in themeColors.rules
-    #     themeColors.removeRule()
-
-    #   themeColors.insertRule( colorFill ".clr-text.prime", "color", heroColor.normal )
-    #   themeColors.insertRule( colorFill "a", "color", heroColor.normal)
-    #   themeColors.insertRule( colorFill "a:hover, a.active", "color", heroColor.dark)
-
-    #   themeColors.insertRule( colorFill ".clr-bg", "background", heroColor.normal)
-    #   themeColors.insertRule( colorFill ".clr-bg.btn:hover", "background", heroColor.dark)
-
-    #   themeColors.insertRule( colorFill ".clr-bg.light", "background", heroColor.light )
-    #   themeColors.insertRule( colorFill ".clr-bg.dark", "background", heroColor.dark)
-
-    #   heroColor.shiftColor d.color
-
-  else
-
-    #   heroColor.shiftColor d.color
-
-    heroColor.shiftColor('hsla(200, 90%, 40%, 1)')
 
 HeroList = (opt) ->
   fontSize = void
@@ -58,32 +13,27 @@ HeroList = (opt) ->
     .data(opt.current[opt.name])
 
   hero
-    .enter()
+    .enter!
     .append "span"
 
   hero
-    .exit()
-    .transition()
+    .exit!
+    .transition!
     .style {}=
-      opacity: 0
-      "font-size": "0px"
-    .remove()
+      "opacity"   : 0
+      "font-size" : "0px"
+    .remove!
 
   hero
-    ..text (d) ->
-      d
-    ..transition()
-    ..style {}=
+    .text -> it
+    .transition!
+    .style {}=
       "opacity": "1"
-      "color": (d) ->
-        heroColor.normal
       "font-size": (d) ->
         fontSize = (Math.round(15 + (200 / chars))) + "px"  unless fontSize
         fontSize
 
   return false  if opt.skipList
-
-  limbo = false
 
   list = d3.select("ul." + opt.name + "-list")
 
@@ -91,22 +41,17 @@ HeroList = (opt) ->
     .data(opt.collection)
 
   item
-    .enter()
+    .enter!
     .insert "li"
 
   item
     .datum (d, i) ->
-      if limbo and opt.leader
-        d.status = "limbo"
-      else if _.contains(opt.current[opt.name], d[opt.selector])
-        d.status = "active"
-      else
-        d.status = "inactive"
-
+      d.status  = if _.contains opt.current[opt.name], d[opt.selector]
+                then "active"
+                else "inactive"
       d
 
-    .attr "class", (d) ->
-      d.status
+    .attr "class", (.status)
     .html (d) ->
       child = ""
       if opt.name is "tag"
@@ -114,25 +59,17 @@ HeroList = (opt) ->
       d[opt.selector] + child
 
   item
-    .exit()
-    .remove()
+    .exit!
+    .remove!
 
   active = list.selectAll("li.active")
-    ..transition()
-    ..style {}=
-      'color': (c) ->
-        if opt.leader then heroAdjustColors(c)
-        heroColor.normal
+    .transition!
+    .style {}=
       'font-size': '18px'
 
   inactive = list.selectAll("li.inactive")
-    ..transition()
-    ..style {}=
-      'color': (d) ->
-        if opt.leader
-          "#bbb"
-        else
-          heroColor.bright
+    .transition!
+    .style {}=
       'font-size': '13px'
 
 
@@ -206,15 +143,14 @@ Template.hero.events {}=
 Template.hero.created = ->
   Session.set "heroRendered", false
   Session.set "current_changed", null
-  self = this
-  unless self.handle
-    self.handle = Meteor.autorun(->
+  unless @handle
+    @.handle = Meteor.autorun ->
 
       uloc = Store.get('user_loc')
 
-      tagsets = Tagsets.find().fetch()
-      sorts   = Sorts.find().fetch()
-      tags = Tag.rateAll()
+      tagsets = Tagsets.find!fetch!
+      sorts   = Sorts.find!fetch!
+      tags    = Tag.rateAll!
 
       # tags    = Tags.find().map (d)->
 
@@ -260,7 +196,8 @@ Template.hero.created = ->
         as "collection", out
 
         Session.set "heroDataReady", true
-    )
+
+
 
   Deps.autorun ->
     unless Session.get("heroRendered")
@@ -270,7 +207,7 @@ Template.hero.created = ->
       console.log "no data"
       return false
 
-    current = statCurrent().verbose
+    current = statCurrent!verbose
     Collection = as("collection")
 
     collection =
@@ -341,7 +278,5 @@ Template.hero.created = ->
 
 Template.hero.rendered = (tmpl) ->
   Session.set "heroRendered", true  unless Session.get("heroRendered")
-  @handle and @handle.stop()  if Session.get("heroDataReady")
-  # if Meteor.Isotope
-  #   Meteor.Isotope.reload()
+  if Session.get("heroDataReady") => @handle and @handle.stop!  
 

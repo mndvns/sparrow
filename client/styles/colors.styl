@@ -1,0 +1,52 @@
+
+s = 90%
+l = 40%
+variation = 130
+
+prime = hsla(200, s, l, 1)
+comp = hsla((hue(prime) + variation), s, l, 1)
+triad  = hsla((hue(prime) - variation), s, l, 1)
+
+.clr-gradient
+  background linear-gradient(top right, lighten(saturate(prime, 100%), 10%), prime)
+  color white
+  padding-bottom 20px
+
+a
+  color prime
+  &:hover
+    color darken(prime, 20%)
+
+.clr-text
+  color prime
+  &.hvr
+    &:hover
+      color darken(prime, 20%)
+  &.clr-bg
+    &.hvr
+      :hover
+        white
+
+clr-bg(a)
+  background a
+  &.dark
+    background darken(a, 50%)
+  &.light
+    background lighten(a, 50%)
+  &.btn
+    color white
+    &.active
+    &:hover
+      background darken(a, 20%)
+
+.clr-bg
+  clr-bg(prime)
+  &.prime
+    clr-bg(prime)
+  &.comp
+    clr-bg(comp)
+  &.triad
+    clr-bg(triad)
+
+
+

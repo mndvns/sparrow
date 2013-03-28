@@ -100,70 +100,6 @@ Template.wrapper.events {}=
       , "fast"
 
 
-  "click a[data-toggle-mode='help']": (event, tmpl) ->
-    Meteor.Help.set()
-
-    # dhb = "data-help-block"
-    # blocks = $("[#{dhb}]")
-    # status = blocks.first().attr(dhb)
-    # wrapper = $(tmpl.find(".wrapper"))
-    # wrapperClasses = "help-mode clr-bg dark"
-    # span = $(event.currentTarget).children("span")
-
-    # if status is "true"
-    #   blocks.attr(dhb, "false")
-    #   blocks.removeAttr "help-active"
-    #   wrapper.removeClass wrapperClasses
-    #   span.text("help")
-
-    # else
-    #   blocks.attr(dhb, "true")
-    #   wrapper.addClass wrapperClasses
-    #   span.text("exit")
-
-  "click .help-mode [data-help-block='true']": (event, tmpl) ->
-
-    event.stopPropagation()
-
-    $target = $(event.currentTarget)
-    selector = $target.attr "data-help-selector"
-
-    oldB = tmpl.findAll("[help-active='true']")
-    newB = tmpl.findAll("[data-help-selector='#{selector}']")
-
-    console.log(oldB, newB)
-
-    $(oldB).attr("help-active", "false")
-    $(newB).attr("help-active", "true")
-
-    tmpl.find("#help p").textContent = helpBlocks[selector].summary
-
-    return false
-
-  "mouseenter .help-mode [data-help-block='true']": (event, tmpl) ->
-
-    selector = event.currentTarget.getAttribute "data-help-selector"
-
-    help = tmpl.find("#help")
-
-    text = (cb)->
-      help.querySelector("h4").innerHTML = helpBlocks[selector] and helpBlocks[selector].title
-      help.querySelector("p").innerHTML = helpBlocks[selector] and helpBlocks[selector].summary
-      if cb and typeof cb is "function" then cb()
-
-    # if help.style.display isnt "block"
-    #   text()
-    #   $(help).fadeIn 'fast'
-    # else
-    #   $(help).fadeOut 'fast', ->
-    #     text(->
-    #       $(help).fadeIn 'fast'
-    #     )
-
-  "mouseleave .help-mode [data-help-block='true']": (event, tmpl) ->
-    help = tmpl.find("#help")
-    $(help).fadeOut('fast')
-
   "click .shift": (event, tmpl) ->
 
     if checkHelpMode() then return
@@ -344,6 +280,24 @@ Template.ceiling.rendered = ->
 Template.content.rendered = ->
   return if Meteor.Router.page() is "home"
 
+  # unless @event-horizon
+  #   @event-horizon = Deps.autorun ~>
+  #     eh = Event-horizon
+
+  #     terr       = $ \.terrace
+  #     terr-alert = $ \#terrace-alert
+
+  #     eh.fire-when-true 'terrace_open', ->
+  #       Prompts.find-one()?
+
+  #     eh.on 'terrace_open', ->
+  #       console.log "IT FIRED"
+  #       terr-alert.show!
+  #       terr.show!
+
+
+
+
   unless @activateLinks
     @activateLinks = ~>
       # context = new Deps.Context()
@@ -454,7 +408,7 @@ Template.content.events {}=
 
 
   "click .sublinks.account_offer a.save": (event, tmpl) ->
-    Offer.store-get! ..save!
+    Offer.new!store-get! ..save!
 
   'click .accord header': (event, tmpl) ->
     if not $(event.target).hasClass "active"
@@ -487,7 +441,7 @@ colorFill = (el, selector, value) ->
 #  $$ home
 
 class Conf
-  constructor: (current)->
+  (current)->
 
     @sort = {}
     if current.sort.verbose?.length
@@ -510,7 +464,7 @@ Template.home.helpers {}=
 
     conf = new Conf(current)
 
-    # console.log("QUERY SORT", conf)
+    delete! conf.query.tags
 
     ranges =
       updatedAt   : []
@@ -522,33 +476,31 @@ Template.home.helpers {}=
       count: 0
       votes: 0
 
-    # result = App.Collection.Offers.find(
-    #   conf.query
-    # ).map (d) ->
+    result = Offers.find!
+
+    ct = Store.get "current_tags"
+
+    result = Offers.find(
+      conf.query,
+      reactive: true
+    ).map ->
+        | ct.length > 0 => it.active = (_.intersection it.tags, ct ).length > 0
+        | _             => it.active = true
+        it
+
+        # for r of ranges
+        #   ranges[r].push d[r]
+
+        # notes.count +=1
+        # notes.votes += d.votes_count
+
+        # if conf.sort_empty and d.rand
+        #   d.shuffle = current.sort.order * d.rand
+        #   d.shuffle = parseInt( d.shuffle.toString().slice(1,4) )
+
+        # d
 
 
-    # result = App.Collection.Offers.find(
-    # ).fetch()
-
-    # result = App.Collection.Offers.find(
-    #   conf.query,
-    #   conf.sort
-    # ).map (d) ->
-
-    #     # d.distance = Math.round(distance(myLoc.lat, myLoc.long, d.loc.lat, d.loc.long, "M") * 10) / 10
-    #     # for r of ranges
-    #     #   ranges[r].push d[r]
-
-    #     # notes.count +=1
-    #     # notes.votes += d.votes_count
-
-    #     # if conf.sort_empty and d.rand
-    #     #   d.shuffle = current.sort.order * d.rand
-    #     #   d.shuffle = parseInt( d.shuffle.toString().slice(1,4) )
-
-    #     d
-
-    # console.log(ranges)
 
     # if result and myLoc
 

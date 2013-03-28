@@ -13,13 +13,10 @@
     "stripe": {},
     "collectionFS": {},
     "imgur": {},
-    "logger": {},
-    "canvas-image-manipulation": {},
-    "jqbootstrapvalidation": {},
     "publish-with-relations": {},
-    "mocha-web": {},
     "event-horizon": {},
     "session-extras": {},
-    "handlebar-bind": {}
+    "handlebar-bind": {},
+    "parsleyjs": {}
   }
 }

@@ -1,4 +1,3 @@
-
 type = ->
   unless it?
     return String it
@@ -21,13 +20,18 @@ My =
     | Meteor.isClient => return Meteor.user!
 
   userId    : ->
-    | Meteor.isServer => return Meteor.userId?!
+    | Meteor.isServer => return Meteor.userId!
     | Meteor.isClient => return Meteor.userId!
 
   userLoc   : -> Store?.get "user_loc"
 
+  customer  : -> Customers.findOne ownerId: @userId!
+  customerId: -> @customer! ?.id
+
   offer     : -> Offers?.findOne ownerId: @userId!
-  offerId   : -> @offer! ?._id
+  offer-id  : -> @offer! ?._id
+
+  market    : -> Markets.findOne ownerId: @userId!
 
   tags      : -> Tags?.find ownerId: @userId! .fetch!
   tagset    : -> @offer! ?.tagset
@@ -35,7 +39,12 @@ My =
   locations : -> Locations?.find ownerId: @userId! .fetch!
   pictures  : -> Pictures?.find ownerId: @userId! .fetch!
 
-  alert     : -> Alerts?.findOne ownerId: @userId! ?._id
+  alert     : -> Alerts?.find-one owner-id: @user-id! ?._id
+  prompts   : -> Prompts?.find!.fetch!
+
+
+
+  init      : (klass, obj = {}) -> @[klass]! or @env![klass.to-proper-case!].new obj
 
   map       : (field, list) --> map (-> it[field]), @[list]?!
 

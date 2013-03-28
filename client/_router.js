@@ -43,15 +43,17 @@ Meteor.Router.add({
         return decodeURIComponent(s.replace(pl, " "));
       };
       query = window.location.search.substring(1);
+      console.log("QUERY", query);
       while (compare = search.exec(query)) {
         results$.push(urlParams[decode(compare[1])] = decode(compare[2]));
       }
       return results$;
     })();
-    console.log(urlParams);
-    return Meteor.call("stripeOauth", urlParams.code, function(){
+    console.log('PARAMS', urlParams);
+    Meteor.call('market_oauth', urlParams.code, function(){
       return window.close();
     });
+    return "account_earnings_dashboard";
   },
   "/:area": function(area){
     var store_page;

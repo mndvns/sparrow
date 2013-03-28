@@ -1,23 +1,49 @@
 
+do ->
+  ms = Meteor.subscribe
 
+  # ms "relations", My?.userLoc! , ->
+  #   console.log "SUBSCRIBE READY"
+  #   Session.set "subscribe_ready", true
 
-#                                                //
-#           ______            _____              //
-#          / ____/___  ____  / __(_)___ _        //
-#         / /   / __ \/ __ \/ /_/ / __ `/        //
-#        / /___/ /_/ / / / / __/ / /_/ /         //
-#        \____/\____/_/ /_/_/ /_/\__, /          //
-#                               /____/           //
-#                                                //
+  ms "my_offer"
+  ms "my_tags"
+  ms "my_pictures"
+  ms "my_messages"
+  ms "my_alerts"
+  ms "my_prompts"
 
+  ms "tagsets"
+  ms "sorts"
+  ms "points"
+
+  ms "all_offers"
+  ms "all_tags"
+  ms "all_locations"
+  ms "all_markets"
+
+  ms "purchases"
+  ms "customers"
+
+  ms "user_data"
 
 # window.__dirname = "http://localhost:3000/"
 
-Stripe.setPublishableKey("pk_test_xB8tcSbkx4mwjHjxZtSMuZDf") 
+
+
+
+
+
+
+
+
+
+
+Stripe.set-publishable-key("pk_test_xB8tcSbkx4mwjHjxZtSMuZDf") 
 Stripe.client_id = "ca_131FztgqheXRmq6vudxED4qdTPtZTjNt"
 
 Color = net.brehaut.Color
-Store = Meteor.BrowserStore
+Store = Meteor.Browser-store
 Store.clear = ->
   keys = Object.keys(Store.keys)
   keeps = [
@@ -38,11 +64,19 @@ Store.clear = ->
     console.log(diff)
     Store.set(diff, null)
 
-Store.clearAll = ->
+Store.clear-all = ->
   keys = _.keys(Store.keys)
   for key in keys
     console.log(key)
     Store.set(key, null)
+
+do ->
+  eh = Event-horizon
+
+  eh.on "select_offer", ->
+    console.log 'selected offer'
+
+
 
 
 # Accounts.ui.config passwordSignupFields: "USERNAME_AND_OPTIONAL_EMAIL"

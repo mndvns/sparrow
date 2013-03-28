@@ -7,6 +7,7 @@ dwollaUrl = "https://www.dwolla.com/oauth/v2/token"
 require  = __meteor_bootstrap__.require
 MongoDB  = require "mongodb"
 Future   = require "fibers/future"
+
 # Colors = require "colors"
 # fs       = require "fs"
 # console.log(Meteor.settings)
@@ -15,44 +16,54 @@ Future   = require "fibers/future"
 do ->
   mp = Meteor.publish
 
-  mp "relations", (loc)->
-    miles  = 2000
-    radius = (miles / 69)
-    switch loc
-    | (.lat)? => filt = geo: $near: [loc.lat, loc.long ], $maxDistance: radius
-    | _       => filt = {}
+  # mp "relations", (loc)->
+  #   miles  = 2000
+  #   radius = (miles / 69)
+  #   switch loc
+  #   | (.lat)? => filt = geo: $near: [loc.lat, loc.long ], $maxDistance: radius
+  #   | _       => filt = {}
 
-    Meteor.publishWithRelations {}=
-      handle: this
-      collection: Locations
-      filter: filt
-      mappings: [
-        key: 'offerId'
-        collection: Offers
-        filter: {}
-        mappings: [
-          reverse: true
-          key: 'offerId'
-          collection: Tags
-          filter: {}
-        ]
-      ]
+  #   Meteor.publishWithRelations {}=
+  #     handle: this
+  #     collection: Locations
+  #     filter: filt
+  #     mappings: [
+  #       key: 'offerId'
+  #       collection: Offers
+  #       mappings: [
+  #         reverse: true
+  #         key: 'offerId'
+  #         collection: Tags
+  #       ]
+  #     ]
 
-    @ready()
+  #   @ready()
 
-  mp "my_offer",    -> Offers.find ownerId : @userId
-  mp "my_tags",     -> Tags.find ownerId : @userId
-  mp "my_pictures", -> Pictures.find ownerId: @userId , status: $nin: ["deactivated"]
-  mp "my_messages", -> Messages.find involve: $in: [@userId]
-  mp "my_alerts",   -> Alerts.find owner: @userId
+  mp "my_offer",      -> Offers.findOne ownerId : @userId
 
-  mp "tagsets",     -> Tagsets.find!
-  mp "sorts",       -> Sorts.find {}, sort: list_order: 1
-  mp "votes",       -> Votes.find!
+  mp "my_tags",       -> Tags.find ownerId : @userId
+  mp "my_pictures",   -> Pictures.find ownerId: @userId , status: $nin: ["deactivated"]
+  mp "my_messages",   -> Messages.find involve: $in: [@userId]
+  mp "my_alerts",     -> Alerts.find owner: @userId
+  mp "my_prompts",    -> Prompts.find!
 
-  mp "all_offers",  -> Offers.find!
+  mp "tagsets",       -> Tagsets.find!
+  mp "sorts",         -> Sorts.find {}, sort: list_order: 1
+  mp "points",        -> Points.find!
 
-  mp "user_data",   -> Meteor.users.find!
+  mp "all_offers",    -> Offers.find!
+  mp "all_tags",      -> Tags.find!
+  mp "all_locations", -> Locations.find!
+  mp "all_markets",   -> Markets.find!
+
+  # mp "charges",       -> Charges.find $or: [ offer-id: My.offer-id!, customer-id: My.user!.customer-id ]
+
+  mp "purchases",     -> Purchases.find!
+  mp "customers",     -> Customers.find!
+
+  mp "user_data",     -> Meteor.users.find!
+
+
 
 
 class Alert
@@ -94,8 +105,7 @@ Meteor.users.allow {}=
     else
       false
 
-
-allowUser = ( collections ) ->
+allow-user = ( collections ) ->
   for c in collections
     c.allow {}=
       insert: (userId, doc) ->
@@ -107,12 +117,16 @@ allowUser = ( collections ) ->
       fetch: ['ownerId']
 
 
-allowUser([
+allow-user([
   Offers
-  Votes
+  Points
   Tags
   Locations
   Pictures
+
+  Markets
+  Purchases
+  Customers
 ])
 
 #                                                         //

@@ -16,14 +16,11 @@
       "stripe": {},
       "collectionFS": {},
       "imgur": {},
-      "logger": {},
-      "canvas-image-manipulation": {},
-      "jqbootstrapvalidation": {},
       "publish-with-relations": {},
-      "mocha-web": {},
       "event-horizon": {},
       "session-extras": {},
-      "handlebar-bind": {}
+      "handlebar-bind": {},
+      "parsleyjs": {}
     },
     "packages": {
       "moment": {
@@ -76,30 +73,10 @@
         "tag": "v0.1.0",
         "commit": "0781b66ce15a4d9afaed98455761a5b7a2104125"
       },
-      "logger": {
-        "git": "https://github.com/jerico-dev/meteor-logger.git",
-        "tag": "v0.1.2",
-        "commit": "8811ff33e4787d7c564e030ff3afaa3d7c4981fc"
-      },
-      "canvas-image-manipulation": {
-        "git": "https://github.com/jackp/canvas-image-manipulation.git",
-        "tag": "v0.1.0",
-        "commit": "bd29971e84b1f37168bca4548f621df26845c978"
-      },
-      "jqbootstrapvalidation": {
-        "git": "https://github.com/nate-strauser/meteor-jqbootstrapvalidation.git",
-        "tag": "v0.1.0",
-        "commit": "2af4625d41a9b24311544a53790f14fa38c27b10"
-      },
       "publish-with-relations": {
         "git": "https://github.com/erundook/meteor-publish-with-relations.git",
-        "tag": "v0.1.3",
-        "commit": "ab53930b4934e8b25330fd1fa3ac6d7d365eb201"
-      },
-      "mocha-web": {
-        "git": "https://github.com/mad-eye/meteor-mocha-web.git",
-        "tag": "v0.1.0",
-        "commit": "540fd609af4e4cfa921a1ef1151bee542d2e06a4"
+        "tag": "v0.1.4",
+        "commit": "d453a7b8f389ff30e8c03fe07d116c39c337d3a2"
       },
       "event-horizon": {
         "git": "https://github.com/belisarius222/meteor-event-horizon.git",
@@ -115,6 +92,11 @@
         "git": "https://github.com/raix/Meteor-handlebar-bind.git",
         "tag": "v0.0.1",
         "commit": "5dad52f10c53c3c322406432ab18531904a17213"
+      },
+      "parsleyjs": {
+        "git": "https://github.com/nate-strauser/meteor-parsleyjs.git",
+        "tag": "v0.1.0",
+        "commit": "5ec267dcc1af252774a23dfc8b0c9c495fe2a8cb"
       },
       "page-js-ie-support": {
         "git": "https://github.com/tmeasday/meteor-page-js-ie-support.git",

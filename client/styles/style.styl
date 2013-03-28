@@ -1,8 +1,10 @@
 // @import 'index'
-@import 'nib'
+
 @import 'mixins'
+@import 'nib'
 @import 'jscrollpane'
 @import 'icons.css'
+@import 'colors'
 
 li
   list-style none
@@ -48,6 +50,9 @@ topnav-padding = 15px
 size(args)
   height args
   width args
+
+.prompt-area
+  display none
 
 
 .tooltip
@@ -850,6 +855,7 @@ Spanner( 940px )
 
   .headline
     absolute top 60px left 15%
+    color darken(prime, 50%)
     z-index 100
     width 70%
     text-align center
@@ -902,10 +908,12 @@ Spanner( 940px )
       &[data-active]
       &.inactive
         opacity .5
+        color desaturate(prime, 90%)
         &:hover
           opacity .8
       &[data-active=true]
       &.active
+        color prime
         opacity .95
         &:hover
           opacity .9
@@ -1038,6 +1046,9 @@ Spanner( 940px )
   display block
 
 .offer
+  // &[data-active=false]
+  //   display none
+
   height = 170px
   bumper = 1px
   action(a, b)
@@ -1487,68 +1498,6 @@ input.color
       line-height 1.5
       margin-bottom (fontSize / 2) 0
 
-
-// .dhtmlx_message_area
-//   fixed right 5px
-//   top 83px!important
-//   width 250px
-//   z-index 1000
-//   *
-//     font-family "proxima-nova"
-//   .dhtmlx-info
-//     transition all .5s ease
-//     z-index 10000
-//     display block
-//     min-width 120px
-//     height height
-//     line-height height
-//     padding 5px 15px
-//     box-shadow 0 1px 5px rgba(black, 0.1)
-//     border none
-//     border-radius 0
-//     font-weight 600
-//     margin 5px
-//     margin-bottom 10px
-//     opacity 1
-//     overflow hidden
-//     i
-//       padding 2px 15px 2px 0
-//       vertical-align middle
-//       font-size 30px
-//       line-height height
-//       height 100%
-//       margin 0
-//       float left
-//       position relative
-//     div
-//       border-radius 0
-//       border none
-//       background none
-//       padding 0
-//       margin 0
-//       height height
-//       line-height height
-//     &.hidden
-//       height 0
-//       overflow hidden
-//       padding 0
-//       opacity 0
-//       margin 0
-//     status(col)
-//       desat = desaturate(darken(col, 30%), 80%)
-//       background desaturate(lighten(col, 90%), 40%)
-//       color desat
-//       border-bottom 1px solid rgba(desat, 0.7)
-//       border-left 1px solid rgba(desat, 0.4)
-//       border-right 1px solid rgba(desat, 0.4)
-//       border-top 1px solid rgba(desaturate(col, 60%), 0.5)
-//     &[class*="success"]
-//       status(#89dd7c)
-//     &[class*="warning"]
-//       status(#db7d7d)
-//     &[class*="neutral"]
-//       status(#9696aa)
-
 .message-container
   color = rgba(white, .3)
   background color
@@ -1583,10 +1532,10 @@ input.color
         border-color rgba(black, .5)
         color light
       .sent
-        background rgba(white, .01)
+        background rgba(white, 0.01)
         font-weight bold
         &:hover
-          background rgba(white, .1)
+          background rgba(white, 0.1)
 
 
 .modal
@@ -1665,70 +1614,6 @@ input.color
   &:hover
     transition background 200ms ease 0
 
-Duration = 2000ms
-
-easing(args...)
-  transition-easing-function linear
-  if args
-    transition-duration args!important
-  else
-    transition-duration 500ms!important
-
-[data-help-block]
-  outline = 3px
-  // box-shadow none
-  trans(all)
-  &[data-help-block=true]
-    outline outline solid transparent
-    outline outline solid rgba(black, 0.2)
-    overflow visible
-    opacity .9!important
-    &.offer
-      opacity 0
-      display none
-      &:first-child
-        display block
-    &:hover
-      opacity 1!important
-      easing( 200ms )
-    transform scale( .75)
-    background rgba(white, 0.4)
-    box-shadow 0 1px 2px rgba(black, .3)
-    *
-      trans(all)
-      easing()
-      opacity 0
-    [data-help-block]
-      background rgba(white, 0.4)
-      opacity 1
-      li
-        opacity 0!important
-    &.help-active
-    &[help-active=true]
-    &[help-active=false]
-      transition-duration 200ms
-    &.help-active
-    &[help-active=true]
-    &:hover
-      transform scale( .8 )
-      box-shadow 0 0 60px rgba(white, .25 )
-      background rgba(white, .6)
-      outline 3px solid rgba(black, .1 )
-      [data-help-block]
-        background rgba(black, 0)
-        outline 3px solid rgba(black, .3 )
-        box-shadow 0 1px 2px rgba(black, .2)
-
-//////////////////////////////////////////////
-//  $$ help-mode
-
-
-.clr-bg.dark
-  &.help-mode
-  .help-mode &
-    trans(background-color)
-    easing()
-
 // body
 //   trans(all)
 
@@ -1738,14 +1623,6 @@ easing(args...)
   .help-mode &
     transform scale( .9 )
     top 50px
-
-.ceiling
-  trans(background)
-  easing()
-  user-select none
-  .help-mode &
-    overflow visible!important
-    background transparent!important
 
 .terrace
   display none
@@ -1757,7 +1634,7 @@ easing(args...)
 
 #terrace-help
   relative top
-  wdith 70%
+  width 70%
   margin 0 0 0 15%
   padding-bottom 0
   trans(opacity max-height)
@@ -1829,61 +1706,6 @@ speed = 400ms
   overflow visible
   trans(all)
 
-.wrapper
-.wrapper.clr-bg.dark
-  transition-duration 2000ms!important
-
-
-s = 90%
-l = 40%
-variation = 130
-
-prime = hsla(200, s, l, 1)
-comp = hsla((hue(prime) + variation), s, l, 1)
-triad  = hsla((hue(prime) - variation), s, l, 1)
-
-.clr-gradient
-  background linear-gradient(top right, lighten(saturate(prime, 100%), 10%), prime)
-  color white
-  padding-bottom 20px
-
-a
-  color prime
-  &:hover
-    color darken(prime, 20%)
-
-.clr-text
-  color prime
-  &.hvr
-    &:hover
-      color darken(prime, 20%)
-  &.clr-bg
-    &.hvr
-      :hover
-        white
-
-clr-bg(a)
-  background a
-  &.dark
-    background darken(a, 50%)
-  &.light
-    background lighten(a, 50%)
-  &.btn
-    color white
-    &.active
-    &:hover
-      background darken(a, 20%)
-
-.clr-bg
-  clr-bg(prime)
-  &.prime
-    clr-bg(prime)
-  &.comp
-    clr-bg(comp)
-  &.triad
-    clr-bg(triad)
-
-
 
 
 
@@ -1894,9 +1716,7 @@ clr-bg(a)
 
 
 
-
-@charset "utf-8";
-
+// MOCHA
 
 .mocha-form
   label
@@ -2094,4 +1914,6 @@ code .keyword
 
 code .number
   color: #2F6FAD
+
+
 

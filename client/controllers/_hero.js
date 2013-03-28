@@ -1,49 +1,19 @@
-var heroColor, heroAdjustColors, HeroList;
-heroColor = {
-  shiftColor: function(a){
-    var white, col;
-    white = Color(fff + "");
-    col = Color(a);
-    this.normal = col.toString();
-    this.bright = col.desaturateByAmount(0.1);
-    this.sat_dark = col.darkenByAmount(0.5).saturateByAmount(0.3);
-    this.hue = col.getHue();
-    this.light = col.setSaturation(0.8).setLightness(0.7).toString();
-    this.desat = col.desaturateByAmount(0.8).darkenByAmount(0.2).toString();
-    return this.dark = col.setSaturation(1).setLightness(0.2).toString();
-  }
-};
-heroAdjustColors = function(d){
-  var user;
-  user = Meteor.user();
-  if (user && user.colors) {
-    heroColor.shiftColor(user.colors.prime.medium);
-    return Session.set("user_colors_set", true);
-  } else {
-    return heroColor.shiftColor('hsla(200, 90%, 40%, 1)');
-  }
-};
+var HeroList;
 HeroList = function(opt){
-  var fontSize, chars, ref$, key$, hero, x$, limbo, list, item, y$, active, z$, inactive;
+  var fontSize, chars, ref$, key$, hero, list, item, active, inactive;
   fontSize = void 8;
   chars = _.flatten(opt.current).toString().length;
   (ref$ = opt.current)[key$ = opt.name] == null && (ref$[key$] = []);
   hero = d3.select(".headline ." + opt.name).selectAll("span").data(opt.current[opt.name]);
   hero.enter().append("span");
   hero.exit().transition().style({
-    opacity: 0,
+    "opacity": 0,
     "font-size": "0px"
   }).remove();
-  x$ = hero;
-  x$.text(function(d){
-    return d;
-  });
-  x$.transition();
-  x$.style({
+  hero.text(function(it){
+    return it;
+  }).transition().style({
     "opacity": "1",
-    "color": function(d){
-      return heroColor.normal;
-    },
     "font-size": function(d){
       var fontSize;
       if (!fontSize) {
@@ -55,21 +25,14 @@ HeroList = function(opt){
   if (opt.skipList) {
     return false;
   }
-  limbo = false;
   list = d3.select("ul." + opt.name + "-list");
   item = list.selectAll("li").data(opt.collection);
   item.enter().insert("li");
   item.datum(function(d, i){
-    if (limbo && opt.leader) {
-      d.status = "limbo";
-    } else if (_.contains(opt.current[opt.name], d[opt.selector])) {
-      d.status = "active";
-    } else {
-      d.status = "inactive";
-    }
+    d.status = _.contains(opt.current[opt.name], d[opt.selector]) ? "active" : "inactive";
     return d;
-  }).attr("class", function(d){
-    return d.status;
+  }).attr("class", function(it){
+    return it.status;
   }).html(function(d){
     var child;
     child = "";
@@ -79,27 +42,10 @@ HeroList = function(opt){
     return d[opt.selector] + child;
   });
   item.exit().remove();
-  y$ = active = list.selectAll("li.active");
-  y$.transition();
-  y$.style({
-    'color': function(c){
-      if (opt.leader) {
-        heroAdjustColors(c);
-      }
-      return heroColor.normal;
-    },
+  active = list.selectAll("li.active").transition().style({
     'font-size': '18px'
   });
-  z$ = inactive = list.selectAll("li.inactive");
-  z$.transition();
-  z$.style({
-    'color': function(d){
-      if (opt.leader) {
-        return bbb + "";
-      } else {
-        return heroColor.bright;
-      }
-    },
+  inactive = list.selectAll("li.inactive").transition().style({
     'font-size': '13px'
   });
   return [list, hero];
@@ -156,12 +102,10 @@ Template.hero.events({
   }
 });
 Template.hero.created = function(){
-  var self;
   Session.set("heroRendered", false);
   Session.set("current_changed", null);
-  self = this;
-  if (!self.handle) {
-    self.handle = Meteor.autorun(function(){
+  if (!this.handle) {
+    this.handle = Meteor.autorun(function(){
       var uloc, tagsets, sorts, tags, out;
       uloc = Store.get('user_loc');
       tagsets = Tagsets.find().fetch();

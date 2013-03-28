@@ -12,6 +12,10 @@ var slice$ = [].slice;
   hh("my", function(it){
     return typeof My != 'undefined' && My !== null ? typeof My[it] === 'function' ? My[it]() : void 8 : void 8;
   });
+  hh("if_my", function(a, b){
+    var ref$;
+    return (ref$ = My[a]()) != null ? ref$[b] : void 8;
+  });
   hh("my_tagset", function(){
     return My.tagset();
   });
@@ -19,10 +23,8 @@ var slice$ = [].slice;
     var ref$;
     return (ref$ = Offer.storeGet()) != null ? ref$['tagset'] : void 8;
   });
-  hh("get-store", function(a){
-    if (Meteor.BrowserStore.get(a)) {
-      return Store.get(a);
-    }
+  hh("store_get", function(it){
+    return Store.get(it);
   });
   hh("store-equals", function(a, b){
     if (Store.get(a) === b) {
@@ -40,6 +42,13 @@ var slice$ = [].slice;
   hh("session", function(method, a, b){
     b == null && (b = "");
     return Session[method](a, b);
+  });
+  hh("is_customer", function(){
+    return My.customerId() != null;
+  });
+  hh("count", function(collection){
+    var ref$;
+    return (ref$ = window[collection]) != null ? ref$.find().count() : void 8;
   });
   hh("pictures", function(){
     return typeof Pictures != 'undefined' && Pictures !== null ? Pictures.find() : void 8;
@@ -108,29 +117,6 @@ var slice$ = [].slice;
     var result;
     result = "<" + el + ">" + content + "</" + el + ">";
     return new Handlebars.SafeString(result);
-  });
-  hh("renderThemeColors", function(user, selector){
-    var color, themeColors, i$, ref$, len$, rule;
-    if (user && user.colors) {
-      color = user.colors;
-      themeColors = _.find(document.styleSheets, function(d){
-        return d.title === "dynamic-theme";
-      });
-      for (i$ = 0, len$ = (ref$ = themeColors.rules).length; i$ < len$; ++i$) {
-        rule = ref$[i$];
-        themeColors.removeRule();
-      }
-      themeColors.insertRule(colorFill(".clr-text.prime", "color", color.prime.medium));
-      themeColors.insertRule(colorFill("a", "color", color.prime.medium));
-      themeColors.insertRule(colorFill("a:hover, a.active", "color", color.prime.medium));
-      themeColors.insertRule(colorFill(".clr-text.desat", "color", color.prime.light));
-      themeColors.insertRule(colorFill(".clr-text.desat:hover", "color", color.prime.medium));
-      themeColors.insertRule(colorFill(".clr-text.desat:active", "color", color.prime.dark));
-      themeColors.insertRule(colorFill(".clr-bg", "background", color.prime.medium));
-      themeColors.insertRule(colorFill(".clr-bg.btn:hover", "background", color.prime.medium));
-      themeColors.insertRule(colorFill(".clr-bg.light", "background", color.prime.light));
-      themeColors.insertRule(colorFill(".clr-bg.dark", "background", color.prime.dark));
-    }
   });
   hh("page_next", function(area){
     var shift_sub_area, parse_sub_area;

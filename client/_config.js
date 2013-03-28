@@ -1,4 +1,24 @@
 var Color, Store;
+(function(){
+  var ms;
+  ms = Meteor.subscribe;
+  ms("my_offer");
+  ms("my_tags");
+  ms("my_pictures");
+  ms("my_messages");
+  ms("my_alerts");
+  ms("my_prompts");
+  ms("tagsets");
+  ms("sorts");
+  ms("points");
+  ms("all_offers");
+  ms("all_tags");
+  ms("all_locations");
+  ms("all_markets");
+  ms("purchases");
+  ms("customers");
+  return ms("user_data");
+})();
 Stripe.setPublishableKey("pk_test_xB8tcSbkx4mwjHjxZtSMuZDf");
 Stripe.client_id = "ca_131FztgqheXRmq6vudxED4qdTPtZTjNt";
 Color = net.brehaut.Color;
@@ -25,3 +45,10 @@ Store.clearAll = function(){
   }
   return results$;
 };
+(function(){
+  var eh;
+  eh = EventHorizon;
+  return eh.on("select_offer", function(){
+    return console.log('selected offer');
+  });
+})();

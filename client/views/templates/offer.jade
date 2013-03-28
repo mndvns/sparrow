@@ -8,11 +8,7 @@ template(name='thisOffer')
     {{/with}}
 
 template(name='offer')
-  .offer(data-tagset="{{this.tagset}}", data-help-block="false", data-help-selector="offer").long
-    {{#constant}}
-    h1 {{this.distance}}
-    {{/constant}}
-
+  .offer(data-tagset="{{this.tagset}}", data-help-block="false", data-help-selector="offer", data-active="{{active}}").long
     section.image.span2
       div(style="background-image: url({{this.image}})")
 
@@ -47,35 +43,14 @@ template(name='offer')
           li(class= opt.selector, data-status="inactive", data-selector= opt.selector)
             a(href="#")= opt.label
 
-        mixin action({ selector: "vote", label: "upvote" })
         mixin action({ selector: "reserve", label: "purchase" })
         mixin action({ selector: "message", label: "message" })
         mixin action({ selector: "map", label: "locate" })
 
     section.extension(data-extension="reserve")
-      .inner.span10(action="", method="POST")
-        form.payment-form
-
-          .control-group
-            label.control-label Card Number
-            .controls
-              input(type="text", autocomplete="off", placeholder="4242424242424242").card-number
-
-          .control-group
-            label.control-label Expiration
-            .controls
-              input(type="text", autocomplete="off", placeholder="MM").card-expiry-month.input-mini
-              input(type="text", autocomplete="off", placeholder="YYYY").card-expiry-year.input-mini
-
-          .control-group
-            label.control-label CVV
-            .controls
-              input(type="text", autocomplete="off", placeholder="123").card-cvc.input-mini
-
-        em: h6.span10.centered status report
-
-      .inner.span2.margin.left.reserve reserve
-      .inner.span2.margin.left.reserve buy
+      {{#with market}}
+      {{> offer_market }}
+      {{/with}}
 
     section.extension(data-extension="message")
       .inner.span10
@@ -96,4 +71,31 @@ template(name='offer')
           span arrive in
           br
           span.value
+
+
+template(name='offer_market')
+  form.payment-form(action="", method="POST" )
+
+    .control-group
+      label.control-label(for="card-number") Card Number
+      .controls
+        input(type="text", autocomplete="off", name="card-number", data-required="true", placeholder="4242424242424242").card-number
+
+    .control-group
+      label.control-label Expiration
+      .controls
+        input(type="text", autocomplete="off", name="card-expiry-month", placeholder="10").card-expiry-month.input-mini
+        input(type="text", autocomplete="off", name="card-expiry-year", placeholder="2013").card-expiry-year.input-mini
+
+    .control-group
+      label.control-label CVV
+      .controls
+        input(type="text", autocomplete="off", name="card-cvv", placeholder="123").card-cvv.input-mini
+
+    .clearfix
+    {{#if my 'customer' 'active_card'}}
+    button.btn.btn-primary(type='button').existing existing customer
+    {{else}}
+    button.btn.btn-primary(type='button').new new token
+    {{/if}}
 

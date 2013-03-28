@@ -1,4 +1,4 @@
-var handleActions, adjustOfferElements, setPadding, this$ = this;
+var handleActions;
 handleActions = function(event, tmpl, cb){
   var eventEl, extension, targetEl;
   eventEl = event.currentTarget;
@@ -46,7 +46,7 @@ Template.offer.events({
     return false;
   },
   'click .vote': function(event, tmpl){
-    return Vote.cast(this);
+    return Point.cast(this);
   },
   'click .image': function(event, tmpl){
     return console.log(this);
@@ -60,14 +60,14 @@ Template.offer.events({
     var targetEl;
     targetEl = tmpl.find("section.extension[data-extension='map'] .inner.map");
     return handleActions(event, tmpl, function(){
-      var map, directionsDisplay, directionsService, origin, gorigin, dest, gdest;
+      var map, directionsDisplay, directionsService, origin, gorigin, dest, ref$, ref1$, gdest;
       map = {};
       directionsDisplay = {};
       directionsService = new google.maps.DirectionsService();
       origin = Store.get("user_loc");
       gorigin = new google.maps.LatLng(origin.lat, origin.long);
-      dest = tmpl.data.loc;
-      gdest = new google.maps.LatLng(dest.lat, dest.long);
+      dest = (ref$ = tmpl.data.locations) != null ? (ref1$ = ref$[0]) != null ? ref1$.geo : void 8 : void 8;
+      gdest = new google.maps.LatLng(dest[0], dest[1]);
       return directionsService.route({
         origin: gorigin,
         destination: gdest,
@@ -101,64 +101,6 @@ Template.offer.events({
       return console.log("clicked buy");
     });
   },
-  'click .payment-form button': function(event, tmpl){
-    var form;
-    event.preventDefault();
-    form = $(tmpl.find("form"));
-    form.find("button").prop('disabled', true);
-    return Stripe.createToken({
-      number: $(".card-number").val(),
-      cvc: $(".card-cvc").val(),
-      exp_month: $(".card-expiry-month").val(),
-      exp_year: $(".card-expiry-year").val()
-    }, "sk_test_AAKXLw2R4kozgEqCoMFu9ufH", function(status, response){
-      var token, customer_id, createCharge;
-      if (response.error) {
-        form.find("button").prop("disabled", false);
-        return Meteor.Alert.set({
-          text: response.error.message
-        });
-      } else {
-        console.log(response.id);
-        token = response.id;
-        form.append($("<input type=\"hidden\" name=\"stripeToken\" />").val(token));
-        customer_id = Meteor.user().stripe_customer_id;
-        createCharge = function(){
-          return Meteor.call("stripeChargeCreate", {
-            amount: 1000,
-            application_fee: 250,
-            user: Meteor.user()
-          }, function(err, res){
-            if (err) {
-              throw err;
-            }
-            return console.log(err, res, "stripeChargeCreate");
-          });
-        };
-        if (!customer_id) {
-          console.log("NEW CUSTOMER");
-          return Meteor.call("stripeCustomerCreate", token, function(err, res){
-            var customerId, ref$;
-            if (err) {
-              throw err;
-            }
-            console.log(err, res, "stripeCustomerCreate");
-            customerId = (ref$ = _.compact(res)) != null ? ref$.toString() : void 8;
-            return Meteor.call("stripeSaveCustomerId", customerId, function(err, res){
-              if (err) {
-                throw err;
-              }
-              console.log(err, res, "stripeSaveCustomerId");
-              return createCharge();
-            });
-          });
-        } else {
-          console.log("CUSTOMER EXISTS");
-          return createCharge();
-        }
-      }
-    });
-  },
   "click .send": function(event, tmpl){
     var target, textarea, container;
     target = $(event.target);
@@ -185,79 +127,113 @@ Template.offer.events({
     });
   }
 });
-adjustOfferElements = function(main){
-  var kids, bottom, padding_top;
-  kids = main.children;
-  bottom = kids[kids.length - 1].offsetTop;
-  padding_top = (170 - bottom) * 0.3;
-  return padding_top;
-};
-setPadding = function(section_main){
-  var padding_top;
-  padding_top = adjustOfferElements(section_main);
-  return $(section_main).css("padding-top", padding_top);
+Template.offer_market.events({
+  'click .payment-form button': function(e, t){
+    var form, offer, accessToken, card, custId;
+    e.preventDefault();
+    form = $(t.find("form"));
+    offer = this.findOffer();
+    accessToken = this.access_token;
+    card = {
+      number: $(".card-number").val(),
+      cvc: $(".card-cvc").val(),
+      exp_month: $(".card-expiry-month").val(),
+      exp_year: $(".card-expiry-year").val()
+    };
+    if ($(e.currentTarget).hasClass("new")) {
+      console.log("NEW CUSTOMER");
+      return Meteor.call("stripe_customers_create", card, function(){
+        var ref$, err, cust;
+        ref$ = [arguments[1][0], arguments[1][1]], err = ref$[0], cust = ref$[1];
+        if (err) {
+          console.log('ERROR', err);
+          return;
+        }
+        console.log('STRIPE_CUSTOMERS_CREATE', cust);
+        return Meteor.call("stripe_customers_save", cust, function(){
+          var ref$, err, res;
+          ref$ = [arguments[1][0], arguments[1][1]], err = ref$[0], res = ref$[1];
+          if (err) {
+            console.log('ERROR', err);
+            return;
+          }
+          console.log('STRIPE_CUSTOMERS_SAVE', res);
+          return Meteor.call("stripe_token_create", cust.id, accessToken, function(){
+            var ref$, err, token;
+            ref$ = [arguments[1][0], arguments[1][1]], err = ref$[0], token = ref$[1];
+            if (err) {
+              console.log('ERROR', err);
+              return;
+            }
+            console.log('STRIPE_TOKEN_CREATE', token);
+            return Meteor.call("stripe_charges_create", offer, cust.id, accessToken, function(){
+              var ref$, err, charge;
+              ref$ = [arguments[1][0], arguments[1][1]], err = ref$[0], charge = ref$[1];
+              if (err) {
+                console.log('ERROR', err);
+                return;
+              }
+              return console.log('STRIPE_CHARGES_CREATE', charge);
+            });
+          });
+        });
+      });
+    } else {
+      custId = My.customerId();
+      console.log("EXISTING CUSTOMER");
+      return Meteor.call("stripe_token_create", custId, accessToken, function(){
+        var ref$, err, token;
+        ref$ = [arguments[1][0], arguments[1][1]], err = ref$[0], token = ref$[1];
+        if (err) {
+          console.log('ERROR', err);
+          return;
+        }
+        console.log('STRIPE_TOKEN_CREATE', token);
+        return Meteor.call("stripe_charges_create", offer, custId, accessToken, function(){
+          var ref$, err, charge;
+          ref$ = [arguments[1][0], arguments[1][1]], err = ref$[0], charge = ref$[1];
+          if (err) {
+            console.log('ERROR', err);
+            return;
+          }
+          return console.log('STRIPE_CHARGES_CREATE', charge);
+        });
+      });
+    }
+  }
+});
+Template.offer_market.rendered = function(){
+  return $(this.find('form')).parsley({
+    inputs: "input, textarea, select",
+    excluded: "input[type=hidden]",
+    trigger: false,
+    focus: "first",
+    validationMinlength: 3,
+    successClass: "parsley-success",
+    errorClass: "parsley-error",
+    validators: {},
+    messages: {},
+    validateIfUnchanged: false,
+    errors: {
+      classHandler: function(elem, isRadioOrCheckbox){},
+      container: function(elem, isRadioOrCheckbox){},
+      errorsWrapper: "<ul></ul>",
+      errorElem: "<li></li>"
+    },
+    listeners: {
+      onFieldValidate: function(elem, ParsleyField){
+        return false;
+      },
+      onFormSubmit: function(isFormValid, event, ParsleyForm){},
+      onFieldError: function(elem, constraints, ParsleyField){},
+      onFieldSuccess: function(elem, constraints, ParsleyField){}
+    }
+  });
 };
 Template.offer.rendered = function(){
-  var range, keys, self, renderRatio, userId, voted;
-  setPadding(this.find("section.main"));
-  if (Session.get("shift_area") === "account" || Meteor.Router.page() === "account_offer") {
-    return;
-  }
-  range = statRange();
-  keys = [
-    {
-      name: "updatedAt",
-      invert: false
-    }, {
-      name: "distance",
-      invert: true
-    }, {
-      name: "votes_count",
-      invert: false
-    }, {
-      name: "price",
-      invert: true
-    }
-  ];
-  self = this;
-  renderRatio = function(callback){
-    var ratio;
-    ratio = {};
-    _.each(keys, function(k){
-      var d, upperRange, lowerRange, out;
-      d = k.name;
-      upperRange = self.data[d] - range.min[d] + 0.01;
-      lowerRange = range.max[d] - range.min[d];
-      out = Math.ceil((100 * upperRange / lowerRange) * 5) / 10;
-      return ratio[d] = k.invert === false
-        ? out
-        : Math.abs(out - 50);
-    });
-    return callback(ratio);
-  };
-  renderRatio(function(ratio){
-    var key, data, metric, results$ = [];
-    for (key in ratio) {
-      if (ratio.hasOwnProperty(key) && ratio[key]) {
-        data = d3.select(self.find("section.data ." + key));
-        metric = data.select(".metric");
-        results$.push(metric.style({
-          height: fn$
-        }));
-      }
-    }
-    return results$;
-    function fn$(){
-      return ratio[key] + "%";
-    }
+  Session.whenTrue(['derp', 'herp'], function(){
+    return console.log("DERP AND HERP");
   });
-  userId = Meteor.userId();
-  voted = _.find(self.data.votes_meta, function(d){
-    return d.user === userId;
-  });
-  if (voted) {
-    self.find("li.vote").setAttribute("disabled");
-  }
   if (typeof watchOffer != 'undefined' && watchOffer !== null) {
     return watchOffer.stop();
   }

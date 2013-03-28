@@ -32,8 +32,8 @@ Meteor.Router.add {}=
 
   "/access/*": ->
     console.log("YOOOOOOOOO")
-    urlParams = {}
-    (->
+    url-params = {}
+    do ->
       compare = void
       pl = /\+/g
       search = /([^&=]+)=?([^&]*)/g
@@ -41,14 +41,14 @@ Meteor.Router.add {}=
         decodeURIComponent s.replace(pl, " ")
 
       query = window.location.search.substring(1)
+      console.log "QUERY" query
       while compare = search.exec(query)
-        urlParams[decode(compare[1])] = decode(compare[2]) 
-    )()
+        url-params[decode(compare[1])] = decode(compare[2]) 
 
-    console.log(urlParams)
+    console.log \PARAMS, url-params
 
-    Meteor.call "stripeOauth", urlParams.code, ->
-      window.close()
+    Meteor.call 'market_oauth', url-params.code, -> window.close()
+    "account_earnings_dashboard"
 
   "/:area": (area) ->
     Session.set "shift_current", area

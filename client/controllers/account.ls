@@ -51,19 +51,16 @@ Template.account_offer.events {}=
   "click .offer" : (event, tmpl) ->
     false
 
-  "keyup [data-validate], change [data-validate]": (event, tmpl) ->
-    target = event.currentTarget
-    val = target.value
-    offer = Offer.storeGet()
-    offer[target.id] =  val
-    Offer.new(offer).storeSet()
+  "keyup [data-validate], change [data-validate]": (e, t) ->
+    t = e.current-target
+    o = Offer.store-get!set-store t.id, t.value
 
   'keydown [data-validate]#price': (e, t) ->
-    isNumberKey = (evt) ->
+    is-number-key = (evt) ->
       charCode = (if (evt.which) then evt.which else event.keyCode)
       return false  if charCode > 31 and (charCode < 48 or charCode > 57)
       true
-    unless isNumberKey(e) then return false
+    unless is-number-key(e) then return false
 
   'click #qr-button': (event, tmpl) ->
     offerId = @business
@@ -169,8 +166,8 @@ Template.account_offer_tags.events {}=
     Tag.new name: (tmpl.find \input .value) ..save!
 
   "click li[data-group='tagset']": (e, t) ->
-    if @name is My.tagset! => return
-    Offer.store-get! ..set-store \tagset, @name ..save!
+    console.log \ASDASDASDASA, @name
+    My.offer! ..set \tagset, @name ..save!
     Tag.destroy-mine!
 
   "click li[data-group='tags']": (e, t) ->
@@ -229,4 +226,4 @@ Template.account_earnings.rendered = ->
 Template.account_earnings_dashboard.events {}=
   'click a.stripe-connect': (event, tmpl) ->
     Meteor.Alert.set text: "Connecting to Stripe...", wait: true
-    window.open "https://connect.stripe.com/oauth/authorize?response_type=code&client_id=#{Stripe.client_id}"
+    window.open "https://connect.stripe.com/oauth/authorize?response_type=code&scope=read_write&client_id=#{Stripe.client_id}"

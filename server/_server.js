@@ -8,44 +8,8 @@ Future = require("fibers/future");
 (function(){
   var mp;
   mp = Meteor.publish;
-  mp("relations", function(loc){
-    var miles, radius, filt;
-    miles = 2000;
-    radius = miles / 69;
-    switch (loc) {
-    case function(it){
-      return it.lat;
-    } != null:
-      filt = {
-        geo: {
-          $near: [loc.lat, loc.long],
-          $maxDistance: radius
-        }
-      };
-      break;
-    default:
-      filt = {};
-    }
-    Meteor.publishWithRelations({
-      handle: this,
-      collection: Locations,
-      filter: filt,
-      mappings: [{
-        key: 'offerId',
-        collection: Offers,
-        filter: {},
-        mappings: [{
-          reverse: true,
-          key: 'offerId',
-          collection: Tags,
-          filter: {}
-        }]
-      }]
-    });
-    return this.ready();
-  });
   mp("my_offer", function(){
-    return Offers.find({
+    return Offers.findOne({
       ownerId: this.userId
     });
   });
@@ -74,6 +38,9 @@ Future = require("fibers/future");
       owner: this.userId
     });
   });
+  mp("my_prompts", function(){
+    return Prompts.find();
+  });
   mp("tagsets", function(){
     return Tagsets.find();
   });
@@ -84,11 +51,26 @@ Future = require("fibers/future");
       }
     });
   });
-  mp("votes", function(){
-    return Votes.find();
+  mp("points", function(){
+    return Points.find();
   });
   mp("all_offers", function(){
     return Offers.find();
+  });
+  mp("all_tags", function(){
+    return Tags.find();
+  });
+  mp("all_locations", function(){
+    return Locations.find();
+  });
+  mp("all_markets", function(){
+    return Markets.find();
+  });
+  mp("purchases", function(){
+    return Purchases.find();
+  });
+  mp("customers", function(){
+    return Customers.find();
   });
   return mp("user_data", function(){
     return Meteor.users.find();
@@ -175,7 +157,7 @@ allowUser = function(collections){
     return userId === doc.ownerId;
   }
 };
-allowUser([Offers, Votes, Tags, Locations, Pictures]);
+allowUser([Offers, Points, Tags, Locations, Pictures, Markets, Purchases, Customers]);
 mapper = function(a){
   var map;
   map = _.isArray(a)

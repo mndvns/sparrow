@@ -33,13 +33,10 @@ Template.account_offer.events({
   "click .offer": function(event, tmpl){
     return false;
   },
-  "keyup [data-validate], change [data-validate]": function(event, tmpl){
-    var target, val, offer;
-    target = event.currentTarget;
-    val = target.value;
-    offer = Offer.storeGet();
-    offer[target.id] = val;
-    return Offer['new'](offer).storeSet();
+  "keyup [data-validate], change [data-validate]": function(e, t){
+    var o;
+    t = e.currentTarget;
+    return o = Offer.storeGet().setStore(t.id, t.value);
   },
   'keydown [data-validate]#price': function(e, t){
     var isNumberKey;
@@ -162,11 +159,9 @@ Template.account_offer_tags.events({
   },
   "click li[data-group='tagset']": function(e, t){
     var x$;
-    if (this.name === My.tagset()) {
-      return;
-    }
-    x$ = Offer.storeGet();
-    x$.setStore('tagset', this.name);
+    console.log('ASDASDASDASA', this.name);
+    x$ = My.offer();
+    x$.set('tagset', this.name);
     x$.save();
     return Tag.destroyMine();
   },
@@ -231,7 +226,7 @@ Template.account_earnings_dashboard.events({
       text: "Connecting to Stripe...",
       wait: true
     });
-    return window.open("https://connect.stripe.com/oauth/authorize?response_type=code&client_id=" + Stripe.client_id);
+    return window.open("https://connect.stripe.com/oauth/authorize?response_type=code&scope=read_write&client_id=" + Stripe.client_id);
   }
 });
 function partialize$(f, args, where){
